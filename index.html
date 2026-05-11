@@ -7,7 +7,19 @@ body{font-family:-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;
 .wrap{padding:12px;max-width:640px;margin:0 auto;}
 
 /* 상단 프로필 */
-.profile{background:#fff;border-radius:14px;border:1.5px solid #ddd;padding:14px;margin-bottom:12px;}
+.profile{background:#fff;border-radius:14px;border:1.5px solid #ddd;padding:12px 14px;margin-bottom:12px;}
+.profile-collapsed{display:flex;justify-content:space-between;align-items:center;}
+.profile-collapsed-left{display:flex;align-items:center;gap:10px;}
+.profile-collapsed-name{font-size:13px;font-weight:700;color:#1a1a1a;}
+.profile-collapsed-sub{font-size:10px;color:#888;}
+.profile-collapsed-score{background:#dceefb;border:1.5px solid #378add;border-radius:7px;padding:4px 10px;text-align:center;flex-shrink:0;}
+.profile-collapsed-score-val{font-size:15px;font-weight:700;color:#185fa5;line-height:1;}
+.profile-collapsed-score-lbl{font-size:8px;color:#185fa5;}
+.profile-toggle{background:none;border:1.5px solid #e8e8e8;cursor:pointer;padding:4px 10px;border-radius:14px;color:#888;font-size:11px;font-weight:500;-webkit-tap-highlight-color:transparent;transition:all .15s;font-family:inherit;}
+.profile-toggle:hover{background:#f5f5f5;border-color:#ccc;}
+.profile-expand{overflow:hidden;transition:max-height .25s ease,opacity .25s ease;max-height:0;opacity:0;}
+.profile-expand.open{max-height:200px;opacity:1;}
+.profile-divider{border:none;border-top:1.5px solid #f0f0f0;margin:10px 0 10px;}
 .profile-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;}
 .profile-name{font-size:16px;font-weight:700;}
 .profile-sub{font-size:11px;color:#888;margin-top:2px;}
@@ -226,21 +238,30 @@ body{font-family:-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;
 
 <!-- 프로필 -->
 <div class="profile">
-  <div class="profile-top">
-    <div>
-      <div class="profile-name">30세 남성 · 166cm · 65.2kg</div>
-      <div class="profile-sub">클라이밍 + 로드바이크 + 웨이트 | 벌크업 목표 | 우측 복사뼈 골절 회복 중</div>
-    </div>
-    <div class="score-box">
-      <div class="score-val">81</div>
-      <div class="score-lbl">InBody</div>
-    </div>
+  <!-- 항상 보이는 축소 상태 -->
+  <div class="profile-collapsed">
+    <div style="font-size:11px;color:#aaa;font-weight:500">내 프로필</div>
+    <button class="profile-toggle" id="profile-toggle-btn" onclick="toggleProfile()" title="프로필 펼치기">▼ 펼치기</button>
   </div>
-  <div class="stat-grid">
-    <div class="stat-box"><div class="stat-val" style="color:#1d9e75">30.7kg</div><div class="stat-lbl">골격근량</div></div>
-    <div class="stat-box"><div class="stat-val" style="color:#ef9f27">17.3%</div><div class="stat-lbl">체지방률</div></div>
-    <div class="stat-box"><div class="stat-val" style="color:#185fa5">1,534</div><div class="stat-lbl">기초대사량</div></div>
-    <div class="stat-box"><div class="stat-val" style="color:#7b72e9">22개월</div><div class="stat-lbl">훈련 이력</div></div>
+  <!-- 펼쳐지는 상세 정보 -->
+  <div class="profile-expand" id="profile-expand">
+    <hr class="profile-divider">
+    <div class="profile-top">
+      <div>
+        <div class="profile-name">30세 남성 · 166cm · 65.2kg</div>
+        <div class="profile-sub">클라이밍 + 로드바이크 + 웨이트 | 벌크업 목표 | 우측 복사뼈 골절 회복 중</div>
+      </div>
+      <div class="score-box">
+        <div class="score-val">81</div>
+        <div class="score-lbl">InBody</div>
+      </div>
+    </div>
+    <div class="stat-grid">
+      <div class="stat-box"><div class="stat-val" style="color:#1d9e75">30.7kg</div><div class="stat-lbl">골격근량</div></div>
+      <div class="stat-box"><div class="stat-val" style="color:#ef9f27">17.3%</div><div class="stat-lbl">체지방률</div></div>
+      <div class="stat-box"><div class="stat-val" style="color:#185fa5">1,534</div><div class="stat-lbl">기초대사량</div></div>
+      <div class="stat-box"><div class="stat-val" style="color:#7b72e9">22개월</div><div class="stat-lbl">훈련 이력</div></div>
+    </div>
   </div>
 </div>
 
@@ -843,11 +864,24 @@ body{font-family:-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;
 </div>
 </div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js">
-/* ==================== 앱 초기화 ==================== */
-loadConfig();
-if(GH.owner&&GH.repo) pullFromGitHub(false);
-
+<script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+<script type="text/javascript">
+/* ==================== 프로필 토글 ==================== */
+function toggleProfile(){
+  var exp=document.getElementById('profile-expand');
+  var btn=document.getElementById('profile-toggle-btn');
+  if(!exp||!btn)return;
+  var isOpen=exp.classList.contains('open');
+  if(isOpen){
+    exp.classList.remove('open');
+    btn.textContent='▼ 펼치기';
+    btn.title='프로필 펼치기';
+  } else {
+    exp.classList.add('open');
+    btn.textContent='▲ 접기';
+    btn.title='프로필 접기';
+  }
+}
 </script>
 <script type="text/javascript">
 
@@ -2261,5 +2295,9 @@ function renderLiftHistory(){
   }
   el.innerHTML=h;
 }
+
+/* ==================== 앱 초기화 ==================== */
+loadConfig();
+if(GH.owner&&GH.repo) pullFromGitHub(false);
 
 </script>
