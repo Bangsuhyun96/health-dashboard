@@ -35,6 +35,18 @@
       "weight": 82,
       "createdAt": "2026-05-12",
       "onboardingDone": false
+    },
+    {
+      "id": "oo",
+      "name": "이OO",
+      "passwordHash": "bed23dd50160d5b65c2e2c8810af5925f8c99c01d17c21e54ead6998de0cdcd8",
+      "avatar": "⭐",
+      "age": 29,
+      "gender": "female",
+      "height": 168,
+      "weight": 50,
+      "createdAt": "2026-05-12",
+      "onboardingDone": false
     }
   ]
 }
