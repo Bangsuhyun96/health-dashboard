@@ -1185,6 +1185,8 @@ function saveLoginRepo(){
   if(!owner||!repo){alert('사용자명과 저장소명을 입력해주세요');return;}
   GH.owner=owner;GH.repo=repo;
   lSet('v5_repo',{owner,repo,branch:'main'});
+  var hint=document.getElementById('first-setup-hint');
+  if(hint)hint.style.display='none';
   showSyncBar('저장소 저장됨 ✓','#1d9e75');
   fetchAndRenderUserChips();
 }
