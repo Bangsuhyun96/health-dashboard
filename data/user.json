@@ -1,3 +1,16 @@
 {
-  "users": []
+  "users": [
+    {
+      "id": "user41028",
+      "name": "방수현",
+      "passwordHash": "60836a583b52d025f92a9deb51296778c550350f83b8042a359e238acbdab7cb",
+      "avatar": "💪",
+      "age": 30,
+      "gender": "male",
+      "height": 166,
+      "weight": 65.2,
+      "createdAt": "2026-05-12",
+      "onboardingDone": false
+    }
+  ]
 }
