@@ -43,6 +43,26 @@ body{font-family:-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;
 .repo-mini-input::placeholder{color:#718096;}
 .repo-mini-btn{font-family:inherit;font-size:11px;font-weight:600;padding:7px 12px;border-radius:8px;border:none;background:rgba(123,114,233,.4);color:#e9d8fd;cursor:pointer;white-space:nowrap;}
 
+/* ─── 초기 설정 화면 ─── */
+#setup-screen{display:none;min-height:100vh;background:linear-gradient(160deg,#1a1a2e 0%,#16213e 50%,#0f3460 100%);padding:36px 20px 20px;}
+.setup-wrap{max-width:440px;margin:0 auto;}
+.setup-title{font-size:22px;font-weight:800;color:#fff;margin-bottom:4px;text-align:center;}
+.setup-sub{font-size:12px;color:#a0aec0;line-height:1.7;text-align:center;margin-bottom:24px;}
+.setup-step-dot{width:28px;height:28px;border-radius:50%;border:2px solid rgba(255,255,255,.2);background:#1a1a2e;color:#a0aec0;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;z-index:1;flex-shrink:0;transition:all .3s;}
+.setup-step-dot.done{background:#7b72e9;border-color:#7b72e9;color:#fff;}
+.setup-step-dot.active{background:#a78bfa;border-color:#a78bfa;color:#fff;box-shadow:0 0 0 4px rgba(167,139,250,.3);}
+.setup-card{background:rgba(255,255,255,.07);backdrop-filter:blur(20px);border:1px solid rgba(255,255,255,.12);border-radius:16px;padding:20px;margin-bottom:12px;}
+.setup-card-title{font-size:13px;font-weight:700;color:#e2e8f0;margin-bottom:4px;}
+.setup-card-sub{font-size:11px;color:#a0aec0;margin-bottom:12px;line-height:1.6;}
+.setup-notice{background:rgba(123,114,233,.15);border:1px solid rgba(123,114,233,.4);border-radius:10px;padding:10px 12px;font-size:11px;color:#c4b5fd;line-height:1.8;margin-bottom:12px;}
+.setup-notice b{color:#e9d8fd;}
+.setup-step-panel{display:none;}
+.setup-step-panel.on{display:block;}
+.setup-result-box{background:rgba(29,158,117,.12);border:1px solid rgba(29,158,117,.4);border-radius:10px;padding:12px 14px;font-size:11px;color:#6ee7b7;line-height:1.9;margin-top:10px;}
+.setup-result-box b{color:#a7f3d0;}
+.setup-err{font-size:11px;color:#fc8181;margin-top:8px;min-height:16px;}
+.setup-ok{font-size:11px;color:#6ee7b7;margin-top:8px;min-height:16px;}
+
 /* ─── 온보딩 ─── */
 #onboarding-screen{display:none;min-height:100vh;background:#f2f2f7;padding:16px;}
 .ob-progress-bar{height:4px;background:#e8e8e8;border-radius:2px;margin-bottom:20px;overflow:hidden;}
@@ -245,6 +265,12 @@ body{font-family:-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;
           <button class="repo-mini-btn" onclick="saveLoginRepo()">저장</button>
         </div>
       </div>
+      <!-- 처음 설정 안내 -->
+      <div id="first-setup-hint" style="margin-top:12px;padding:10px 12px;background:rgba(239,159,39,.12);border:1px solid rgba(239,159,39,.4);border-radius:10px;display:none">
+        <div style="font-size:11px;color:#fcd34d;font-weight:700;margin-bottom:4px">⚠ 처음 사용하시나요?</div>
+        <div style="font-size:10px;color:#fbbf24;line-height:1.7;margin-bottom:8px">저장소를 설정하고 첫 사용자를 만들어야 해요.<br>아래 버튼으로 단계별 설정을 시작하세요.</div>
+        <button onclick="goSetup()" style="font-family:inherit;font-size:11px;font-weight:700;padding:7px 14px;border-radius:8px;border:none;background:linear-gradient(135deg,#7b72e9,#a78bfa);color:#fff;cursor:pointer;width:100%">⚙ 처음 설정 시작하기 →</button>
+      </div>
     </div>
 
     <!-- 사용자 생성 패널 -->
@@ -284,6 +310,141 @@ body{font-family:-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;
       </div>
     </div>
   </div>
+</div>
+
+<!-- ==================== 초기 설정 화면 (토큰/JSON 없을 때) ==================== -->
+<div id="setup-screen">
+<div class="setup-wrap">
+  <div class="setup-logo">
+    <span class="login-logo-icon">⚙️</span>
+    <div class="setup-title">처음 설정하기</div>
+    <div class="setup-sub">GitHub 저장소 연결 → 토큰 등록 → 첫 번째 사용자 생성<br>한 번만 하면 이후부터는 바로 로그인 가능해요.</div>
+  </div>
+
+  <!-- 단계 표시 -->
+  <div style="display:flex;align-items:center;gap:0;margin-bottom:20px;position:relative;">
+    <div style="position:absolute;top:14px;left:14px;right:14px;height:2px;background:rgba(255,255,255,.1);z-index:0"><div id="setup-step-fill" style="height:100%;background:#7b72e9;width:0%;transition:width .4s;border-radius:2px"></div></div>
+    <div class="setup-step-dot active" id="sdot-1">1</div>
+    <div style="flex:1"></div>
+    <div class="setup-step-dot" id="sdot-2">2</div>
+    <div style="flex:1"></div>
+    <div class="setup-step-dot" id="sdot-3">3</div>
+    <div style="flex:1"></div>
+    <div class="setup-step-dot" id="sdot-4">4</div>
+  </div>
+
+  <!-- Step 1: 저장소 설정 -->
+  <div class="setup-step-panel on" id="setup-panel-1">
+    <div class="setup-card">
+      <div class="setup-card-title">📦 Step 1 — GitHub 저장소 연결</div>
+      <div class="setup-card-sub">이미 만들어둔 Public 저장소 정보를 입력하세요.</div>
+      <div class="setup-notice">
+        <b>저장소가 없으면 먼저 만드세요:</b><br>
+        github.com → New repository<br>
+        이름: <b>health-dashboard</b> · Public · README 체크 → Create
+      </div>
+      <div class="login-field"><label>GitHub 사용자명</label><input class="login-input" id="s-owner" placeholder="Bangsuhyun96" autocomplete="off"></div>
+      <div class="login-field"><label>저장소 이름</label><input class="login-input" id="s-repo" placeholder="health-dashboard" autocomplete="off"></div>
+      <button class="login-btn" onclick="setupStep1Next()">다음 → 토큰 등록</button>
+      <div class="setup-err" id="s1-err"></div>
+    </div>
+  </div>
+
+  <!-- Step 2: PAT 토큰 등록 -->
+  <div class="setup-step-panel" id="setup-panel-2">
+    <div class="setup-card">
+      <div class="setup-card-title">🔑 Step 2 — GitHub 토큰(PAT) 등록</div>
+      <div class="setup-card-sub">쓰기 권한용 토큰을 비밀번호로 암호화해서 이 기기에만 저장합니다.</div>
+      <div class="setup-notice">
+        <b>PAT 발급 방법 (처음 1회):</b><br>
+        github.com 로그인 → 우상단 프로필 → Settings<br>
+        → Developer settings → Personal access tokens<br>
+        → Tokens (classic) → Generate new token (classic)<br>
+        → Note에 "health-dashboard" 입력<br>
+        → <b>repo 체크박스</b> 클릭 → Generate token<br>
+        → <b>ghp_ 로 시작하는 토큰 복사 (한 번만 표시됨!)</b>
+      </div>
+      <div class="login-field"><label>GitHub PAT 토큰</label><input class="login-input" id="s-token" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx" autocomplete="off"></div>
+      <div class="login-field"><label>토큰 보호 비밀번호 (이 비밀번호로 쓰기 잠금 해제)</label><input class="login-input" type="password" id="s-tokenpw" placeholder="비밀번호 설정 (잊지 마세요)"></div>
+      <div class="login-field"><label>비밀번호 확인</label><input class="login-input" type="password" id="s-tokenpw2" placeholder="동일하게 입력"></div>
+      <div style="display:flex;gap:8px">
+        <button class="login-btn login-btn-sec" onclick="setupGoStep(1)" style="flex:1;margin-top:0">← 이전</button>
+        <button class="login-btn" onclick="setupStep2Next()" style="flex:2">다음 → 파일 초기화</button>
+      </div>
+      <div class="setup-err" id="s2-err"></div>
+    </div>
+  </div>
+
+  <!-- Step 3: JSON 파일 초기화 -->
+  <div class="setup-step-panel" id="setup-panel-3">
+    <div class="setup-card">
+      <div class="setup-card-title">📄 Step 3 — 저장소 파일 초기화</div>
+      <div class="setup-card-sub">GitHub 저장소에 <code style="background:rgba(255,255,255,.1);padding:1px 5px;border-radius:3px">data/users.json</code> 파일을 자동 생성합니다.</div>
+      <div class="setup-notice">
+        <b>생성될 파일:</b><br>
+        📄 data/users.json — 사용자 목록 (빈 배열로 시작)<br><br>
+        <b>연결할 저장소:</b><br>
+        <span id="s3-repo-display" style="color:#e9d8fd;font-weight:700">-</span>
+      </div>
+      <div id="s3-loading" style="display:none;text-align:center;color:#a0aec0;font-size:12px;padding:12px">GitHub에 파일 생성 중...</div>
+      <div style="display:flex;gap:8px">
+        <button class="login-btn login-btn-sec" onclick="setupGoStep(2)" style="flex:1;margin-top:0">← 이전</button>
+        <button class="login-btn" id="s3-init-btn" onclick="setupStep3Init()" style="flex:2">GitHub 파일 초기화 →</button>
+      </div>
+      <div class="setup-err" id="s3-err"></div>
+      <div class="setup-ok" id="s3-ok"></div>
+    </div>
+  </div>
+
+  <!-- Step 4: 첫 사용자 생성 -->
+  <div class="setup-step-panel" id="setup-panel-4">
+    <div class="setup-card">
+      <div class="setup-card-title">👤 Step 4 — 첫 번째 사용자 생성</div>
+      <div class="setup-card-sub">로그인에 사용할 계정을 만드세요. 이후에 더 추가할 수 있어요.</div>
+      <div class="login-field"><label>이름</label><input class="login-input" id="s-name" placeholder="방수현"></div>
+      <div style="display:flex;gap:8px">
+        <div class="login-field" style="flex:1"><label>나이</label><input class="login-input" type="number" id="s-age" placeholder="30"></div>
+        <div class="login-field" style="flex:1"><label>성별</label><select class="login-input" id="s-gender"><option value="male">남성</option><option value="female">여성</option></select></div>
+      </div>
+      <div style="display:flex;gap:8px">
+        <div class="login-field" style="flex:1"><label>키 (cm)</label><input class="login-input" type="number" id="s-height" placeholder="166"></div>
+        <div class="login-field" style="flex:1"><label>체중 (kg)</label><input class="login-input" type="number" id="s-weight" placeholder="65.2"></div>
+      </div>
+      <div class="login-field"><label>앱 로그인 비밀번호</label><input class="login-input" type="password" id="s-userpw" placeholder="앱 로그인용 비밀번호 (쓰기 비밀번호와 달라도 됨)"></div>
+      <div class="login-field" style="margin-bottom:8px"><label>아바타</label>
+        <div style="display:flex;gap:10px;margin-top:5px" id="s-ava-btns">
+          <span style="font-size:26px;cursor:pointer;filter:drop-shadow(0 0 6px rgba(123,114,233,.8))" data-sel="true" onclick="pickSetupAva(this)">💪</span>
+          <span style="font-size:26px;cursor:pointer;opacity:.4" onclick="pickSetupAva(this)">🧗</span>
+          <span style="font-size:26px;cursor:pointer;opacity:.4" onclick="pickSetupAva(this)">🚴</span>
+          <span style="font-size:26px;cursor:pointer;opacity:.4" onclick="pickSetupAva(this)">🏋️</span>
+          <span style="font-size:26px;cursor:pointer;opacity:.4" onclick="pickSetupAva(this)">⭐</span>
+        </div>
+      </div>
+      <div id="s4-loading" style="display:none;text-align:center;color:#a0aec0;font-size:12px;padding:12px">계정 생성 중...</div>
+      <div style="display:flex;gap:8px">
+        <button class="login-btn login-btn-sec" onclick="setupGoStep(3)" style="flex:1;margin-top:0">← 이전</button>
+        <button class="login-btn" id="s4-create-btn" onclick="setupStep4Create()" style="flex:2;background:linear-gradient(135deg,#1d9e75,#34d399)">계정 생성 🚀</button>
+      </div>
+      <div class="setup-err" id="s4-err"></div>
+      <div id="s4-result" style="display:none" class="setup-result-box"></div>
+    </div>
+  </div>
+
+  <!-- 완료 -->
+  <div class="setup-step-panel" id="setup-panel-done">
+    <div class="setup-card" style="text-align:center;padding:30px 20px">
+      <div style="font-size:56px;margin-bottom:12px">🎉</div>
+      <div style="font-size:18px;font-weight:800;color:#fff;margin-bottom:8px">설정 완료!</div>
+      <div style="font-size:12px;color:#a0aec0;margin-bottom:16px;line-height:1.8">이제 로그인해서 온보딩을 시작하세요.<br>개인 맞춤 식단·운동 플랜을 만들어드릴게요.</div>
+      <div id="setup-done-info" class="setup-result-box" style="text-align:left;margin-bottom:16px"></div>
+      <button class="login-btn" onclick="setupGotoLogin()">로그인 화면으로 →</button>
+    </div>
+  </div>
+
+  <div style="text-align:center;margin-top:16px">
+    <button onclick="showScreen('login')" style="background:none;border:none;color:#718096;font-size:11px;cursor:pointer;font-family:inherit">← 이미 설정했어요, 로그인으로</button>
+  </div>
+</div>
 </div>
 
 <!-- ==================== 온보딩 ==================== -->
@@ -1031,6 +1192,7 @@ function saveLoginRepo(){
 /* ─── 화면 전환 ─── */
 function showScreen(n){
   document.getElementById('login-screen').style.display=n==='login'?'':'none';
+  document.getElementById('setup-screen').style.display=n==='setup'?'block':'none';
   document.getElementById('onboarding-screen').style.display=n==='onboarding'?'block':'none';
   document.getElementById('app-screen').style.display=n==='app'?'block':'none';
 }
@@ -2490,27 +2652,7 @@ function initLogTab(){
 }
 
 /* ─── 자동 로그인 체크 ─── */
-async function autoLoginCheck(){
-  loadRepoConfig();
-  var uid=sessionStorage.getItem('v5_uid');
-  if(!uid||!GH.owner||!GH.repo){showScreen('login');fetchAndRenderUserChips();return;}
-  try{
-    var {users}=await fetchUsers();
-    var u=users.find(x=>x.id===uid);
-    if(!u){showScreen('login');fetchAndRenderUserChips();return;}
-    APP.user=u;
-    GH.encToken=lGet('v5_enc_token')||null;
-    /* 로컬 캐시에서 프로필 먼저 */
-    var cached=lGet('v5_profile_'+uid);
-    if(cached){APP.profile=cached;}
-    else{
-      try{APP.profile=await ghGet('data/users/'+uid+'/profile.json');}
-      catch(e){APP.profile=null;}
-    }
-    if(!u.onboardingDone||!APP.profile){showScreen('onboarding');initOnboarding();}
-    else{showScreen('app');initApp();}
-  }catch(e){showScreen('login');fetchAndRenderUserChips();}
-}
+/* autoLoginCheck → 초기설정 플로우 버전으로 대체됨 */
 
 /* ─── 방수현 기본 계정 처리 ─── */
 function ensureBangProfile(){
@@ -2531,8 +2673,250 @@ function ensureBangProfile(){
   }
 }
 
-/* ─── DOM Ready ─── */
-document.addEventListener('DOMContentLoaded',function(){
-  autoLoginCheck();
-});
+/* ==================== 초기 설정 플로우 ==================== */
+
+var SETUP = { owner:'', repo:'', branch:'main', token:'', tokenPw:'', setupAva:'💪' };
+var setupCurrentStep = 1;
+
+/* 설정 화면 진입 */
+function goSetup() {
+  showScreen('setup');
+  setupGoStep(1);
+}
+
+/* 단계 이동 */
+function setupGoStep(n) {
+  setupCurrentStep = n;
+  /* 패널 전환 */
+  document.querySelectorAll('.setup-step-panel').forEach(p => p.classList.remove('on'));
+  var panel = document.getElementById('setup-panel-' + n);
+  if (panel) panel.classList.add('on');
+  /* 진행바 + 점 */
+  var fill = document.getElementById('setup-step-fill');
+  if (fill) fill.style.width = Math.round((n - 1) / 3 * 100) + '%';
+  for (var i = 1; i <= 4; i++) {
+    var dot = document.getElementById('sdot-' + i);
+    if (!dot) continue;
+    dot.className = 'setup-step-dot' + (i < n ? ' done' : i === n ? ' active' : '');
+  }
+  /* Step 3에 저장소 이름 표시 */
+  if (n === 3) {
+    var disp = document.getElementById('s3-repo-display');
+    if (disp) disp.textContent = (SETUP.owner || '?') + ' / ' + (SETUP.repo || '?');
+  }
+}
+
+/* 아바타 선택 */
+function pickSetupAva(el) {
+  document.querySelectorAll('#s-ava-btns span').forEach(s => {
+    s.style.opacity = '.4'; s.style.filter = '';
+  });
+  el.style.opacity = '1';
+  el.style.filter = 'drop-shadow(0 0 6px rgba(123,114,233,.8))';
+  SETUP.setupAva = el.textContent;
+}
+
+/* ── Step 1: 저장소 확인 ── */
+async function setupStep1Next() {
+  var owner = (document.getElementById('s-owner').value || '').trim();
+  var repo  = (document.getElementById('s-repo').value  || '').trim();
+  var err   = document.getElementById('s1-err');
+  err.textContent = '';
+  if (!owner || !repo) { err.textContent = '사용자명과 저장소 이름을 모두 입력해주세요'; return; }
+  err.textContent = '저장소 확인 중...';
+  try {
+    /* Public 저장소면 인증 없이 접근 가능 */
+    var r = await fetch('https://api.github.com/repos/' + owner + '/' + repo);
+    if (!r.ok) { err.textContent = '저장소를 찾을 수 없어요. 사용자명/저장소명을 확인하세요. (Public 저장소여야 해요)'; return; }
+    SETUP.owner = owner; SETUP.repo = repo;
+    /* localStorage에도 저장 */
+    lSet('v5_repo', { owner, repo, branch: 'main' });
+    GH.owner = owner; GH.repo = repo; GH.branch = 'main';
+    /* 로그인화면 입력칸도 동기화 */
+    var lo = document.getElementById('rml-owner'), lr = document.getElementById('rml-repo');
+    if (lo) lo.value = owner; if (lr) lr.value = repo;
+    err.textContent = '';
+    setupGoStep(2);
+  } catch (e) { err.textContent = '네트워크 오류: ' + e.message; }
+}
+
+/* ── Step 2: 토큰 암호화 저장 ── */
+function setupStep2Next() {
+  var token  = (document.getElementById('s-token').value  || '').trim();
+  var pw     = document.getElementById('s-tokenpw').value  || '';
+  var pw2    = document.getElementById('s-tokenpw2').value || '';
+  var err    = document.getElementById('s2-err');
+  err.textContent = '';
+  if (!token) { err.textContent = 'GitHub PAT 토큰을 입력해주세요'; return; }
+  if (!token.startsWith('ghp_') && !token.startsWith('github_pat_')) {
+    err.textContent = '토큰 형식이 올바르지 않아요 (ghp_ 또는 github_pat_ 로 시작)'; return;
+  }
+  if (!pw) { err.textContent = '비밀번호를 입력해주세요'; return; }
+  if (pw.length < 4) { err.textContent = '비밀번호는 4자리 이상으로 설정해주세요'; return; }
+  if (pw !== pw2) { err.textContent = '비밀번호가 일치하지 않아요'; return; }
+  /* 암호화 저장 */
+  var enc = CryptoJS.AES.encrypt(token, pw).toString();
+  GH.encToken = enc; GH.token = token; GH.writeMode = true; SETUP.tokenPw = pw;
+  lSet('v5_enc_token', enc);
+  err.textContent = '';
+  setupGoStep(3);
+}
+
+/* ── Step 3: GitHub 파일 초기화 ── */
+async function setupStep3Init() {
+  var err = document.getElementById('s3-err');
+  var ok  = document.getElementById('s3-ok');
+  var btn = document.getElementById('s3-init-btn');
+  var loading = document.getElementById('s3-loading');
+  err.textContent = ''; ok.textContent = '';
+  if (!GH.token) { err.textContent = '토큰이 없어요. Step 2로 돌아가세요'; return; }
+  btn.style.display = 'none';
+  loading.style.display = 'block';
+  try {
+    /* data/users.json 생성 시도 (이미 있으면 패스) */
+    var usersData = { users: [] };
+    try {
+      /* 이미 있는지 확인 */
+      var check = await fetch(
+        'https://api.github.com/repos/' + GH.owner + '/' + GH.repo + '/contents/data/users.json?ref=main',
+        { headers: { 'Authorization': 'token ' + GH.token, 'Accept': 'application/vnd.github.v3+json' } }
+      );
+      if (check.ok) {
+        /* 이미 존재함 — SHA 저장 */
+        var existing = await check.json();
+        GH.sha['data/users.json'] = existing.sha;
+        ok.textContent = '✓ data/users.json 이미 존재해요. 그대로 사용합니다.';
+        loading.style.display = 'none';
+        setTimeout(() => setupGoStep(4), 1200);
+        return;
+      }
+    } catch(e) {}
+    /* 새로 생성 */
+    await ghPut('data/users.json', usersData);
+    loading.style.display = 'none';
+    ok.textContent = '✓ data/users.json 생성 완료!';
+    setTimeout(() => setupGoStep(4), 1200);
+  } catch (e) {
+    loading.style.display = 'none';
+    btn.style.display = '';
+    err.textContent = '파일 생성 실패: ' + e.message + ' (토큰 권한을 확인하세요)';
+  }
+}
+
+/* ── Step 4: 첫 사용자 생성 ── */
+async function setupStep4Create() {
+  var name   = (document.getElementById('s-name').value   || '').trim();
+  var age    = parseInt(document.getElementById('s-age').value)    || 0;
+  var gender = document.getElementById('s-gender').value;
+  var height = parseFloat(document.getElementById('s-height').value) || 0;
+  var weight = parseFloat(document.getElementById('s-weight').value) || 0;
+  var pw     = document.getElementById('s-userpw').value || '';
+  var err    = document.getElementById('s4-err');
+  var loading = document.getElementById('s4-loading');
+  var btn    = document.getElementById('s4-create-btn');
+  var resultEl = document.getElementById('s4-result');
+  err.textContent = ''; resultEl.style.display = 'none';
+  if (!name) { err.textContent = '이름을 입력해주세요'; return; }
+  if (!pw)   { err.textContent = '로그인 비밀번호를 입력해주세요'; return; }
+  if (pw.length < 4) { err.textContent = '비밀번호는 4자리 이상으로 설정해주세요'; return; }
+  if (!GH.token) { err.textContent = '토큰이 없어요. Step 2부터 다시 진행하세요'; return; }
+  btn.style.display = 'none'; loading.style.display = 'block';
+  try {
+    /* ID 생성 */
+    var id = name.replace(/\s/g,'').toLowerCase().replace(/[^a-z0-9가-힣]/g,'').substring(0, 8);
+    /* 한글이면 로마자로 변환 시도, 안 되면 user + 타임스탬프 */
+    if (/[가-힣]/.test(id)) id = 'user' + Date.now().toString().slice(-5);
+    /* 이미 있는 유저 목록 체크 */
+    var { users } = await fetchUsers();
+    if (users.find(u => u.id === id)) id += Date.now().toString().slice(-3);
+    /* SHA-256 해시 */
+    var hash = await sha256(pw + id);
+    var newUser = {
+      id, name, passwordHash: hash, avatar: SETUP.setupAva || '💪',
+      age, gender, height, weight,
+      createdAt: new Date().toISOString().slice(0, 10),
+      onboardingDone: false
+    };
+    users.push(newUser);
+    await ghPut('data/users.json', { users });
+    /* 사용자 폴더 초기 파일 생성 */
+    var base = 'data/users/' + id + '/';
+    await ghPut(base + 'profile.json', {
+      userId: id, name, age, gender, height, weight, onboardingDone: false
+    });
+    await ghPut(base + 'health.json', {
+      logs: [], inbody: [], lifts: [], updatedAt: new Date().toISOString()
+    });
+    loading.style.display = 'none';
+    /* 완료 화면 */
+    var doneInfo = document.getElementById('setup-done-info');
+    if (doneInfo) doneInfo.innerHTML =
+      '<b>계정 생성 완료!</b><br>' +
+      '아이디: <b>' + id + '</b><br>' +
+      '이름: <b>' + name + '</b><br>' +
+      '쓰기 비밀번호: 저장됨 (잊지 마세요!)<br>' +
+      '로그인 비밀번호: 설정됨<br><br>' +
+      '이제 로그인 → 온보딩으로 개인 플랜을 설정하세요.';
+    /* 진행바 100% */
+    var fill = document.getElementById('setup-step-fill');
+    if (fill) fill.style.width = '100%';
+    for (var i = 1; i <= 4; i++) {
+      var dot = document.getElementById('sdot-' + i);
+      if (dot) dot.className = 'setup-step-dot done';
+    }
+    document.querySelectorAll('.setup-step-panel').forEach(p => p.classList.remove('on'));
+    document.getElementById('setup-panel-done').classList.add('on');
+    /* 로그인화면 유저칩 미리 갱신 */
+    fetchAndRenderUserChips();
+  } catch (e) {
+    loading.style.display = 'none';
+    btn.style.display = '';
+    err.textContent = '생성 실패: ' + e.message;
+  }
+}
+
+/* 완료 → 로그인 */
+function setupGotoLogin() {
+  /* 로그인 ID 자동 채우기 */
+  showScreen('login');
+  fetchAndRenderUserChips();
+}
+
+/* autoLoginCheck에 처음 설정 안내 추가 */
+async function autoLoginCheck(){
+  loadRepoConfig();
+  var uid=sessionStorage.getItem('v5_uid');
+
+  /* 저장소 미설정 → 처음 설정 화면 */
+  if(!GH.owner||!GH.repo){
+    /* 처음 방문자 힌트 */
+    showScreen('login');
+    fetchAndRenderUserChips();
+    /* 로그인 화면에 초기설정 버튼 표시 */
+    var hint=document.getElementById('first-setup-hint');
+    if(hint)hint.style.display='block';
+    return;
+  }
+
+  if(!uid){showScreen('login');fetchAndRenderUserChips();return;}
+  try{
+    var {users}=await fetchUsers();
+    var u=users.find(x=>x.id===uid);
+    if(!u){showScreen('login');fetchAndRenderUserChips();return;}
+    APP.user=u;
+    GH.encToken=lGet('v5_enc_token')||null;
+    var cached=lGet('v5_profile_'+uid);
+    if(cached){APP.profile=cached;}
+    else{
+      try{APP.profile=await ghGet('data/users/'+uid+'/profile.json');}
+      catch(e){APP.profile=null;}
+    }
+    if(!u.onboardingDone||!APP.profile){showScreen('onboarding');initOnboarding();}
+    else{showScreen('app');initApp();}
+  }catch(e){showScreen('login');fetchAndRenderUserChips();}
+}
+
+
 </script>
+
+document.addEventListener("DOMContentLoaded",function(){autoLoginCheck();});
