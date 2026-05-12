@@ -1,0 +1,13 @@
+json{
+  "users": [
+    {
+      "id": "bang",
+      "name": "방수현",
+      "passwordHash": "sha256해시",
+      "writeToken": "AES암호화된_PAT (본인 쓰기 권한 있을 시)",
+      "avatar": "💪",
+      "createdAt": "2026-05-12",
+      "onboardingDone": true
+    }
+  ]
+}
