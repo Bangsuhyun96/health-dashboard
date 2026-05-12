@@ -379,10 +379,10 @@ body{font-family:-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;
   <div class="setup-step-panel" id="setup-panel-3">
     <div class="setup-card">
       <div class="setup-card-title">📄 Step 3 — 저장소 파일 초기화</div>
-      <div class="setup-card-sub">GitHub 저장소에 <code style="background:rgba(255,255,255,.1);padding:1px 5px;border-radius:3px">data/users.json</code> 파일을 자동 생성합니다.</div>
+      <div class="setup-card-sub">GitHub 저장소에 <code style="background:rgba(255,255,255,.1);padding:1px 5px;border-radius:3px">data/user.json</code> 파일을 자동 생성합니다.</div>
       <div class="setup-notice">
         <b>생성될 파일:</b><br>
-        📄 data/users.json — 사용자 목록 (빈 배열로 시작)<br><br>
+        📄 data/user.json — 사용자 목록 (빈 배열로 시작)<br><br>
         <b>연결할 저장소:</b><br>
         <span id="s3-repo-display" style="color:#e9d8fd;font-weight:700">-</span>
       </div>
@@ -1215,7 +1215,7 @@ function pickAva(el,v){
 /* ─── users.json 가져오기 ─── */
 async function fetchUsers(){
   if(!GH.owner||!GH.repo)return{users:[],sha:null};
-  try{var d=await ghGet('data/users.json');return{users:d.users||[],sha:GH.sha['data/users.json']};}
+  try{var d=await ghGet('data/user.json');return{users:d.users||[],sha:GH.sha['data/user.json']};}
   catch(e){if(e.message.includes('404'))return{users:[],sha:null};throw e;}
 }
 
@@ -1399,8 +1399,8 @@ async function createUser(){
     var newUser={id,name,passwordHash:hash,avatar:selectedAva,age,gender,height:h,weight:w,
       createdAt:new Date().toISOString().slice(0,10),onboardingDone:false};
     users.push(newUser);
-    GH.sha['data/users.json']=sha;
-    await ghPut('data/users.json',{users});
+    GH.sha['data/user.json']=sha;
+    await ghPut('data/user.json',{users});
     /* 초기 파일 생성 */
     var base='data/users/'+id+'/';
     var initFiles={
@@ -1633,8 +1633,8 @@ async function finishOnboarding(){
       /* users.json의 onboardingDone 업데이트 */
       var {users,sha}=await fetchUsers();
       users=users.map(u=>u.id===APP.user.id?{...u,onboardingDone:true}:u);
-      GH.sha['data/users.json']=sha;
-      await ghPut('data/users.json',{users});
+      GH.sha['data/user.json']=sha;
+      await ghPut('data/user.json',{users});
     }catch(e){console.warn('온보딩 GitHub 저장 실패',e);}
   }
   showScreen('app');
@@ -1663,7 +1663,7 @@ function initApp(){
       try{
         var {users} = await fetchUsers();
         users = users.map(u => u.id===id ? {...u, passwordHash: newHash} : u);
-        await ghPut('data/users.json', {users});
+        await ghPut('data/user.json', {users});
         showSyncBar('✓ 비밀번호 해시 업데이트 완료','#1d9e75');
       }catch(e){ console.warn('hash update failed', e); }
     })();
@@ -2728,7 +2728,7 @@ function importJSON(input){
 
 function renderSetupGuide(){
   var el=document.getElementById('setup-guide');if(!el)return;
-  el.innerHTML=`<div class="ex-row"><div class="ex-dot" style="background:#ef9f27"></div><div class="ex-b"><div class="ex-n">1. 저장소 생성</div><div class="ex-s">github.com에서 새 Public 저장소 생성 → health-dashboard 권장</div></div></div><div class="ex-row"><div class="ex-dot" style="background:#ef9f27"></div><div class="ex-b"><div class="ex-n">2. PAT 발급</div><div class="ex-s">GitHub Settings → Developer settings → Personal Access Tokens → Tokens (classic) → repo 권한</div></div></div><div class="ex-row"><div class="ex-dot" style="background:#185fa5"></div><div class="ex-b"><div class="ex-n">3. data/users.json 초기 파일 생성</div><div class="ex-s">저장소에 data/users.json 파일을 {"users":[]} 내용으로 직접 생성 or 첫 사용자 생성시 자동 생성</div></div></div><div class="ex-row"><div class="ex-dot" style="background:#1d9e75"></div><div class="ex-b"><div class="ex-n">4. Claude API 키</div><div class="ex-s">console.anthropic.com → API Keys → 새 키 생성 (sk-ant-...)</div></div></div>`;
+  el.innerHTML=`<div class="ex-row"><div class="ex-dot" style="background:#ef9f27"></div><div class="ex-b"><div class="ex-n">1. 저장소 생성</div><div class="ex-s">github.com에서 새 Public 저장소 생성 → health-dashboard 권장</div></div></div><div class="ex-row"><div class="ex-dot" style="background:#ef9f27"></div><div class="ex-b"><div class="ex-n">2. PAT 발급</div><div class="ex-s">GitHub Settings → Developer settings → Personal Access Tokens → Tokens (classic) → repo 권한</div></div></div><div class="ex-row"><div class="ex-dot" style="background:#185fa5"></div><div class="ex-b"><div class="ex-n">3. data/user.json 초기 파일 생성</div><div class="ex-s">저장소에 data/user.json 파일을 {"users":[]} 내용으로 직접 생성 or 첫 사용자 생성시 자동 생성</div></div></div><div class="ex-row"><div class="ex-dot" style="background:#1d9e75"></div><div class="ex-b"><div class="ex-n">4. Claude API 키</div><div class="ex-s">console.anthropic.com → API Keys → 새 키 생성 (sk-ant-...)</div></div></div>`;
 }
 
 function showSyncBar(msg,color){
@@ -2900,28 +2900,28 @@ async function setupStep3Init() {
   btn.style.display = 'none';
   loading.style.display = 'block';
   try {
-    /* data/users.json 생성 시도 (이미 있으면 패스) */
+    /* data/user.json 생성 시도 (이미 있으면 패스) */
     var usersData = { users: [] };
     try {
       /* 이미 있는지 확인 */
       var check = await fetch(
-        'https://api.github.com/repos/' + GH.owner + '/' + GH.repo + '/contents/data/users.json?ref=main',
+        'https://api.github.com/repos/' + GH.owner + '/' + GH.repo + '/contents/data/user.json?ref=main',
         { headers: { 'Authorization': 'token ' + GH.token, 'Accept': 'application/vnd.github.v3+json' } }
       );
       if (check.ok) {
         /* 이미 존재함 — SHA 저장 */
         var existing = await check.json();
-        GH.sha['data/users.json'] = existing.sha;
-        ok.textContent = '✓ data/users.json 이미 존재해요. 그대로 사용합니다.';
+        GH.sha['data/user.json'] = existing.sha;
+        ok.textContent = '✓ data/user.json 이미 존재해요. 그대로 사용합니다.';
         loading.style.display = 'none';
         setTimeout(() => setupGoStep(4), 1200);
         return;
       }
     } catch(e) {}
     /* 새로 생성 */
-    await ghPut('data/users.json', usersData);
+    await ghPut('data/user.json', usersData);
     loading.style.display = 'none';
-    ok.textContent = '✓ data/users.json 생성 완료!';
+    ok.textContent = '✓ data/user.json 생성 완료!';
     setTimeout(() => setupGoStep(4), 1200);
   } catch (e) {
     loading.style.display = 'none';
@@ -2965,7 +2965,7 @@ async function setupStep4Create() {
       onboardingDone: false
     };
     users.push(newUser);
-    await ghPut('data/users.json', { users });
+    await ghPut('data/user.json', { users });
     /* 사용자 폴더 초기 파일 생성 */
     var base = 'data/users/' + id + '/';
     await ghPut(base + 'profile.json', {
