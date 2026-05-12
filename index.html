@@ -379,10 +379,10 @@ body{font-family:-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;
   <div class="setup-step-panel" id="setup-panel-3">
     <div class="setup-card">
       <div class="setup-card-title">📄 Step 3 — 저장소 파일 초기화</div>
-      <div class="setup-card-sub">GitHub 저장소에 <code style="background:rgba(255,255,255,.1);padding:1px 5px;border-radius:3px">data/users.json</code> 파일을 자동 생성합니다.</div>
+      <div class="setup-card-sub">GitHub 저장소에 <code style="background:rgba(255,255,255,.1);padding:1px 5px;border-radius:3px">data/user.json</code> 파일을 자동 생성합니다.</div>
       <div class="setup-notice">
         <b>생성될 파일:</b><br>
-        📄 data/users.json — 사용자 목록 (빈 배열로 시작)<br><br>
+        📄 data/user.json — 사용자 목록 (빈 배열로 시작)<br><br>
         <b>연결할 저장소:</b><br>
         <span id="s3-repo-display" style="color:#e9d8fd;font-weight:700">-</span>
       </div>
@@ -1215,7 +1215,7 @@ function pickAva(el,v){
 /* ─── users.json 가져오기 ─── */
 async function fetchUsers(){
   if(!GH.owner||!GH.repo)return{users:[],sha:null};
-  try{var d=await ghGet('data/users.json');return{users:d.users||[],sha:GH.sha['data/users.json']};}
+  try{var d=await ghGet('data/user.json');return{users:d.users||[],sha:GH.sha['data/user.json']};}
   catch(e){if(e.message.includes('404'))return{users:[],sha:null};throw e;}
 }
 
@@ -1239,36 +1239,91 @@ async function doLogin(){
   var err=document.getElementById('login-err');
   err.textContent='';
   if(!id||!pw){err.textContent='ID와 비밀번호를 입력해주세요';return;}
-  if(!GH.owner||!GH.repo){err.textContent='저장소를 먼저 설정해주세요 (하단)';return;}
+
+  /* ── 저장소 미설정 체크 ── */
+  if(!GH.owner||!GH.repo){
+    /* 혹시 입력칸에 값이 있으면 먼저 저장 */
+    var lo=(document.getElementById('rml-owner').value||'').trim();
+    var lr=(document.getElementById('rml-repo').value||'').trim();
+    if(lo&&lr){GH.owner=lo;GH.repo=lr;lSet('v5_repo',{owner:lo,repo:lr,branch:'main'});}
+    else{err.textContent='저장소를 먼저 설정해주세요 (하단 GitHub 저장소 입력)';return;}
+  }
+
   err.textContent='확인 중...';
   try{
     var {users}=await fetchUsers();
     var u=users.find(x=>x.id===id);
     if(!u){err.textContent='존재하지 않는 사용자입니다';return;}
-    var hash=await sha256(pw+id);
-    if(hash!==u.passwordHash){err.textContent='비밀번호가 틀렸습니다';return;}
+
+    /* ── 비밀번호 검증 ──
+       실제 SHA-256 해시(64자리 hex)가 있을 때만 검증.
+       "sha256해시" 같은 플레이스홀더거나 없으면 통과 → 앱 진입 후 재설정 안내 */
+    var isRealHash = u.passwordHash && /^[0-9a-f]{64}$/.test(u.passwordHash);
+    if(isRealHash){
+      var hash=await sha256(pw+id);
+      if(hash!==u.passwordHash){err.textContent='비밀번호가 틀렸습니다';return;}
+    }
+
     /* 성공 */
     sessionStorage.setItem('v5_uid',id);
     APP.user=u;
-    /* 암호화 토큰 로드 */
-    GH.encToken=lGet('v5_enc_token')||null;
     GH.sha={};
+
+    /* ── 플레이스홀더 passwordHash면 실제 해시로 업데이트 ── */
+    var isRealHash = u.passwordHash && /^[0-9a-f]{64}$/.test(u.passwordHash);
+    if(!isRealHash && pw){
+      var newHash = await sha256(pw+id);
+      APP._pendingHashUpdate = {id, newHash}; /* 로드 후 처리 */
+    }
+
+    /* ── 토큰 처리 (우선순위):
+       1) 로컬 암호화 토큰 (이미 이 기기에서 설정한 경우)
+       2) users.json의 writeToken (평문 PAT — 공개 저장소라 보안 위험, 즉시 이관 권고)
+       3) 없으면 읽기 전용 모드 */
+    GH.encToken=lGet('v5_enc_token')||null;
+    if(!GH.encToken && u.writeToken){
+      GH.token=u.writeToken;
+      GH.writeMode=true;
+      GH.rawTokenFromJson=true;
+      GH.needEncryptWarning=true;
+    }
+
     await loadUserProfile(u);
   }catch(e){err.textContent='오류: '+e.message;}
 }
 
 async function loadUserProfile(u){
-  try{
-    var profile=await ghGet('data/users/'+u.id+'/profile.json');
-    APP.profile=profile;
-  }catch(e){APP.profile=null;}
-  /* 온보딩 완료 여부 체크 */
-  if(!u.onboardingDone||!APP.profile){
-    showScreen('onboarding');
-    initOnboarding();
-  }else{
+  /* 로컬 캐시 먼저 */
+  var cached=lGet('v5_profile_'+u.id);
+  if(cached){APP.profile=cached;}
+  else{
+    try{
+      var profile=await ghGet('data/users/'+u.id+'/profile.json');
+      APP.profile=profile;
+      lSet('v5_profile_'+u.id,profile);/* 캐시 저장 */
+    }catch(e){APP.profile=null;}
+  }
+
+  /* onboardingDone:true 이면 profile.json 없어도 앱 진입
+     (users.json에 기본 신체정보가 있으므로 이를 최소 프로필로 사용) */
+  if(u.onboardingDone){
+    if(!APP.profile){
+      /* users.json 데이터로 최소 프로필 구성 */
+      APP.profile={
+        userId:u.id, name:u.name, age:u.age||0, gender:u.gender||'male',
+        height:u.height||0, weight:u.weight||0,
+        muscle:0, fatPct:0, bmr:0, inbodyScore:0,
+        goal:{type:'bulk'}, sports:[], injuries:[],
+        performance:{}, plan:null, onboardingDone:true
+      };
+    }
+    /* writeToken이 있고 암호화가 안 됐으면 배너 안내 (앱 진입 후 표시) */
+    GH.needEncryptWarning = !!(u.writeToken && !GH.encToken);
     showScreen('app');
     initApp();
+  }else{
+    showScreen('onboarding');
+    initOnboarding();
   }
 }
 
@@ -1285,14 +1340,40 @@ function doLogout(){
 function activateWriteMode(){
   var pw=document.getElementById('create-write-pw').value;
   var msg=document.getElementById('write-mode-msg');
-  if(!GH.encToken){msg.style.color='#fc8181';msg.textContent='암호화된 토큰이 없어요 (동기화설정 Step 2 먼저)';return;}
-  try{
-    var dec=CryptoJS.AES.decrypt(GH.encToken,pw).toString(CryptoJS.enc.Utf8);
-    if(!dec||(dec.indexOf('ghp_')<0&&dec.indexOf('github_pat_')<0)){msg.style.color='#fc8181';msg.textContent='비밀번호가 틀렸어요';return;}
-    GH.token=dec;GH.writeMode=true;
-    msg.style.color='#68d391';msg.textContent='쓰기 모드 활성화!';
+
+  /* 방법 1: 로컬 암호화 토큰으로 복호화 */
+  if(GH.encToken){
+    try{
+      var dec=CryptoJS.AES.decrypt(GH.encToken,pw).toString(CryptoJS.enc.Utf8);
+      if(dec&&(dec.indexOf('ghp_')>=0||dec.indexOf('github_pat_')>=0)){
+        GH.token=dec;GH.writeMode=true;
+        msg.style.color='#68d391';msg.textContent='쓰기 모드 활성화!';
+        document.getElementById('create-form').style.display='block';
+        return;
+      }
+    }catch(e){}
+    msg.style.color='#fc8181';msg.textContent='비밀번호가 틀렸어요';
+    return;
+  }
+
+  /* 방법 2: 로그인한 유저의 writeToken (users.json 평문) */
+  if(APP.user?.writeToken){
+    GH.token=APP.user.writeToken;GH.writeMode=true;
+    msg.style.color='#68d391';msg.textContent='쓰기 모드 활성화! (writeToken 사용 중 — 동기화설정에서 암호화 이관 권장)';
     document.getElementById('create-form').style.display='block';
-  }catch(e){msg.style.color='#fc8181';msg.textContent='복호화 실패: '+e.message;}
+    return;
+  }
+
+  /* 방법 3: 입력값 자체가 PAT인 경우 (비밀번호 칸에 토큰 직접 입력) */
+  if(pw&&(pw.indexOf('ghp_')>=0||pw.indexOf('github_pat_')>=0)){
+    GH.token=pw;GH.writeMode=true;
+    msg.style.color='#68d391';msg.textContent='쓰기 모드 활성화! (동기화설정에서 토큰 암호화 저장을 권장합니다)';
+    document.getElementById('create-form').style.display='block';
+    return;
+  }
+
+  msg.style.color='#fc8181';
+  msg.textContent='토큰이 없어요. 동기화설정 Step 2에서 암호화하거나, 이 칸에 PAT(ghp_...)를 직접 입력하세요.';
 }
 
 /* ─── 사용자 생성 ─── */
@@ -1318,8 +1399,8 @@ async function createUser(){
     var newUser={id,name,passwordHash:hash,avatar:selectedAva,age,gender,height:h,weight:w,
       createdAt:new Date().toISOString().slice(0,10),onboardingDone:false};
     users.push(newUser);
-    GH.sha['data/users.json']=sha;
-    await ghPut('data/users.json',{users});
+    GH.sha['data/user.json']=sha;
+    await ghPut('data/user.json',{users});
     /* 초기 파일 생성 */
     var base='data/users/'+id+'/';
     var initFiles={
@@ -1552,8 +1633,8 @@ async function finishOnboarding(){
       /* users.json의 onboardingDone 업데이트 */
       var {users,sha}=await fetchUsers();
       users=users.map(u=>u.id===APP.user.id?{...u,onboardingDone:true}:u);
-      GH.sha['data/users.json']=sha;
-      await ghPut('data/users.json',{users});
+      GH.sha['data/user.json']=sha;
+      await ghPut('data/user.json',{users});
     }catch(e){console.warn('온보딩 GitHub 저장 실패',e);}
   }
   showScreen('app');
@@ -1566,7 +1647,27 @@ function initApp(){
   renderExercise();
   renderRehab();
   loadSyncConfig();
-  /* 기록 탭은 lazy */
+
+  /* writeToken 평문 경고 배너 */
+  if(GH.needEncryptWarning){
+    setTimeout(()=>{
+      showSyncBar('⚠ writeToken이 평문 노출 상태 → 기록 탭 > 동기화설정 > Step 2에서 암호화 저장하세요','#ef9f27');
+    },1500);
+  }
+
+  /* passwordHash 플레이스홀더 → 실제 해시로 업데이트 */
+  if(APP._pendingHashUpdate && GH.writeMode && GH.token){
+    var {id, newHash} = APP._pendingHashUpdate;
+    APP._pendingHashUpdate = null;
+    (async()=>{
+      try{
+        var {users} = await fetchUsers();
+        users = users.map(u => u.id===id ? {...u, passwordHash: newHash} : u);
+        await ghPut('data/user.json', {users});
+        showSyncBar('✓ 비밀번호 해시 업데이트 완료','#1d9e75');
+      }catch(e){ console.warn('hash update failed', e); }
+    })();
+  }
 }
 
 /* ─── 프로필 헤더 ─── */
@@ -2528,16 +2629,42 @@ function encryptAndSaveToken(){
 function unlockWrite(){
   var pw=document.getElementById('cfg-unlock-pw')?.value||'';
   var res=document.getElementById('unlock-result');
-  if(!GH.encToken){if(res)res.textContent='암호화된 토큰이 없습니다 (Step 2 먼저)';return;}
-  try{
-    var dec=CryptoJS.AES.decrypt(GH.encToken,pw).toString(CryptoJS.enc.Utf8);
-    if(!dec||(dec.indexOf('ghp_')<0&&dec.indexOf('github_pat_')<0)){if(res)res.textContent='비밀번호가 틀렸어요';return;}
-    GH.token=dec;GH.writeMode=true;
-    if(res){res.style.color='#0a5c46';res.textContent='✓ 쓰기 모드 활성화!';}
+
+  /* 방법 1: 로컬 암호화 토큰 */
+  if(GH.encToken){
+    try{
+      var dec=CryptoJS.AES.decrypt(GH.encToken,pw).toString(CryptoJS.enc.Utf8);
+      if(dec&&(dec.indexOf('ghp_')>=0||dec.indexOf('github_pat_')>=0)){
+        GH.token=dec;GH.writeMode=true;
+        if(res){res.style.color='#0a5c46';res.textContent='✓ 쓰기 모드 활성화!';}
+        var pb=document.getElementById('push-btn');
+        if(pb){pb.disabled=false;pb.style.background='#185fa5';pb.style.color='#fff';pb.style.cursor='pointer';}
+        updateSyncStatusUI();return;
+      }
+    }catch(e){}
+    if(res)res.textContent='비밀번호가 틀렸어요';
+    return;
+  }
+
+  /* 방법 2: users.json의 writeToken (로그인된 유저) */
+  if(APP.user?.writeToken){
+    GH.token=APP.user.writeToken;GH.writeMode=true;
+    if(res){res.style.color='#0a5c46';res.textContent='✓ 쓰기 모드 활성화! (writeToken 사용 중)';}
     var pb=document.getElementById('push-btn');
     if(pb){pb.disabled=false;pb.style.background='#185fa5';pb.style.color='#fff';pb.style.cursor='pointer';}
-    updateSyncStatusUI();
-  }catch(e){if(res)res.textContent='복호화 실패: '+e.message;}
+    updateSyncStatusUI();return;
+  }
+
+  /* 방법 3: 이 칸에 PAT 직접 입력 */
+  if(pw&&(pw.indexOf('ghp_')>=0||pw.indexOf('github_pat_')>=0)){
+    GH.token=pw;GH.writeMode=true;
+    if(res){res.style.color='#0a5c46';res.textContent='✓ 쓰기 모드 활성화! (위에서 암호화 저장을 권장합니다)';}
+    var pb=document.getElementById('push-btn');
+    if(pb){pb.disabled=false;pb.style.background='#185fa5';pb.style.color='#fff';pb.style.cursor='pointer';}
+    updateSyncStatusUI();return;
+  }
+
+  if(res)res.textContent='토큰이 없어요. Step 2에서 암호화하거나 이 칸에 PAT(ghp_...)를 직접 입력하세요.';
 }
 function updateSyncStatusUI(){
   var userId=APP.user?.id||'?';
@@ -2601,7 +2728,7 @@ function importJSON(input){
 
 function renderSetupGuide(){
   var el=document.getElementById('setup-guide');if(!el)return;
-  el.innerHTML=`<div class="ex-row"><div class="ex-dot" style="background:#ef9f27"></div><div class="ex-b"><div class="ex-n">1. 저장소 생성</div><div class="ex-s">github.com에서 새 Public 저장소 생성 → health-dashboard 권장</div></div></div><div class="ex-row"><div class="ex-dot" style="background:#ef9f27"></div><div class="ex-b"><div class="ex-n">2. PAT 발급</div><div class="ex-s">GitHub Settings → Developer settings → Personal Access Tokens → Tokens (classic) → repo 권한</div></div></div><div class="ex-row"><div class="ex-dot" style="background:#185fa5"></div><div class="ex-b"><div class="ex-n">3. data/users.json 초기 파일 생성</div><div class="ex-s">저장소에 data/users.json 파일을 {"users":[]} 내용으로 직접 생성 or 첫 사용자 생성시 자동 생성</div></div></div><div class="ex-row"><div class="ex-dot" style="background:#1d9e75"></div><div class="ex-b"><div class="ex-n">4. Claude API 키</div><div class="ex-s">console.anthropic.com → API Keys → 새 키 생성 (sk-ant-...)</div></div></div>`;
+  el.innerHTML=`<div class="ex-row"><div class="ex-dot" style="background:#ef9f27"></div><div class="ex-b"><div class="ex-n">1. 저장소 생성</div><div class="ex-s">github.com에서 새 Public 저장소 생성 → health-dashboard 권장</div></div></div><div class="ex-row"><div class="ex-dot" style="background:#ef9f27"></div><div class="ex-b"><div class="ex-n">2. PAT 발급</div><div class="ex-s">GitHub Settings → Developer settings → Personal Access Tokens → Tokens (classic) → repo 권한</div></div></div><div class="ex-row"><div class="ex-dot" style="background:#185fa5"></div><div class="ex-b"><div class="ex-n">3. data/user.json 초기 파일 생성</div><div class="ex-s">저장소에 data/user.json 파일을 {"users":[]} 내용으로 직접 생성 or 첫 사용자 생성시 자동 생성</div></div></div><div class="ex-row"><div class="ex-dot" style="background:#1d9e75"></div><div class="ex-b"><div class="ex-n">4. Claude API 키</div><div class="ex-s">console.anthropic.com → API Keys → 새 키 생성 (sk-ant-...)</div></div></div>`;
 }
 
 function showSyncBar(msg,color){
@@ -2773,28 +2900,28 @@ async function setupStep3Init() {
   btn.style.display = 'none';
   loading.style.display = 'block';
   try {
-    /* data/users.json 생성 시도 (이미 있으면 패스) */
+    /* data/user.json 생성 시도 (이미 있으면 패스) */
     var usersData = { users: [] };
     try {
       /* 이미 있는지 확인 */
       var check = await fetch(
-        'https://api.github.com/repos/' + GH.owner + '/' + GH.repo + '/contents/data/users.json?ref=main',
+        'https://api.github.com/repos/' + GH.owner + '/' + GH.repo + '/contents/data/user.json?ref=main',
         { headers: { 'Authorization': 'token ' + GH.token, 'Accept': 'application/vnd.github.v3+json' } }
       );
       if (check.ok) {
         /* 이미 존재함 — SHA 저장 */
         var existing = await check.json();
-        GH.sha['data/users.json'] = existing.sha;
-        ok.textContent = '✓ data/users.json 이미 존재해요. 그대로 사용합니다.';
+        GH.sha['data/user.json'] = existing.sha;
+        ok.textContent = '✓ data/user.json 이미 존재해요. 그대로 사용합니다.';
         loading.style.display = 'none';
         setTimeout(() => setupGoStep(4), 1200);
         return;
       }
     } catch(e) {}
     /* 새로 생성 */
-    await ghPut('data/users.json', usersData);
+    await ghPut('data/user.json', usersData);
     loading.style.display = 'none';
-    ok.textContent = '✓ data/users.json 생성 완료!';
+    ok.textContent = '✓ data/user.json 생성 완료!';
     setTimeout(() => setupGoStep(4), 1200);
   } catch (e) {
     loading.style.display = 'none';
@@ -2838,7 +2965,7 @@ async function setupStep4Create() {
       onboardingDone: false
     };
     users.push(newUser);
-    await ghPut('data/users.json', { users });
+    await ghPut('data/user.json', { users });
     /* 사용자 폴더 초기 파일 생성 */
     var base = 'data/users/' + id + '/';
     await ghPut(base + 'profile.json', {
@@ -2887,12 +3014,10 @@ async function autoLoginCheck(){
   loadRepoConfig();
   var uid=sessionStorage.getItem('v5_uid');
 
-  /* 저장소 미설정 → 처음 설정 화면 */
+  /* 저장소 미설정 → 처음 설정 버튼 표시 */
   if(!GH.owner||!GH.repo){
-    /* 처음 방문자 힌트 */
     showScreen('login');
     fetchAndRenderUserChips();
-    /* 로그인 화면에 초기설정 버튼 표시 */
     var hint=document.getElementById('first-setup-hint');
     if(hint)hint.style.display='block';
     return;
@@ -2905,18 +3030,11 @@ async function autoLoginCheck(){
     if(!u){showScreen('login');fetchAndRenderUserChips();return;}
     APP.user=u;
     GH.encToken=lGet('v5_enc_token')||null;
-    var cached=lGet('v5_profile_'+uid);
-    if(cached){APP.profile=cached;}
-    else{
-      try{APP.profile=await ghGet('data/users/'+uid+'/profile.json');}
-      catch(e){APP.profile=null;}
-    }
-    if(!u.onboardingDone||!APP.profile){showScreen('onboarding');initOnboarding();}
-    else{showScreen('app');initApp();}
+    /* writeToken 처리 */
+    if(!GH.encToken&&u.writeToken){GH.token=u.writeToken;GH.writeMode=true;GH.needEncryptWarning=true;}
+    await loadUserProfile(u);
   }catch(e){showScreen('login');fetchAndRenderUserChips();}
 }
 
-
+document.addEventListener('DOMContentLoaded',function(){autoLoginCheck();});
 </script>
-
-document.addEventListener("DOMContentLoaded",function(){autoLoginCheck();});
