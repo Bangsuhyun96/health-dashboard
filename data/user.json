@@ -23,6 +23,18 @@
       "weight": 123,
       "createdAt": "2026-05-12",
       "onboardingDone": false
+    },
+    {
+      "id": "123574",
+      "name": "123",
+      "passwordHash": "5488cc102ae1d4447bb395f2d09e2fb01a1fbd7e6dd518b64e64bbb3ade29217",
+      "avatar": "🏋️",
+      "age": 31,
+      "gender": "male",
+      "height": 123,
+      "weight": 12,
+      "createdAt": "2026-05-12",
+      "onboardingDone": false
     }
   ]
 }
