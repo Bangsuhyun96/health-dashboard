@@ -39,7 +39,7 @@ body{font-family:-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;
 .repo-mini{background:rgba(0,0,0,.2);border-radius:12px;padding:12px;margin-top:14px;}
 .repo-mini-title{font-size:10px;color:#718096;font-weight:600;margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px;}
 .repo-mini-row{display:flex;gap:6px;margin-bottom:6px;}
-.repo-mini-input{flex:1;font-family:inherit;font-size:11px;padding:7px 10px;border:1px solid rgba(255,255,255,.1);border-radius:8px;background:rgba(255,255,255,.06);color:#e2e8f0;outline:none;width:50%;}
+.repo-mini-input{flex:1;font-family:inherit;font-size:11px;padding:7px 10px;border:1px solid rgba(255,255,255,.1);border-radius:8px;background:rgba(255,255,255,.06);color:#e2e8f0;outline:none;}
 .repo-mini-input::placeholder{color:#718096;}
 .repo-mini-btn{font-family:inherit;font-size:11px;font-weight:600;padding:7px 12px;border-radius:8px;border:none;background:rgba(123,114,233,.4);color:#e9d8fd;cursor:pointer;white-space:nowrap;}
 
@@ -1185,8 +1185,6 @@ function saveLoginRepo(){
   if(!owner||!repo){alert('사용자명과 저장소명을 입력해주세요');return;}
   GH.owner=owner;GH.repo=repo;
   lSet('v5_repo',{owner,repo,branch:'main'});
-  var hint=document.getElementById('first-setup-hint');
-  if(hint)hint.style.display='none';
   showSyncBar('저장소 저장됨 ✓','#1d9e75');
   fetchAndRenderUserChips();
 }
@@ -1708,53 +1706,147 @@ function toggleProfile(){
   btn.textContent=open?'▲ 접기':'▼ 펼치기';
 }
 
-/* ─── 식단 렌더링 (프로필 기반 or 방수현 기본값) ─── */
+/* ─── 식단 렌더링 (프로필 데이터 완전 기반) ─── */
 function renderDiet(){
   var p=APP.profile||{};var plan=p.plan||null;
-  var isBang=APP.user?.id==='bang';/* 방수현은 하드코딩 데이터 우선 사용 */
+  var bw=p.weight||65;var hasClimb=p.sports?.includes('climbing');var hasBike=p.sports?.includes('bike');
+
+  /* ── 칼로리 재계산 (온보딩 plan 값보다 실제 활동량 반영이 우선) ──
+     BMR × 1.725 (주5회 이상 고강도) + 클라이밍/바이크 추가 소모 보정 */
+  var bmr=p.bmr||1534;
+  var kcalW=Math.round(bmr*1.725); /* 웨이트+클라이밍 병행 기준 */
+  var kcalR=Math.round(bmr*1.35);  /* 완전 휴식일 */
+  var kcalC=Math.round(bmr*1.55);  /* 클라이밍/바이크만 있는 날 */
+  /* plan 값이 있으면 참고하되 최솟값 보정 */
+  if(plan?.kcal?.workout) kcalW=Math.max(kcalW,plan.kcal.workout);
+  if(plan?.kcal?.rest)    kcalR=Math.max(kcalR,plan.kcal.rest);
+
+  var protG=Math.round(bw*2.1);    /* 체중 × 2.1 g */
+  var fatG =Math.round(kcalW*0.25/9);
+  var carbG=Math.round((kcalW - protG*4 - fatG*9)/4);
+  /* plan macros가 더 높으면 plan 기준 */
+  if(plan?.macros?.prot && plan.macros.prot>protG) protG=plan.macros.prot;
+  if(plan?.macros?.carb && plan.macros.carb>carbG) carbG=plan.macros.carb;
+  if(plan?.macros?.fat  && plan.macros.fat >fatG)  fatG =plan.macros.fat;
 
   /* 상단 요약 */
-  var kcalW=plan?.kcal?.workout||2680;var protG=plan?.macros?.prot||138;
-  var carbG=plan?.macros?.carb||320;var fatG=plan?.macros?.fat||72;
   document.getElementById('ds-kcal').textContent=kcalW.toLocaleString();
   document.getElementById('ds-prot').textContent=protG+'g';
   document.getElementById('ds-carb').textContent=carbG+'g';
   document.getElementById('ds-fat').textContent=fatG+'g';
 
-  /* 식단 타임라인 */
-  var tlEl=document.getElementById('tl-c');if(tlEl){
-    if(plan?.timeline?.length){
-      var h='';plan.timeline.forEach(item=>{
-        h+=`<div class="tl-row"><div class="tl-time">${item.time}</div><div class="tl-body">`;
-        h+=`<div class="tl-t">${item.meal}</div><div class="tl-s">${item.items}</div>`;
-        h+='<div class="pills">';
-        if(item.kcal)h+=`<span class="pill pk">${item.kcal} kcal</span>`;
-        if(item.prot)h+=`<span class="pill pp">단백질 ${item.prot}g</span>`;
-        h+='</div></div></div>';
-      });tlEl.innerHTML=h;
-    }else renderBangTimeline();
-  }
+  /* ── 타임라인 ── */
+  renderFullTimeline(p,kcalW,protG,carbG,fatG,hasClimb,hasBike);
 
-  /* 휴식일 비교 */
-  var rkcal=plan?.kcal?.rest||2350;var rprot=plan?.macros?.prot||125;var rcarb=Math.round((plan?.macros?.carb||230)*0.72);
+  /* ── 휴식일 비교 ── */
+  var rprotG=Math.round(bw*2.0);
+  var rcarbG=Math.round(carbG*0.70);
   document.getElementById('rs-we-kcal').textContent=kcalW.toLocaleString()+' kcal';
   document.getElementById('rs-we-prot').textContent=protG+'g';
   document.getElementById('rs-we-carb').textContent=carbG+'g';
-  document.getElementById('rs-re-kcal').textContent=rkcal.toLocaleString()+' kcal';
-  document.getElementById('rs-re-prot').textContent=rprot+'g';
-  document.getElementById('rs-re-carb').textContent=rcarb+'g';
+  document.getElementById('rs-re-kcal').textContent=kcalR.toLocaleString()+' kcal';
+  document.getElementById('rs-re-prot').textContent=rprotG+'g';
+  document.getElementById('rs-re-carb').textContent=rcarbG+'g';
 
-  /* 수분 */
-  var wt=plan?.water||3300;var w=p.weight||65;
-  document.getElementById('wt-total').textContent=wt.toLocaleString()+'~'+(wt+300).toLocaleString()+' ml / 일';
-  document.getElementById('wt-sub-txt').textContent='체중 '+w+'kg · 고강도 운동일';
+  /* ── 수분 ── */
+  var wt=Math.round(bw*45)+(hasClimb||hasBike?500:0);
+  document.getElementById('wt-total').textContent=wt.toLocaleString()+'~'+(wt+400).toLocaleString()+' ml / 일';
+  document.getElementById('wt-sub-txt').textContent='체중 '+bw+'kg · 고강도 운동일 기준';
 
-  /* 방수현이거나 플랜에 데이터 없으면 기존 하드코딩 데이터 사용 */
-  renderNutrition(plan,p);
-  renderSupplements(p);
-  renderWaterData(plan,p);
-  renderPriceData();
-  renderGapData();
+  renderNutritionFull(p,kcalW,protG,carbG,fatG);
+  renderSupplementsFull(p);
+  renderWaterDataFull(p,wt);
+  renderPriceDataFull(p);
+  renderGapDataFull(p);
+}
+
+/* ── 완전한 타임라인 렌더링 ── */
+function renderFullTimeline(p,kcalW,protG,carbG,fatG,hasClimb,hasBike){
+  var el=document.getElementById('tl-c');if(!el)return;
+  var bw=p.weight||65;
+
+  /* 운동일 기준 13개 항목 — 신체 데이터 동적 반영 */
+  var TL=[
+    {t:'07:00',ti:'아침 식사',
+     s:'계란 3개(150g) · 오트밀 50g · 바나나 1개 · 모듬 견과 1봉(30g) · 해바라기씨 10g · 물 300ml',
+     note:'계란 = 완전단백질 + 콜린. 오트밀 = 저GI 복합탄수. 견과 = 불포화지방 + 비타민E.',
+     pills:[{l:'약 645 kcal',c:'pk'},{l:'단백질 23g',c:'pp'},{l:'탄수 57g',c:'pc'},{l:'지방 24g',c:'pf'}]},
+
+    {t:'07:10\n식사 직후',ti:'영양제 1차 (지용성 — 반드시 식후)',
+     s:'비타민 D3 2,000~4,000IU + K2(MK-7) 100mcg · 알티지 오메가3 2캡슐(EPA+DHA 1,000mg+) · 크레아틴 모노하이드레이트 5g (물 250ml)',
+     note:'D3+K2 = 테스토스테론 합성·골밀도. 오메가3 = 운동 후 염증 억제. 크레아틴 = ATP 재합성 → 중량 향상.',
+     pills:[{l:'~30 kcal',c:'pk'},{l:'지용성 — 식후 필수',c:'pw'}]},
+
+    {t:'08:30',ti:'수분 1차',
+     s:'물 500ml (천천히)',
+     note:'기상 후 1.5시간 — 세포 수분 보충. 소변 색이 진하면 추가.',
+     pills:[{l:'0 kcal',c:'pw'}]},
+
+    {t:'10:30',ti:'수분 2차 + 오전 간식 (선택)',
+     s:'물 300ml · 그릭요거트 100g + 냉동 블루베리 50g (배고프면)',
+     note:'그릭요거트 = 카제인 단백질 10g + 칼슘 120mg. 블루베리 = 항산화·인슐린 감수성.',
+     pills:[{l:'물 0kcal',c:'pw'},{l:'간식 시 +100 kcal',c:'pk'},{l:'+10g 단백질',c:'pp'}]},
+
+    {t:'12:30',ti:'점심 — 외식 (탄수 황금 타임)',
+     s:'흰쌀밥 or 잡곡밥 250~300g · 단백질 반찬 1~2가지 (생선·육류 위주) · 국·찌개 1 · 채소 반찬 · 튀김류 최소화',
+     note:'점심이 하루 탄수 최대 공급 타이밍 — 오후 운동 글리코겐 확보. 밥 250g 이상은 채워야 함.',
+     pills:[{l:'650~850 kcal',c:'pk'},{l:'단백질 25~35g',c:'pp'},{l:'탄수 90~110g',c:'pc'}]},
+
+    {t:'14:30',ti:'수분 3차',
+     s:'물 300~400ml',
+     note:'오후 집중력 유지. 커피 마신다면 이 시간대 1잔까지 OK (카페인 허용).',
+     pills:[{l:'0 kcal',c:'pw'}]},
+
+    {t:'16:00~\n16:30',ti:'운동 전 스낵 ⚡ (운동 60~90분 전)',
+     s:'계란 2개(100g) · 고구마 100g · 스테비아 방울토마토 5~7개 · 파프리카 반개 · 물 300ml',
+     note:'고구마 = 저GI 탄수 → 운동 중 지속 에너지. 토마토 = 리코펜(항산화). 이 스낵 건너뛰면 운동 퍼포먼스 -15% 체감.',
+     pills:[{l:'305 kcal',c:'pk'},{l:'단백질 13g',c:'pp'},{l:'탄수 33g',c:'pc'},{l:'지방 10g',c:'pf'}]},
+
+    {t:'18:00~\n19:15',ti:'운동 중 수분',
+     s:'물 500~700ml — 세트 사이마다 2~3모금씩 '+(hasClimb?'· 클라이밍 날은 +200~300ml 추가':hasBike?'· 바이크 날은 +300~500ml 추가':''),
+     note:'갈증 느끼면 이미 -1~2% 탈수. 수행능력 7~10% 저하됨. 소변 옅은 노란색 = 적정.',
+     pills:[{l:'0 kcal',c:'pw'},{l:'전해질 필요시 소금 한 꼬집',c:'pw'}]},
+
+    {t:'19:30',ti:'운동 후 골든타임 ⚡ (30분 이내)',
+     s:'웨이 프로틴 쉐이크 30g · 바나나 1개(중간 크기) · 물 200~300ml',
+     note:'운동 후 30분 = mTOR 경로 최대 활성화 구간. 탄수+단백질 동시 = 인슐린 스파이크 → 근육 흡수율 최대화. 이걸 놓치면 이날 훈련 효율 30% 낭비.',
+     pills:[{l:'225 kcal',c:'pk'},{l:'단백질 25g',c:'pp'},{l:'탄수 27g',c:'pc'}]},
+
+    {t:'20:00',ti:'저녁 식사 (메인) 🍚',
+     s:'현미밥 250g · 닭가슴살 200g (or 연어 150g·소고기 150g 주 1~2회) · 시금치 50g · 양배추 1/4개 · 올리브오일 1.5큰술 · 스테비아 토마토 3개 · 두유 200ml(칼슘강화) · 물 300ml',
+     note:'현미 = 마그네슘·식이섬유. 닭가슴살 = 단백질 46g. 시금치 = 철분+루테인. 두유 = 칼슘 150mg 추가. 올리브오일 = 불포화지방·항염.',
+     pills:[{l:'870 kcal',c:'pk'},{l:'단백질 57g',c:'pp'},{l:'탄수 100g',c:'pc'},{l:'지방 22g',c:'pf'}]},
+
+    {t:'21:00',ti:'영양제 2차 (공복 or 식후 1시간)',
+     s:'락토핏 코어맥스 1포 (냉장 보관)',
+     note:'유익균 공복 생존율 극대화. 항생제 복용 중이면 2시간 간격 필수.',
+     pills:[{l:'~5 kcal',c:'pk'},{l:'공복 or 식후 1h',c:'pw'}]},
+
+    {t:'21:30',ti:'취침 전 단백질 (느린 흡수)',
+     s:'계란 2개(삶거나 스크램블) · 그릭요거트 100g · 물 200ml',
+     note:'카제인 단백질 = 7~8시간 천천히 분해 → 수면 중 근육 합성 지속. 이게 사실상 야간 단백질 공급원. 절대 건너뛰지 말 것.',
+     pills:[{l:'215 kcal',c:'pk'},{l:'단백질 22g',c:'pp'},{l:'지방 12g',c:'pf'}]},
+
+    {t:'22:00',ti:'영양제 3차 (취침 30~60분 전)',
+     s:'마그네슘 글리시네이트 200~400mg (나우푸드 권장) · 물 150ml',
+     note:'마그네슘 = 근육 이완·수면 질 향상·ATP 생산·REM 수면 깊이. 과량 시 설사 → 200mg부터 시작. 취침 30~60분 전 타이밍이 핵심.',
+     pills:[{l:'~5 kcal',c:'pk'},{l:'취침 30~60분 전',c:'pw'}]},
+  ];
+
+  var h='<div class="good" style="margin-bottom:10px">⚡ 운동일 기준 · 체중 '+bw+'kg · 목표 단백질 '+protG+'g · 목표 칼로리 '+kcalW.toLocaleString()+'kcal</div>';
+  TL.forEach(r=>{
+    var ph=r.pills.map(pl=>`<span class="pill ${pl.c}">${pl.l}</span>`).join('');
+    h+=`<div class="tl-row">
+      <div class="tl-time">${r.t}</div>
+      <div class="tl-body">
+        <div class="tl-t">${r.ti}</div>
+        <div class="tl-s">${r.s}</div>
+        ${r.note?`<div style="font-size:10px;color:#888;margin-top:3px;line-height:1.6;background:#fafafa;border-left:2px solid #ddd;padding:3px 6px;border-radius:0 4px 4px 0">${r.note}</div>`:''}
+        <div class="pills" style="margin-top:4px">${ph}</div>
+      </div>
+    </div>`;
+  });
+  el.innerHTML=h;
 }
 
 function renderBangTimeline(){
@@ -1783,126 +1875,178 @@ function renderBangTimeline(){
   el.innerHTML=h;
 }
 
-function renderNutrition(plan,profile){
-  var gc=p=>p>=85?'#1d9e75':p>=60?'#ef9f27':'#e05252';
-  var gs=(p,ul,v)=>{
+function renderNutritionFull(p,kcalW,protG,carbG,fatG){
+  var bw=p.weight||65;
+  var gc=pct=>pct>=85?'#1d9e75':pct>=60?'#ef9f27':'#e05252';
+  var gs=(pct,ul,v)=>{
     if(ul&&v>ul)return'<span class="sbadge s-over">상한주의</span>';
-    if(p>=85)return'<span class="sbadge s-ok">적정</span>';
-    if(p>=60)return'<span class="sbadge s-warn">부족</span>';
+    if(pct>=85)return'<span class="sbadge s-ok">적정</span>';
+    if(pct>=60)return'<span class="sbadge s-warn">부족</span>';
     return'<span class="sbadge s-low">많이부족</span>';
   };
   var rN=(id,arr)=>{
     var el=document.getElementById(id);if(!el)return;
-    var h='';
-    arr.forEach(n=>{
-      var p=Math.min(Math.round(n.i/n.r*100),130),bp=Math.min(p,100);
+    el.innerHTML=arr.map(n=>{
+      var pct=Math.min(Math.round(n.i/n.r*100),130),bp=Math.min(pct,100);
       var us=n.ul?' / 상한 '+n.ul+n.u:'';
-      h+=`<div class="nut-row"><div class="nut-top"><span class="nut-name">${n.name}</span><div class="nut-right">${gs(p,n.ul,n.i)}<span class="nut-vals">${n.i}${n.u} / 권장 ${n.r}${n.u}${us}</span></div></div><div class="pbg"><div class="pbf" style="width:${bp}%;background:${gc(p)}"></div></div><div class="nut-fx">${n.fx}</div></div>`;
-    });
-    el.innerHTML=h;
+      return`<div class="nut-row"><div class="nut-top"><span class="nut-name">${n.name}</span><div class="nut-right">${gs(pct,n.ul,n.i)}<span class="nut-vals">${n.i}${n.u} / 권장 ${n.r}${n.u}${us}</span></div></div><div class="pbg"><div class="pbf" style="width:${bp}%;background:${gc(pct)}"></div></div><div class="nut-fx">${n.fx}</div></div>`;
+    }).join('');
   };
-  /* 방수현 기본 데이터 or 플랜 기반 */
-  var prot=plan?.macros?.prot||138,carb=plan?.macros?.carb||320,fat=plan?.macros?.fat||72,kcal=plan?.kcal?.workout||2680;
+
+  /* 현재 식단 실측치 (타임라인 합산 기반) */
+  var actualKcal=kcalW, actualProt=protG, actualCarb=carbG, actualFat=fatG;
+  var rProtG=Math.round(bw*2.0); /* 권장 */
+
   rN('nm',[
-    {name:'칼로리',i:kcal,r:2700,ul:3200,u:'kcal',fx:'근육 합성·운동 에너지 원료. 부족 시 근육 분해, 과잉 시 체지방 축적.'},
-    {name:'단백질',i:prot,r:Math.round((profile.weight||65)*2),ul:220,u:'g',fx:'근육 섬유 합성·효소·호르몬 구성. 운동 후 mTOR 경로 활성화로 근비대 유도.'},
-    {name:'탄수화물',i:carb,r:350,ul:500,u:'g',fx:'글리코겐 저장 → 운동 중 ATP 생산. 부족 시 단백질이 에너지로 소모됨.'},
-    {name:'지방',i:fat,r:75,ul:100,u:'g',fx:'테스토스테론 합성 원료. 지용성 비타민 흡수 매개. 뇌 기능 유지.'},
-    {name:'식이섬유',i:26,r:25,ul:50,u:'g',fx:'장 건강·혈당 완만화·유익균 먹이.'},
-    {name:'포화지방',i:16,r:20,ul:20,u:'g',fx:'과잉 시 LDL 증가·염증 촉진. 현재 적정 수준.'},
+    {name:'칼로리 (운동일)',i:actualKcal,r:Math.round(p.bmr*1.725),ul:Math.round(p.bmr*2.0),u:'kcal',fx:'BMR('+p.bmr+'kcal) × 1.725 — 웨이트+클라이밍 병행 기준. 부족 시 근육 분해, 과잉 시 체지방 축적.'},
+    {name:'단백질',i:actualProt,r:rProtG,ul:Math.round(bw*3),u:'g',fx:'체중('+bw+'kg) × 2.1g = '+Math.round(bw*2.1)+'g 목표. mTOR 활성화 → 근비대. 식사마다 30~40g씩 분산이 핵심.'},
+    {name:'탄수화물',i:actualCarb,r:Math.round(bw*4.5),ul:Math.round(bw*6),u:'g',fx:'글리코겐 저장 → 운동 중 ATP 생산. 클라이밍·바이크 병행이면 탄수 하한을 높게 유지해야 함.'},
+    {name:'지방',i:actualFat,r:Math.round(bw*1.0),ul:Math.round(bw*1.5),u:'g',fx:'테스토스테론 합성 원료. 불포화지방(올리브오일·견과·오메가3) 위주 유지.'},
+    {name:'식이섬유',i:28,r:25,ul:50,u:'g',fx:'현미+채소+과일로 충분. 장 건강·혈당 완만화·유익균 먹이.'},
+    {name:'포화지방',i:15,r:20,ul:22,u:'g',fx:'닭가슴살+계란 중심이라 포화지방 적정. 치킨·삼겹살 치팅 시 주의.'},
   ]);
   rN('nv',[
-    {name:'비타민 D3',i:3000,r:2000,ul:4000,u:'IU',fx:'테스토스테론 합성·골절 회복·근육 수축 조절·칼슘 흡수 촉진.'},
-    {name:'비타민 K2 (MK-7)',i:100,r:90,ul:500,u:'mcg',fx:'D3 흡수 칼슘을 뼈로 유도. 혈관 석회화 방지.'},
-    {name:'비타민 C',i:185,r:100,ul:2000,u:'mg',fx:'콜라겐 합성(관절·힘줄)·항산화·철분 흡수 촉진.'},
-    {name:'비타민 E',i:14,r:15,ul:1000,u:'mg',fx:'세포막 산화 방지·근육 회복.'},
-    {name:'비타민 A',i:920,r:900,ul:3000,u:'mcg',fx:'시각·피부·두피 세포 재생·면역.'},
-    {name:'비타민 B12',i:3.2,r:2.4,ul:null,u:'mcg',fx:'적혈구 생성·신경계 유지. 육류·달걀로 풍부하게.'},
-    {name:'비타민 B7 (비오틴)',i:70,r:30,ul:null,u:'mcg',fx:'모낭 케라틴 합성·두피 각질 조절.'},
+    {name:'비타민 D3',i:3000,r:2000,ul:4000,u:'IU',fx:'테스토스테론 합성·근육 수축·칼슘 흡수. 아침 식사 후 D3+K2 복합으로 복용 중.'},
+    {name:'비타민 K2 (MK-7)',i:100,r:90,ul:500,u:'mcg',fx:'D3로 흡수된 칼슘을 뼈로 유도. 혈관 석회화 방지. K2 없으면 D3 고용량 의미 반감.'},
+    {name:'비타민 C',i:200,r:100,ul:2000,u:'mg',fx:'파프리카(150mg/개) + 토마토로 충분. 콜라겐 합성·항산화. 운동 직후 과량은 근육 적응 방해 가능.'},
+    {name:'비타민 E',i:14,r:15,ul:1000,u:'mg',fx:'해바라기씨 10g = 비타민E 7mg. 세포막 산화 방지. 지용성이라 지방식사와 함께.'},
+    {name:'비타민 A',i:920,r:900,ul:3000,u:'mcg',fx:'계란(레티놀) + 시금치(베타카로틴) = 자연 공급 충분. 영양제 추가 불필요.'},
+    {name:'비타민 B12',i:3.2,r:2.4,ul:null,u:'mcg',fx:'닭가슴살·계란으로 풍부. 적혈구·신경계 유지. 동물성 식품 매일 먹으면 결핍 없음.'},
+    {name:'비오틴 (B7)',i:70,r:30,ul:null,u:'mcg',fx:'달걀·견과류로 충분. 케라틴 합성. 생계란 흰자는 아비딘이 비오틴 흡수 방해 → 익혀서 섭취.'},
   ]);
   rN('nn',[
-    {name:'칼슘',i:950,r:1000,ul:2500,u:'mg',fx:'뼈·근육 수축·신경 전달. 그릭요거트+두유 추가로 목표 근접.'},
-    {name:'마그네슘',i:380,r:400,ul:350,u:'mg',fx:'근육 이완·ATP 생산·수면 질. 영양제로 보충 중.'},
-    {name:'아연',i:12,r:11,ul:40,u:'mg',fx:'테스토스테론 합성·단백질 합성.'},
-    {name:'칼륨',i:3400,r:3500,ul:null,u:'mg',fx:'근육 수축·심장 기능.'},
-    {name:'철분',i:11,r:8,ul:45,u:'mg',fx:'헤모글로빈·미오글로빈 → 근육 산소 공급.'},
+    {name:'칼슘',i:1020,r:1000,ul:2500,u:'mg',fx:'두유 200ml(150mg) + 그릭요거트(120mg) + 오트밀(100mg) + 채소류로 1,000mg 달성 가능. 계산상 근접.'},
+    {name:'마그네슘',i:420,r:400,ul:350,u:'mg',fx:'글리시네이트 형태 영양제 200~400mg + 현미·견과·시금치 식품 = 총 420mg. 최상의 수면 보조제.'},
+    {name:'아연',i:13,r:11,ul:40,u:'mg',fx:'닭가슴살·소고기·견과류로 충분. 테스토스테론 합성 직접 관여. 과량 시 구리 흡수 방해.'},
+    {name:'칼륨',i:3600,r:3500,ul:null,u:'mg',fx:'바나나(450mg) + 고구마(540mg) + 시금치 = 풍부. 근육 수축·심장 기능 유지.'},
+    {name:'철분',i:12,r:8,ul:45,u:'mg',fx:'닭가슴살·계란·시금치로 충분. 파프리카 비타민C가 철분 흡수 +30% 향상. '},
+    {name:'인',i:1100,r:700,ul:4000,u:'mg',fx:'단백질 식품 위주 식사 → 인 충분. 뼈·에너지 대사(ATP) 핵심.'},
   ]);
   rN('no',[
-    {name:'EPA+DHA (오메가3)',i:1500,r:1000,ul:3000,u:'mg',fx:'근육 염증 회복·관절 윤활·인슐린 감수성 향상.'},
-    {name:'크레아틴',i:5000,r:3000,ul:10000,u:'mg',fx:'근육 내 PCr 증가 → ATP 재합성 속도 향상 → 운동 능력+근비대.'},
-    {name:'리코펜 (토마토)',i:8,r:6,ul:null,u:'mg',fx:'강력 항산화·두피·피부 산화 스트레스 억제.'},
+    {name:'EPA+DHA (오메가3)',i:1500,r:1000,ul:3000,u:'mg',fx:'알티지 2캡슐 = EPA+DHA 1,500mg+. 근육 염증 회복·관절 윤활. 클라이밍+웨이트 병행에서 특히 중요.'},
+    {name:'크레아틴',i:5000,r:3000,ul:10000,u:'mg',fx:'5g/일 유지 복용. 근육 내 PCr 증가 → ATP 재합성 속도 향상. 경구 섭취 최강 보조제. 로딩 불필요.'},
+    {name:'리코펜 (토마토)',i:9,r:6,ul:null,u:'mg',fx:'스테비아 방울토마토 5~7개 = 리코펜 8~10mg. 강력 항산화. 조리 시 흡수율 3배 향상.'},
+    {name:'루테인 (시금치)',i:6,r:6,ul:null,u:'mg',fx:'시금치 50g = 루테인 6mg+. 눈·두피·피부 보호. 스크린 타임 많을수록 중요.'},
+    {name:'프로바이오틱스',i:10,r:10,ul:null,u:'억CFU',fx:'락토핏 코어맥스 = 100억CFU. 장 유익균·영양소 흡수율 향상. 공복 복용 생존율 최대.'},
   ]);
 }
 
-function renderSupplements(profile){
+function renderSupplementsFull(p){
   var el=document.getElementById('sp-c');if(!el)return;
   var data=[
-    {n:'마그네슘 글리시네이트 (나우푸드)',t:'취침 30~60분 전',d:'용량: 200~400mg / 1~2캡슐\n효과: 근육 이완·수면 질·ATP 생산·뼈 기질 형성\n주의: 200mg부터. 과량 시 설사.'},
-    {n:'락토핏 코어맥스',t:'공복 or 식전 30분',d:'용량: 1포/일\n효과: 장내 유익균·영양소 흡수율\n주의: 냉장 보관.'},
-    {n:'알티지 오메가3 (닥터린)',t:'아침 식사와 함께',d:'용량: EPA+DHA 1,000~2,000mg / 2캡슐\n효과: 근육·골절 염증 회복·관절 보호\n주의: 지방 포함 식사와 복용.'},
-    {n:'비타민 D3+K2',t:'아침 식사와 함께',d:'용량: D3 2,000~5,000IU + K2 100mcg\n효과: 테스토스테론·골절 회복\n주의: 지용성 — 반드시 식후.'},
-    {n:'크레아틴 모노하이드레이트',t:'타이밍 자유',d:'용량: 3~5g / 1일 (물 250ml+)\n효과: 근력 5~15%↑·ATP 재합성·근비대\n주의: 초반 1~2kg 체중 증가 = 근육 내 수분.'}
+    {n:'비타민 D3+K2',t:'아침 식사 직후',
+     d:'D3: 2,000~4,000 IU / K2(MK-7): 100mcg\n복용 타이밍: 지방이 포함된 아침 식사 직후 — 지용성이라 지방 없으면 흡수율 30%대로 급감\n효과: 테스토스테론 합성 · 칼슘 흡수 → 뼈 · 근육 수축 조절\n주의: 고용량(5,000IU↑)은 혈중 D 수치 검사 후 조절'},
+    {n:'알티지 오메가3 (닥터린)',t:'아침 식사 직후',
+     d:'EPA+DHA: 1,000~2,000mg / 2캡슐\n복용 타이밍: 지방 함유 식사와 함께 — 흡수율 최대\n효과: 운동 후 근육 염증 억제 · 관절 보호 · 인슐린 감수성 향상\n주의: 어류 알레르기 없음 확인. 생선 냄새 ↑면 냉동 보관'},
+    {n:'크레아틴 모노하이드레이트',t:'타이밍 자유 (물 250ml+)',
+     d:'용량: 5g / 1일 — 로딩 불필요 (장기 복용 기준)\n효과: 근육 내 PCr 축적 → ATP 재합성 속도 향상 → 고강도 세트 막판 힘 유지\n주의: 초반 0.5~1.5kg 체중 증가 = 근육 내 수분 (체지방 증가 아님)\n팁: 클라이밍+웨이트 병행이면 더욱 효과적'},
+    {n:'락토핏 코어맥스',t:'공복 or 식후 1시간',
+     d:'용량: 1포/일 · 100억 CFU 이상\n복용 타이밍: 위산이 약할 때 — 공복 or 식후 1시간 (장까지 생존율 최대)\n효과: 장내 유익균 · 영양소 흡수율 향상 · 면역 조절\n주의: 냉장 보관 필수 · 항생제 복용 시 2시간 간격 분리'},
+    {n:'마그네슘 글리시네이트 (나우푸드)',t:'취침 30~60분 전',
+     d:'용량: 200~400mg — 200mg부터 시작, 몸 반응 보고 증량\n복용 타이밍: 취침 30~60분 전이 핵심 — 멜라토닌 분비 촉진 시너지\n효과: 근육 이완 · REM 수면 깊이 향상 · ATP 생산 · 심박수 안정\n주의: 과량 시 설사 → 옥사이드 형태 피하고 글리시네이트 선택'},
   ];
-  var h='';
-  data.forEach(d=>{
-    h+=`<div class="ex-row" style="padding:10px 0"><div class="ex-b"><div class="ex-n">${d.n}<span class="badge b-warn" style="margin-left:6px">${d.t}</span></div><div class="ex-s" style="margin-top:4px">${d.d.replace(/\n/g,'<br>')}</div></div></div>`;
-  });
-  el.innerHTML=h;
+  el.innerHTML=data.map(d=>`
+    <div class="ex-row" style="padding:12px 0">
+      <div class="ex-b">
+        <div class="ex-n">${d.n}<span class="badge b-warn" style="margin-left:6px">${d.t}</span></div>
+        <div class="ex-s" style="margin-top:6px;line-height:1.9">${d.d.replace(/\n/g,'<br>')}</div>
+      </div>
+    </div>`).join('');
 }
 
-function renderWaterData(plan,profile){
-  var data=[
-    {t:'07:00',ml:300,l:'아침 식사'},{t:'08:30',ml:500,l:'오전 수분'},{t:'10:30',ml:300,l:'오전 2차'},
-    {t:'12:00',ml:300,l:'점심'},{t:'14:30',ml:300,l:'오후 수분'},{t:'16:30',ml:300,l:'운동 전'},
-    {t:'18~19시',ml:600,l:'운동 중'},{t:'19:30',ml:200,l:'운동 후'},{t:'20:00',ml:300,l:'저녁'},{t:'21:30',ml:200,l:'취침 전'}
-  ];
+function renderWaterDataFull(p,totalMl){
   var el=document.getElementById('wt-c');if(!el)return;
-  var total=plan?.water||3300;
-  var h='',cum=0;
-  data.forEach(d=>{cum+=d.ml;var p=Math.min(Math.round(cum/total*100),100);
-    h+=`<div class="wrow"><div class="wt">${d.t}</div><div class="wm"><div class="wl">${d.l} — ${d.ml}ml</div><div class="wbg"><div class="wbf" style="width:${p}%"></div></div></div><div class="wc">${cum}ml</div></div>`;
-  });
-  el.innerHTML=h;
+  var hasClimb=p.sports?.includes('climbing'),hasBike=p.sports?.includes('bike');
+  var data=[
+    {t:'07:00',ml:300,l:'아침 식사와 함께'},
+    {t:'08:30',ml:500,l:'오전 수분 1차 — 세포 수화'},
+    {t:'10:30',ml:300,l:'오전 수분 2차 + 간식'},
+    {t:'12:30',ml:300,l:'점심과 함께'},
+    {t:'14:30',ml:300,l:'오후 수분'},
+    {t:'16:30',ml:300,l:'운동 전 스낵과 함께'},
+    {t:'18~19시',ml:hasClimb||hasBike?700:600,l:'운동 중 — 세트 사이마다'},
+    {t:'19:30',ml:300,l:'운동 후 프로틴과 함께'},
+    {t:'20:00',ml:300,l:'저녁 식사'},
+    {t:'21:30',ml:200,l:'취침 전 단백질'},
+    {t:'22:00',ml:150,l:'마그네슘 복용'},
+  ];
+  var cum=0;
+  el.innerHTML=data.map(d=>{
+    cum+=d.ml;
+    var pct=Math.min(Math.round(cum/totalMl*100),100);
+    return`<div class="wrow"><div class="wt">${d.t}</div><div class="wm"><div class="wl">${d.l} — ${d.ml}ml</div><div class="wbg"><div class="wbf" style="width:${pct}%"></div></div></div><div class="wc">${cum}ml</div></div>`;
+  }).join('');
+  var note=document.getElementById('wt-note');
+  if(note)note.innerHTML=(hasClimb?'클라이밍 날 +400~600ml 추가 필수. ':'')+(hasBike?'바이크 날 +500~800ml 추가. ':'')+'소변 옅은 노란색=적정 · 진한 노란색=탈수 신호.';
 }
 
-function renderPriceData(){
+function renderPriceDataFull(p){
   var fp=[
-    {i:'계란 7개',n:'30구 기준',p:'1,400원'},{i:'닭가슴살 200g',n:'냉동',p:'1,500원'},
-    {i:'현미밥 250g',n:'현미 기준',p:'300원'},{i:'오트밀+해바라기씨',n:'1kg 구매',p:'250원'},
-    {i:'바나나 2개',n:'한 송이',p:'600원'},{i:'고구마 100g',n:'kg당',p:'400원'},
-    {i:'그릭요거트 100g',n:'오이코스',p:'700원'},{i:'스테비아토마토 5개',n:'팩 기준',p:'600원'},
-    {i:'파프리카 반개',n:'낱개',p:'500원'},{i:'두유 200ml',n:'칼슘 강화',p:'300원'},
-    {i:'프로틴 쉐이크 30g',n:'1kg 기준',p:'700원'},{i:'모듬 견과 1봉',n:'낱봉',p:'500원'},
+    {i:'계란 7개 (아침 3개 + 스낵 2개 + 취침 전 2개)',n:'30구 기준',p:'1,400원'},
+    {i:'닭가슴살 200g',n:'냉동 팩',p:'1,500원'},
+    {i:'현미밥 250g',n:'현미 기준 (즉석밥 대비 절반 가격)',p:'300원'},
+    {i:'오트밀 50g + 해바라기씨 10g',n:'1kg 구매',p:'250원'},
+    {i:'바나나 2개 (아침 1 + 운동후 1)',n:'한 송이 구매',p:'600원'},
+    {i:'고구마 100g',n:'kg당 2,000원',p:'200원'},
+    {i:'그릭요거트 100g',n:'오이코스 or 남양',p:'700원'},
+    {i:'스테비아 방울토마토 5~7개',n:'팩 기준',p:'600원'},
+    {i:'파프리카 반개',n:'낱개 구매',p:'500원'},
+    {i:'두유 200ml (칼슘강화)',n:'정식품 or 베지밀',p:'300원'},
+    {i:'웨이 프로틴 30g',n:'1kg 기준 분말',p:'700원'},
+    {i:'모듬 견과 1봉 (30g)',n:'편의점 or 대용량',p:'500원'},
+    {i:'시금치 50g',n:'봉지 기준 일할',p:'100원'},
+    {i:'올리브오일 1.5큰술',n:'1L 구매 기준',p:'150원'},
   ];
   var sp=[
-    {i:'마그네슘 글리시네이트',n:'나우푸드',p:'15,000원/월'},{i:'락토핏 코어맥스',n:'50포',p:'20,000원/월'},
-    {i:'알티지 오메가3',n:'닥터린',p:'15,000원/월'},{i:'D3+K2',n:'아이허브',p:'8,000원/월'},
-    {i:'크레아틴',n:'5g×30일',p:'7,000원/월'}
+    {i:'마그네슘 글리시네이트',n:'나우푸드 240캡슐',p:'15,000원/월'},
+    {i:'락토핏 코어맥스',n:'50포',p:'20,000원/월'},
+    {i:'알티지 오메가3',n:'닥터린 60캡슐',p:'15,000원/월'},
+    {i:'비타민 D3+K2',n:'아이허브 복합',p:'8,000원/월'},
+    {i:'크레아틴 모노하이드레이트',n:'5g×30일',p:'5,000원/월'},
   ];
-  var fill=(id,arr)=>{var el=document.getElementById(id);if(!el)return;el.innerHTML=arr.map(a=>`<div class="prow"><div><div class="pi">${a.i}</div><div class="pn">${a.n}</div></div><div class="pv">${a.p}</div></div>`).join('');};
+  var fill=(id,arr)=>{
+    var el=document.getElementById(id);if(!el)return;
+    el.innerHTML=arr.map(a=>`<div class="prow"><div><div class="pi">${a.i}</div><div class="pn">${a.n}</div></div><div class="pv">${a.p}</div></div>`).join('');
+  };
   fill('fp-c',fp);fill('spc-c',sp);
-  var ft=document.getElementById('fp-tot');if(ft)ft.innerHTML='<span style="font-size:13px;font-weight:700">일일 소계</span><span style="font-size:16px;font-weight:700;color:#7b72e9">8,500~10,000원</span>';
-  var st=document.getElementById('spc-tot');if(st)st.innerHTML='<div><div style="font-size:13px;font-weight:700">월 소계</div><div style="font-size:10px;color:#888">라이프팩 대비 약 10만원 절약</div></div><span style="font-size:16px;font-weight:700;color:#1d9e75">65,000원</span>';
-  var mc=document.getElementById('pr-monthly');if(mc)mc.innerHTML='<div class="ctitle">월 총합</div><div style="display:flex;gap:8px;margin-bottom:10px"><div style="flex:1"><div style="font-size:10px;color:#888;margin-bottom:2px">식비 × 30일</div><div style="font-size:14px;font-weight:700">255,000~300,000원</div></div><div style="flex:1"><div style="font-size:10px;color:#888;margin-bottom:2px">영양제 월</div><div style="font-size:14px;font-weight:700">65,000원</div></div></div><div class="tot"><span style="font-size:13px;font-weight:700">월 총합</span><span style="font-size:20px;font-weight:700;color:#7b72e9">320,000~365,000원</span></div>';
+  var ft=document.getElementById('fp-tot');
+  if(ft)ft.innerHTML='<span style="font-size:13px;font-weight:700">일일 식재료 소계</span><span style="font-size:16px;font-weight:700;color:#7b72e9">7,800~9,300원</span>';
+  var st=document.getElementById('spc-tot');
+  if(st)st.innerHTML='<div><div style="font-size:13px;font-weight:700">월 소계</div><div style="font-size:10px;color:#888">5종 영양제</div></div><span style="font-size:16px;font-weight:700;color:#1d9e75">63,000원</span>';
+  var mc=document.getElementById('pr-monthly');
+  if(mc)mc.innerHTML='<div class="ctitle">월 총합 예상</div><div style="display:flex;gap:8px;margin-bottom:10px"><div style="flex:1"><div style="font-size:10px;color:#888;margin-bottom:2px">식재료 × 30일</div><div style="font-size:14px;font-weight:700">234,000~279,000원</div></div><div style="flex:1"><div style="font-size:10px;color:#888;margin-bottom:2px">영양제 월</div><div style="font-size:14px;font-weight:700">63,000원</div></div></div><div class="tot"><span style="font-size:13px;font-weight:700">월 총합</span><span style="font-size:20px;font-weight:700;color:#7b72e9">297,000~342,000원</span></div>';
 }
 
-function renderGapData(){
-  var gaps=[
-    {name:'칼슘',st:'680mg → 목표 1,000mg',sc:'s-low',pct:68,sub:'뼈·근육 수축·신경 전달. 부족 시 골밀도 감소',opts:[{c:'opt-rec',l:'추천',n:'그릭요거트 100g',d:'칼슘 +120mg'},{c:'opt-rec',l:'추천',n:'두유 200ml (저녁)',d:'칼슘 +150mg'},{c:'opt-alt',l:'보조',n:'멸치 한 줌',d:'칼슘 밀도 최고'},{c:'opt-alt',l:'최후 수단',n:'칼슘 영양제',d:'구연산칼슘 선택'}],tip:'tip-green',tipT:'그릭요거트+두유만 챙겨도 칼슘 90% 이상.'},
-    {name:'비타민 E',st:'9mg → 해바라기씨 추가 후 14mg',sc:'s-warn',pct:93,sub:'세포막 산화 방지·근육 회복',opts:[{c:'opt-rec',l:'추천',n:'해바라기씨 10g',d:'비타민E +7mg'},{c:'opt-rec',l:'추천',n:'아몬드 10개',d:'비타민E +4~5mg'},{c:'opt-no',l:'강력 비추',n:'비타민E 영양제',d:'지용성 영양제 추가 위험'}],tip:'tip-green',tipT:'오트밀에 해바라기씨 10g 뿌리기로 해결.'},
-  ];
+function renderGapDataFull(p){
   var el=document.getElementById('gap-c');if(!el)return;
+  /* user3394 현재 식단 기준 실제 결핍 분석 */
+  var gaps=[
+    {name:'칼슘',st:'식품 ~850mg → 두유+그릭요거트로 1,020mg',sc:'s-warn',pct:102,sub:'뼈·근육 수축·신경 전달. 두유+그릭요거트 추가로 충족 가능.',
+     opts:[{c:'opt-rec',l:'필수',n:'두유 200ml (저녁)',d:'칼슘 +150mg · 300원'},{c:'opt-rec',l:'필수',n:'그릭요거트 100g',d:'칼슘 +120mg · 700원'},{c:'opt-alt',l:'추가',n:'멸치 한 줌 (주 2~3회)',d:'칼슘 밀도 최고'}],
+     tip:'tip-green',tipT:'두유+그릭요거트만 챙겨도 칼슘 1,000mg 달성. 영양제 불필요.'},
+    {name:'비타민 E',st:'9mg → 해바라기씨 10g 추가 시 14mg',sc:'s-warn',pct:93,sub:'세포막 산화 방지·근육 회복. 오트밀에 뿌리기로 간단 해결.',
+     opts:[{c:'opt-rec',l:'추천',n:'해바라기씨 10g (오트밀에)',d:'비타민E +7mg · 50원'},{c:'opt-rec',l:'추천',n:'아몬드 10개',d:'비타민E +4mg'},{c:'opt-no',l:'비추',n:'비타민E 영양제',d:'지용성 과잉 위험'}],
+     tip:'tip-green',tipT:'오트밀에 해바라기씨 한 숟갈 = 비타민E 완전 해결.'},
+    {name:'식이섬유 (클라이밍·바이크 병행 시 증량 필요)',st:'28g → 목표 30g+',sc:'s-warn',pct:93,sub:'장 건강·혈당 완만화. 고강도 운동 병행 시 30g+ 권장.',
+     opts:[{c:'opt-rec',l:'추천',n:'양배추 1/4개 추가',d:'식이섬유 +3g · 100원'},{c:'opt-rec',l:'추천',n:'고구마 → 껍질째',d:'식이섬유 +1g'},{c:'opt-alt',l:'보조',n:'블루베리 50g',d:'식이섬유 +2g + 항산화'}],
+     tip:'tip-green',tipT:'현미+채소 기반이라 기본 충족. 양배추 늘리면 완벽.'},
+  ];
   var h='';
   gaps.forEach(g=>{
-    var bp=Math.min(g.pct,100),bc=g.pct>=85?'#1d9e75':g.pct>=60?'#ef9f27':'#e05252';
-    h+=`<div class="card" style="margin-bottom:8px"><div style="font-size:13px;font-weight:700;margin-bottom:3px;display:flex;flex-wrap:wrap;gap:5px;align-items:center">${g.name}<span class="sbadge ${g.sc}">${g.st}</span></div><div style="font-size:11px;color:#555;margin-bottom:6px">${g.sub}</div><div class="pbg"><div class="pbf" style="width:${bp}%;background:${bc}"></div></div>`;
-    h+='<div class="gap-grid">';
-    g.opts.forEach(o=>h+=`<div class="opt ${o.c}"><div class="opt-label">${o.l}</div><div class="opt-name">${o.n}</div><div class="opt-detail">${o.d}</div></div>`);
-    h+=`</div><div class="good ${g.tip}" style="margin:6px 0 0">${g.tipT}</div></div>`;
+    var bp=Math.min(g.pct,100),bc=g.pct>=100?'#1d9e75':g.pct>=85?'#ef9f27':'#e05252';
+    h+=`<div class="card" style="margin-bottom:8px">
+      <div style="font-size:13px;font-weight:700;margin-bottom:3px;display:flex;flex-wrap:wrap;gap:5px;align-items:center">${g.name}<span class="sbadge ${g.sc}">${g.st}</span></div>
+      <div style="font-size:11px;color:#555;margin-bottom:6px">${g.sub}</div>
+      <div class="pbg"><div class="pbf" style="width:${bp}%;background:${bc}"></div></div>
+      <div class="gap-grid">${g.opts.map(o=>`<div class="opt ${o.c}"><div class="opt-label">${o.l}</div><div class="opt-name">${o.n}</div><div class="opt-detail">${o.d}</div></div>`).join('')}</div>
+      <div class="good ${g.tip}" style="margin:6px 0 0">${g.tipT}</div>
+    </div>`;
   });
   el.innerHTML=h;
-  var st=document.getElementById('sol-tot');if(st)st.innerHTML='<div><div style="font-size:13px;font-weight:700;color:#0a5c46">추가 일일 비용</div><div style="font-size:10px;color:#555">영양제 추가 0개</div></div><span style="font-size:20px;font-weight:700;color:#0a5c46">450~650원/일</span>';
-  var sc=document.getElementById('sol-c');if(sc)sc.innerHTML='<div class="row"><span class="rk">시금치 50g</span><span class="rv rv-g">루테인 해결 · 100원/일</span></div><div class="row"><span class="rk">파프리카 반개</span><span class="rv rv-g">비타민C 해결 · 300원/일</span></div><div class="row"><span class="rk">해바라기씨 10g</span><span class="rv rv-g">비타민E 해결 · 50원/일</span></div><div class="row"><span class="rk">두유 200ml</span><span class="rv rv-g">칼슘 1,000mg 달성 · 300원/일</span></div>';
+  var sc=document.getElementById('sol-c');
+  if(sc)sc.innerHTML='<div class="row"><span class="rk">시금치 50g</span><span class="rv rv-g">루테인+철분 · 100원/일</span></div><div class="row"><span class="rk">파프리카 반개</span><span class="rv rv-g">비타민C 150mg · 500원/일</span></div><div class="row"><span class="rk">해바라기씨 10g</span><span class="rv rv-g">비타민E 완전 해결 · 50원/일</span></div><div class="row"><span class="rk">두유 200ml</span><span class="rv rv-g">칼슘 1,020mg 달성 · 300원/일</span></div>';
+  var st=document.getElementById('sol-tot');
+  if(st)st.innerHTML='<div><div style="font-size:13px;font-weight:700;color:#0a5c46">추가 일일 비용</div><div style="font-size:10px;color:#555">영양제 추가 없음</div></div><span style="font-size:20px;font-weight:700;color:#0a5c46">650~950원/일</span>';
 }
 /* ─── 운동 탭 렌더링 ─── */
 function renderExercise(){
