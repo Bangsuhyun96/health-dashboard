@@ -36,7 +36,7 @@ body{font-family:-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;
 .user-chip-id{font-size:10px;color:#a0aec0;}
 .login-divider{display:flex;align-items:center;gap:8px;margin:14px 0;color:#718096;font-size:11px;}
 .login-divider::before,.login-divider::after{content:'';flex:1;height:1px;background:rgba(255,255,255,.1);}
-.repo-mini{background:rgba(0,0,0,.2);border-radius:12px;padding:12px;margin-top:14px; display: none;}
+.repo-mini{background:rgba(0,0,0,.2);border-radius:12px;padding:12px;margin-top:14px;}
 .repo-mini-title{font-size:10px;color:#718096;font-weight:600;margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px;}
 .repo-mini-row{display:flex;gap:6px;margin-bottom:6px;}
 .repo-mini-input{flex:1;font-family:inherit;font-size:11px;padding:7px 10px;border:1px solid rgba(255,255,255,.1);border-radius:8px;background:rgba(255,255,255,.06);color:#e2e8f0;outline:none;}
@@ -1216,30 +1216,30 @@ async function ghPut(path,json){
 
 /* ─── 저장소 설정 ─── */
 function loadRepoConfig(){
-  var c=lGet('v5_repo');
-  if(c){GH.owner=c.owner||'';GH.repo=c.repo||'';GH.branch=c.branch||'main';}
-  else{
+  var c = lGet('v5_repo');
+  if(c){ GH.owner=c.owner||''; GH.repo=c.repo||''; GH.branch=c.branch||'main'; }
+  else {
     /* localStorage 없으면 default값으로 자동 설정 */
     GH.owner = DEFAULT_REPO.owner;
     GH.repo  = DEFAULT_REPO.repo;
     GH.branch = DEFAULT_REPO.branch;
     lSet('v5_repo', DEFAULT_REPO);
   }
-  GH.encToken=lGet('v5_enc_token')||null;
-  /* 로그인 화면 입력란 채우기 */
-  var o=document.getElementById('rml-owner'),r=document.getElementById('rml-repo');
-  if(o&&GH.owner)o.value=GH.owner;
-  if(r&&GH.repo)r.value=GH.repo;
+  GH.encToken = lGet('v5_enc_token') || null;
+  var o=document.getElementById('rml-owner'), r=document.getElementById('rml-repo');
+  if(o&&GH.owner) o.value=GH.owner;
+  if(r&&GH.repo)  r.value=GH.repo;
 }
 /* 기본값 — 나중에 복구 시 여기만 수정 */
 var DEFAULT_REPO = { owner: 'Bangsuhyun96', repo: 'health-dashboard', branch: 'main' };
 
 function saveLoginRepo(){
+  /* 폼이 숨겨진 동안은 default값 사용 */
   var owner = (document.getElementById('rml-owner').value||'').trim() || DEFAULT_REPO.owner;
   var repo   = (document.getElementById('rml-repo').value||'').trim()  || DEFAULT_REPO.repo;
   if(!owner||!repo){alert('사용자명과 저장소명을 입력해주세요');return;}
-  GH.owner=owner;GH.repo=repo;
-  lSet('v5_repo',{owner,repo,branch:'main'});
+  GH.owner=owner; GH.repo=repo;
+  lSet('v5_repo',{owner, repo, branch:'main'});
   showSyncBar('저장소 저장됨 ✓','#1d9e75');
   fetchAndRenderUserChips();
 }
@@ -2692,6 +2692,30 @@ function renderCardioInputs(){
   if(selectedExTypes.includes('climbing'))h+=`<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px"><span style="font-size:11px;min-width:60px">클라이밍</span><input type="number" id="cardio-climbing" min="30" max="300" step="15" value="90" style="font-family:inherit;font-size:11px;padding:5px 8px;border:1.5px solid #b0bfee;border-radius:7px;width:64px;outline:none" oninput="updateBurnCalc()"><span style="font-size:11px;color:#888">분</span></div>`;
   if(selectedExTypes.includes('bike'))h+=`<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px"><span style="font-size:11px;min-width:60px">로드바이크</span><input type="number" id="cardio-bike" min="30" max="300" step="15" value="60" style="font-family:inherit;font-size:11px;padding:5px 8px;border:1.5px solid #b0bfee;border-radius:7px;width:64px;outline:none" oninput="updateBurnCalc()"><span style="font-size:11px;color:#888">분</span></div>`;
   el.innerHTML=h;
+}
+
+/* ─ 소모 칼로리 계산 ─ */
+function calcBurnKcal(){
+  syncBlockData();
+  var bw=APP.profile?.weight||65;var burn=0;
+  if(selectedExTypes.includes('climbing')){var m=parseFloat(document.getElementById('cardio-climbing')?.value)||90;burn+=Math.round(MET.climbing*bw*m/60);}
+  if(selectedExTypes.includes('bike')){var m=parseFloat(document.getElementById('cardio-bike')?.value)||60;burn+=Math.round(MET.bike*bw*m/60);}
+  if(selectedExTypes.includes('weight')){
+    var totalSets=exerciseBlocks.reduce((a,b)=>a+b.sets.filter(s=>s.kg).length,0);
+    burn+=Math.round(MET.weight*bw*(Math.max(totalSets*3,30))/60);
+  }
+  return burn;
+}
+function updateBurnCalc(){
+  var burn=calcBurnKcal();
+  var el=document.getElementById('sum-burn');if(el)el.textContent=burn>0?burn.toLocaleString():'-';
+  /* 순 칼로리도 업데이트 */
+  var kcalEl=document.getElementById('sum-kcal');
+  var netEl=document.getElementById('sum-net');
+  if(kcalEl&&netEl){
+    var kcal=parseInt(kcalEl.textContent?.replace(/,/g,''))||0;
+    if(kcal>0)netEl.textContent=Math.round(kcal-burn).toLocaleString();
+  }
 }
 
 /* ─ 웨이트 블록 (종목별 세트 관리) ─ */
