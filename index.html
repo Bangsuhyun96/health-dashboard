@@ -36,7 +36,7 @@ body{font-family:-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;
 .user-chip-id{font-size:10px;color:#a0aec0;}
 .login-divider{display:flex;align-items:center;gap:8px;margin:14px 0;color:#718096;font-size:11px;}
 .login-divider::before,.login-divider::after{content:'';flex:1;height:1px;background:rgba(255,255,255,.1);}
-.repo-mini{background:rgba(0,0,0,.2);border-radius:12px;padding:12px;margin-top:14px; display: none;}
+.repo-mini{background:rgba(0,0,0,.2);border-radius:12px;padding:12px;margin-top:14px;}
 .repo-mini-title{font-size:10px;color:#718096;font-weight:600;margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px;}
 .repo-mini-row{display:flex;gap:6px;margin-bottom:6px;}
 .repo-mini-input{flex:1;font-family:inherit;font-size:11px;padding:7px 10px;border:1px solid rgba(255,255,255,.1);border-radius:8px;background:rgba(255,255,255,.06);color:#e2e8f0;outline:none;}
@@ -304,10 +304,11 @@ body{font-family:-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;
         <div id="create-ok" style="display:none" class="login-ok"></div>
       </div>
     </div>
+    <div style="text-align:center;margin-top:20px">
+      <button onclick="clearAllStorage()" style="background:none;border:none;color:rgba(255,255,255,.2);font-size:10px;cursor:pointer;font-family:inherit;padding:4px 8px;border-radius:4px;transition:color .2s" onmouseover="this.style.color='rgba(255,255,255,.5)'" onmouseout="this.style.color='rgba(255,255,255,.2)'">⟳ 앱 초기화</button>
+    </div>
   </div>
-</div>
-
-<!-- ==================== 초기 설정 화면 (토큰/JSON 없을 때) ==================== -->
+</div> (토큰/JSON 없을 때) ==================== -->
 <div id="setup-screen">
 <div class="setup-wrap">
   <div class="setup-logo">
@@ -889,86 +890,134 @@ body{font-family:-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;
 <!-- ======== 기록 탭들 ======== -->
 <!-- 일일기록 -->
 <div id="l-daily" class="page">
+
+<!-- ① 날짜 + 초기화 -->
 <div class="card">
-  <div class="ctitle">일일 기록</div>
-  <div style="display:flex;gap:8px;align-items:center;margin-bottom:12px">
+  <div style="display:flex;gap:8px;align-items:center">
     <label style="font-size:11px;color:#555;flex-shrink:0">날짜</label>
     <input type="date" id="log-date" style="flex:1;font-family:inherit;font-size:12px;padding:6px 10px;border:1.5px solid #ddd;border-radius:8px;background:#fff;color:#1a1a1a;outline:none">
-    <button onclick="setToday()" style="font-family:inherit;font-size:11px;padding:6px 10px;border:1.5px solid #7b72e9;border-radius:8px;background:#f3f0ff;color:#3c3489;cursor:pointer">오늘</button>
+    <button onclick="setToday()" style="font-family:inherit;font-size:11px;padding:6px 10px;border:1.5px solid #7b72e9;border-radius:8px;background:#f3f0ff;color:#3c3489;cursor:pointer;flex-shrink:0">오늘</button>
+    <button onclick="confirmResetLog()" style="font-family:inherit;font-size:11px;padding:6px 10px;border:1.5px solid #e57373;border-radius:8px;background:#fdecea;color:#c0392b;cursor:pointer;flex-shrink:0">초기화</button>
   </div>
-  <div style="font-size:11px;font-weight:700;color:#555;margin-bottom:6px">운동 유형 (복수 선택)</div>
-  <div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:6px" id="ex-type-btns">
-    <button class="type-btn" data-val="weight" onclick="toggleType(this)">웨이트</button>
+</div>
+
+<!-- ② 운동 유형 -->
+<div class="card">
+  <div class="ctitle">운동 유형</div>
+  <div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:8px" id="ex-type-btns">
+    <button class="type-btn" data-val="weight"   onclick="toggleType(this)">웨이트</button>
     <button class="type-btn" data-val="climbing" onclick="toggleType(this)">클라이밍</button>
-    <button class="type-btn" data-val="bike" onclick="toggleType(this)">로드바이크</button>
-    <button class="type-btn" data-val="rehab" onclick="toggleType(this)">재활운동</button>
-    <button class="type-btn" data-val="rest" onclick="toggleType(this)">휴식</button>
+    <button class="type-btn" data-val="bike"     onclick="toggleType(this)">로드바이크</button>
+    <button class="type-btn" data-val="rehab"    onclick="toggleType(this)">재활운동</button>
+    <button class="type-btn" data-val="rest"     onclick="toggleType(this)">휴식</button>
   </div>
-  <div id="cardio-time-wrap" style="display:none;background:#f0f4ff;border:1.5px solid #b0bfee;border-radius:8px;padding:10px;margin-bottom:10px">
+  <!-- 유산소 시간 -->
+  <div id="cardio-time-wrap" style="display:none;background:#f0f4ff;border:1.5px solid #b0bfee;border-radius:8px;padding:10px;margin-bottom:6px">
     <div style="font-size:11px;font-weight:700;color:#2a3fa5;margin-bottom:8px">유산소 운동 시간</div>
     <div id="cardio-inputs"></div>
   </div>
-  <div id="weight-log-wrap" style="display:none;background:#e6f1fb;border:1.5px solid #b0bfee;border-radius:8px;padding:10px;margin-bottom:10px">
-    <div style="font-size:11px;font-weight:700;color:#185fa5;margin-bottom:8px">오늘 웨이트 기록 <span style="font-size:10px;font-weight:400;color:#555">(소모 칼로리 계산용)</span></div>
-    <div id="weight-sets-list"></div>
-    <button onclick="addWeightSet()" style="font-family:inherit;font-size:11px;padding:5px 10px;border:1.5px dashed #b0bfee;border-radius:7px;background:#fff;color:#185fa5;cursor:pointer;width:100%;margin-top:6px">+ 세트 추가</button>
-  </div>
-  <div style="font-size:11px;font-weight:700;color:#555;margin-bottom:6px">식단 유형</div>
-  <div style="display:flex;gap:5px;margin-bottom:10px">
-    <button class="diet-btn on" data-val="workout" onclick="selectDiet(this)">운동일</button>
-    <button class="diet-btn" data-val="rest" onclick="selectDiet(this)">휴식일</button>
-    <button class="diet-btn" data-val="cheat" onclick="selectDiet(this)">치팅</button>
-  </div>
-  <div style="font-size:11px;font-weight:700;color:#555;margin-bottom:6px">기본 메뉴 변경</div>
-  <div id="menu-changes" style="margin-bottom:8px"></div>
-  <button onclick="addMenuChange()" style="font-family:inherit;font-size:11px;padding:5px 10px;border:1.5px dashed #ddd;border-radius:7px;background:#f5f5f5;color:#555;cursor:pointer;width:100%;margin-bottom:10px">+ 메뉴 변경 추가</button>
-  <div style="font-size:11px;font-weight:700;color:#555;margin-bottom:6px">추가 식품</div>
-  <div id="food-items" style="margin-bottom:4px"></div>
-  <button onclick="addFoodRow()" style="font-family:inherit;font-size:11px;padding:5px 10px;border:1.5px dashed #ddd;border-radius:7px;background:#f5f5f5;color:#555;cursor:pointer;width:100%;margin-bottom:12px">+ 추가 식품</button>
-  <div style="font-size:11px;font-weight:700;color:#555;margin-bottom:6px">영양제 복용 체크</div>
-  <div id="supp-checks" style="margin-bottom:12px"></div>
-  <div style="font-size:11px;font-weight:700;color:#555;margin-bottom:6px">오늘 컨디션</div>
-  <div style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:12px">
-    <button class="cond-btn" data-val="5" onclick="selectCond(this)">😄 최고</button>
-    <button class="cond-btn" data-val="4" onclick="selectCond(this)">🙂 좋음</button>
-    <button class="cond-btn on" data-val="3" onclick="selectCond(this)">😐 보통</button>
-    <button class="cond-btn" data-val="2" onclick="selectCond(this)">😔 피곤</button>
-    <button class="cond-btn" data-val="1" onclick="selectCond(this)">😫 최악</button>
-  </div>
-  <div style="font-size:11px;font-weight:700;color:#555;margin-bottom:6px">수면 시간</div>
-  <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
-    <input type="range" id="sleep-hours" min="3" max="10" value="7" step="0.5" style="flex:1;accent-color:#7b72e9" oninput="document.getElementById('sleep-val').textContent=this.value+'시간';updateSleepColor()">
-    <span id="sleep-val" style="font-size:13px;font-weight:700;min-width:48px;color:#1d9e75">7시간</span>
-  </div>
-  <div style="font-size:11px;font-weight:700;color:#555;margin-bottom:6px">발목 통증 (0=없음, 10=극심)</div>
-  <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
-    <input type="range" id="ankle-pain" min="0" max="10" value="0" step="1" style="flex:1;accent-color:#ef9f27" oninput="document.getElementById('ankle-val').textContent=this.value;updateAnkleColor()">
-    <span id="ankle-val" style="font-size:13px;font-weight:700;min-width:20px;text-align:center;color:#1d9e75">0</span>
-  </div>
-  <div style="font-size:11px;font-weight:700;color:#555;margin-bottom:6px">수분 섭취량</div>
-  <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
-    <input type="range" id="water-ml" min="500" max="5000" value="3000" step="100" style="flex:1;accent-color:#378add" oninput="document.getElementById('water-val').textContent=(this.value/1000).toFixed(1)+'L'">
-    <span id="water-val" style="font-size:13px;font-weight:700;min-width:44px;color:#185fa5">3.0L</span>
-  </div>
-  <div style="font-size:11px;font-weight:700;color:#555;margin-bottom:6px">메모</div>
-  <textarea id="log-memo" placeholder="오늘 특이사항, 느낀 점, 부상 여부..." style="font-family:inherit;font-size:11px;width:100%;padding:8px 10px;border:1.5px solid #ddd;border-radius:8px;background:#fff;color:#1a1a1a;resize:none;height:60px;outline:none;margin-bottom:12px"></textarea>
-  <div class="card" style="background:#f5f5f5;margin-bottom:12px">
-    <div class="ctitle">오늘 예상 영양 합계</div>
-    <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px">
-      <div class="sb" style="flex:1 1 calc(50% - 3px)"><div class="sv" id="sum-kcal" style="color:#7b72e9">-</div><div class="sl">섭취 kcal</div></div>
-      <div class="sb" style="flex:1 1 calc(50% - 3px)"><div class="sv" id="sum-burn" style="color:#e57373">-</div><div class="sl">소모 kcal</div></div>
-      <div class="sb" style="flex:1 1 calc(50% - 3px)"><div class="sv" id="sum-net" style="color:#1d9e75">-</div><div class="sl">순 칼로리</div></div>
-      <div class="sb" style="flex:1 1 calc(50% - 3px)"><div class="sv" id="sum-prot" style="color:#1d9e75">-</div><div class="sl">단백질 g</div></div>
-    </div>
-    <div style="display:flex;flex-wrap:wrap;gap:6px">
-      <div class="sb" style="flex:1 1 calc(50% - 3px)"><div class="sv" id="sum-carb" style="color:#c47d0e;font-size:16px">-</div><div class="sl">탄수화물 g</div></div>
-      <div class="sb" style="flex:1 1 calc(50% - 3px)"><div class="sv" id="sum-fat" style="color:#185fa5;font-size:16px">-</div><div class="sl">지방 g</div></div>
-    </div>
-    <div id="over-warn" style="display:none;margin-top:8px"></div>
-  </div>
-  <button onclick="saveLog()" style="font-family:inherit;font-size:13px;font-weight:700;padding:12px;border:none;border-radius:10px;background:#7b72e9;color:#fff;cursor:pointer;width:100%">기록 저장</button>
-  <div id="save-msg" style="text-align:center;font-size:11px;margin-top:8px;color:#0a5c46;display:none">저장됐어요!</div>
 </div>
+
+<!-- ③ 웨이트 기록 (종목별 세트 관리) -->
+<div id="weight-log-wrap" style="display:none">
+<div class="card">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+    <div class="ctitle" style="margin-bottom:0;border-bottom:none;padding-bottom:0">웨이트 기록</div>
+    <button onclick="addExerciseBlock()" style="font-family:inherit;font-size:11px;font-weight:700;padding:5px 12px;border:1.5px solid #185fa5;border-radius:8px;background:#dceefb;color:#185fa5;cursor:pointer">+ 종목 추가</button>
+  </div>
+  <div id="exercise-blocks"></div>
+</div>
+</div>
+
+<!-- ④ 오늘 먹은 음식 자유 입력 -->
+<div class="card">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+    <div class="ctitle" style="margin-bottom:0;border-bottom:none;padding-bottom:0">오늘 먹은 것</div>
+    <button onclick="addFoodEntry()" style="font-family:inherit;font-size:11px;font-weight:700;padding:5px 12px;border:1.5px solid #1d9e75;border-radius:8px;background:#e6fdf2;color:#0a5c46;cursor:pointer">+ 추가</button>
+  </div>
+  <div style="font-size:10px;color:#888;margin-bottom:10px;line-height:1.6">먹은 음식을 그대로 적으세요. 양까지 쓰면 더 정확해요.<br>예: 닭가슴살 200g, 현미밥 한공기, 아이스아메리카노, 치킨 반마리</div>
+  <div id="food-entries"></div>
+  <!-- 수분 입력 -->
+  <div style="margin-top:10px;padding-top:10px;border-top:1.5px solid #f0f0f0">
+    <div style="display:flex;align-items:center;gap:10px">
+      <span style="font-size:11px;font-weight:700;color:#185fa5;flex-shrink:0">💧 수분</span>
+      <input type="range" id="water-ml" min="500" max="5000" value="2500" step="100" style="flex:1;accent-color:#378add" oninput="document.getElementById('water-val').textContent=(this.value/1000).toFixed(1)+'L'">
+      <span id="water-val" style="font-size:13px;font-weight:700;min-width:44px;color:#185fa5;text-align:right">2.5L</span>
+    </div>
+  </div>
+  <button onclick="calcFoodNutrition()" style="font-family:inherit;font-size:12px;font-weight:700;padding:9px;border:none;border-radius:9px;background:linear-gradient(135deg,#7b72e9,#a78bfa);color:#fff;cursor:pointer;width:100%;margin-top:10px">🔍 영양소 분석</button>
+  <div id="food-analysis-result" style="margin-top:10px"></div>
+</div>
+
+<!-- ⑤ 영양제 -->
+<div class="card">
+  <div class="ctitle">영양제 복용</div>
+  <div id="supp-checks"></div>
+</div>
+
+<!-- ⑥ 컨디션 / 수면 / 통증 -->
+<div class="card">
+  <div class="ctitle">오늘 상태</div>
+  <div style="margin-bottom:12px">
+    <div style="font-size:11px;font-weight:700;color:#555;margin-bottom:6px">컨디션</div>
+    <div style="display:flex;gap:4px;flex-wrap:wrap">
+      <button class="cond-btn" data-val="5" onclick="selectCond(this)">😄 최고</button>
+      <button class="cond-btn" data-val="4" onclick="selectCond(this)">🙂 좋음</button>
+      <button class="cond-btn on" data-val="3" onclick="selectCond(this)">😐 보통</button>
+      <button class="cond-btn" data-val="2" onclick="selectCond(this)">😔 피곤</button>
+      <button class="cond-btn" data-val="1" onclick="selectCond(this)">😫 최악</button>
+    </div>
+  </div>
+  <div style="margin-bottom:12px">
+    <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+      <span style="font-size:11px;font-weight:700;color:#555">수면</span>
+      <span id="sleep-val" style="font-size:12px;font-weight:700;color:#1d9e75">7시간</span>
+    </div>
+    <input type="range" id="sleep-hours" min="3" max="10" value="7" step="0.5" style="width:100%;accent-color:#7b72e9" oninput="document.getElementById('sleep-val').textContent=this.value+'시간';updateSleepColor()">
+  </div>
+  <div>
+    <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+      <span style="font-size:11px;font-weight:700;color:#555">발목 통증</span>
+      <span id="ankle-val" style="font-size:12px;font-weight:700;color:#1d9e75">0 / 10</span>
+    </div>
+    <input type="range" id="ankle-pain" min="0" max="10" value="0" step="1" style="width:100%;accent-color:#ef9f27" oninput="document.getElementById('ankle-val').textContent=this.value+' / 10';updateAnkleColor()">
+  </div>
+</div>
+
+<!-- ⑦ 메모 -->
+<div class="card">
+  <div class="ctitle">메모</div>
+  <textarea id="log-memo" placeholder="오늘 특이사항, 느낀 점..." style="font-family:inherit;font-size:11px;width:100%;padding:8px 10px;border:1.5px solid #ddd;border-radius:8px;background:#fff;color:#1a1a1a;resize:none;height:60px;outline:none"></textarea>
+</div>
+
+<!-- ⑧ 영양 합계 -->
+<div class="card" style="background:#f5f5f5">
+  <div class="ctitle">오늘 영양 합계</div>
+  <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:8px">
+    <div class="sb"><div class="sv" id="sum-kcal" style="color:#7b72e9;font-size:16px">-</div><div class="sl">섭취 kcal</div></div>
+    <div class="sb"><div class="sv" id="sum-burn" style="color:#e57373;font-size:16px">-</div><div class="sl">소모 kcal</div></div>
+    <div class="sb"><div class="sv" id="sum-net"  style="color:#1d9e75;font-size:16px">-</div><div class="sl">순 칼로리</div></div>
+  </div>
+  <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:8px">
+    <div class="sb"><div class="sv" id="sum-prot" style="color:#1d9e75;font-size:15px">-</div><div class="sl">단백질 g</div></div>
+    <div class="sb"><div class="sv" id="sum-carb" style="color:#c47d0e;font-size:15px">-</div><div class="sl">탄수화물 g</div></div>
+    <div class="sb"><div class="sv" id="sum-fat"  style="color:#185fa5;font-size:15px">-</div><div class="sl">지방 g</div></div>
+  </div>
+  <div id="over-warn" style="display:none;margin-bottom:8px"></div>
+  <!-- 영양소 바 -->
+  <div id="nutrition-bars" style="display:none">
+    <div style="font-size:10px;font-weight:700;color:#555;margin-bottom:6px">목표 대비</div>
+    <div id="nut-bar-prot" style="margin-bottom:5px"></div>
+    <div id="nut-bar-carb" style="margin-bottom:5px"></div>
+    <div id="nut-bar-fat"  style="margin-bottom:5px"></div>
+    <div id="nut-feedback" style="font-size:11px;line-height:1.8;color:#333;margin-top:8px;padding:8px 10px;background:#fff;border-radius:8px;border:1.5px solid #e8e8e8"></div>
+  </div>
+</div>
+
+<!-- 저장 버튼 -->
+<button onclick="saveLog()" style="font-family:inherit;font-size:14px;font-weight:700;padding:14px;border:none;border-radius:12px;background:#7b72e9;color:#fff;cursor:pointer;width:100%;margin-bottom:4px;box-shadow:0 4px 12px rgba(123,114,233,.3)">기록 저장</button>
+<div id="save-msg" style="text-align:center;font-size:11px;margin-bottom:16px;color:#0a5c46;display:none">✓ 저장됐어요!</div>
+
 </div>
 
 <!-- 기록 내역 -->
@@ -1169,29 +1218,17 @@ async function ghPut(path,json){
 function loadRepoConfig(){
   var c=lGet('v5_repo');
   if(c){GH.owner=c.owner||'';GH.repo=c.repo||'';GH.branch=c.branch||'main';}
-  else{
-    /* localStorage 없으면 default값으로 자동 설정 */
-    GH.owner = DEFAULT_REPO.owner;
-    GH.repo  = DEFAULT_REPO.repo;
-    GH.branch = DEFAULT_REPO.branch;
-    lSet('v5_repo', DEFAULT_REPO);
-  }
   GH.encToken=lGet('v5_enc_token')||null;
   /* 로그인 화면 입력란 채우기 */
   var o=document.getElementById('rml-owner'),r=document.getElementById('rml-repo');
-  if(o&&GH.owner)o.value=GH.owner;
-  if(r&&GH.repo)r.value=GH.repo;
+  if(o&&GH.owner)o.value=GH.owner;if(r&&GH.repo)r.value=GH.repo;
 }
-
-/* 기본값 — 나중에 복구 시 여기만 수정 */
-var DEFAULT_REPO = { owner: 'Bangsuhyun96', repo: 'health-dashboard', branch: 'main' };
 function saveLoginRepo(){
-  /* 폼이 숨겨진 동안은 default값 사용 */
-  var owner = (document.getElementById('rml-owner').value||'').trim() || DEFAULT_REPO.owner;
-  var repo = (document.getElementById('rml-repo').value||'').trim() || DEFAULT_REPO.repo;
+  var owner=(document.getElementById('rml-owner').value||'').trim();
+  var repo=(document.getElementById('rml-repo').value||'').trim();
   if(!owner||!repo){alert('사용자명과 저장소명을 입력해주세요');return;}
-  GH.owner=owner; GH.repo=repo;
-  lSet('v5_repo',{owner, repo, branch:'main'});
+  GH.owner=owner;GH.repo=repo;
+  lSet('v5_repo',{owner,repo,branch:'main'});
   showSyncBar('저장소 저장됨 ✓','#1d9e75');
   fetchAndRenderUserChips();
 }
@@ -2521,35 +2558,500 @@ function renderRehab(){
 }
 /* ─── 기록 탭 ─── */
 var MENU_DB={
-  '아침-계란 3개(150g)':{kcal:225,prot:18,carb:0,fat:15},
-  '아침-오트밀 50g':{kcal:187,prot:7,carb:32,fat:3.5},
-  '아침-바나나 1개':{kcal:105,prot:1.3,carb:27,fat:0.3},
-  '아침-모듬 견과 1봉':{kcal:100,prot:2.5,carb:4,fat:8.5},
-  '아침-해바라기씨 10g':{kcal:58,prot:2,carb:2,fat:5},
-  '점심-일반식':{kcal:700,prot:25,carb:90,fat:15},
-  '점심-외식(불량)':{kcal:900,prot:20,carb:120,fat:25},
-  '간식-계란 2개':{kcal:150,prot:12,carb:0,fat:10},
-  '간식-고구마 100g':{kcal:86,prot:1.6,carb:20,fat:0.1},
-  '간식-그릭요거트 100g':{kcal:70,prot:10,carb:4,fat:0.7},
-  '저녁-현미밥 250g':{kcal:330,prot:7,carb:72,fat:1.5},
-  '저녁-닭가슴살 200g':{kcal:220,prot:46,carb:0,fat:2.5},
-  '저녁-시금치 50g':{kcal:12,prot:1.2,carb:2,fat:0.2},
-  '저녁-두유 200ml':{kcal:80,prot:7,carb:5,fat:3},
-  '운동후-프로틴 30g':{kcal:120,prot:24,carb:3,fat:1.5},
-  '치팅-라면 1개':{kcal:500,prot:10,carb:75,fat:18},
-  '치팅-치킨 1마리':{kcal:900,prot:80,carb:40,fat:45},
-  '치팅-피자 2조각':{kcal:560,prot:22,carb:64,fat:24},
-  '기타-바나나 1개':{kcal:105,prot:1.3,carb:27,fat:0.3},
-  '기타-프로틴바':{kcal:200,prot:20,carb:22,fat:7},
-  '기타-토마토 3개':{kcal:27,prot:1.3,carb:5.8,fat:0.3},
-  '기타-커피(아메리카노)':{kcal:10,prot:0.3,carb:2,fat:0},
+  '계란 1개':{kcal:75,prot:6,carb:0,fat:5},
+  '달걀 1개':{kcal:75,prot:6,carb:0,fat:5},
+  '계란 2개':{kcal:150,prot:12,carb:0,fat:10},
+  '달걀 2개':{kcal:150,prot:12,carb:0,fat:10},
+  '계란 3개':{kcal:225,prot:18,carb:0,fat:15},
+  '달걀 3개':{kcal:225,prot:18,carb:0,fat:15},
+  '오트밀 50g':{kcal:187,prot:7,carb:32,fat:3.5},
+  '오트밀 한공기':{kcal:187,prot:7,carb:32,fat:3.5},
+  '바나나 1개':{kcal:105,prot:1.3,carb:27,fat:0.3},
+  '바나나 반개':{kcal:53,prot:0.7,carb:14,fat:0.2},
+  '견과류 한봉':{kcal:100,prot:2.5,carb:4,fat:8.5},
+  '견과 한봉':{kcal:100,prot:2.5,carb:4,fat:8.5},
+  '닭가슴살 200g':{kcal:220,prot:46,carb:0,fat:2.5},
+  '닭가슴살 100g':{kcal:110,prot:23,carb:0,fat:1.3},
+  '닭가슴살 150g':{kcal:165,prot:35,carb:0,fat:2},
+  '현미밥 한공기':{kcal:330,prot:7,carb:72,fat:1.5},
+  '현미밥 250g':{kcal:330,prot:7,carb:72,fat:1.5},
+  '밥 한공기':{kcal:300,prot:5,carb:66,fat:0.5},
+  '쌀밥 한공기':{kcal:300,prot:5,carb:66,fat:0.5},
+  '고구마 100g':{kcal:86,prot:1.6,carb:20,fat:0.1},
+  '고구마 200g':{kcal:172,prot:3.2,carb:40,fat:0.2},
+  '그릭요거트 100g':{kcal:70,prot:10,carb:4,fat:0.7},
+  '그릭요거트 한컵':{kcal:70,prot:10,carb:4,fat:0.7},
+  '두유 200ml':{kcal:80,prot:7,carb:5,fat:3},
+  '프로틴 30g':{kcal:120,prot:24,carb:3,fat:1.5},
+  '프로틴쉐이크':{kcal:120,prot:24,carb:3,fat:1.5},
+  '시금치 50g':{kcal:12,prot:1.2,carb:2,fat:0.2},
+  '파프리카 반개':{kcal:20,prot:0.5,carb:4,fat:0.1},
+  '토마토 3개':{kcal:27,prot:1.3,carb:5.8,fat:0.3},
+  '방울토마토 한줌':{kcal:20,prot:1,carb:4,fat:0.2},
+  '외식 점심':{kcal:750,prot:28,carb:95,fat:18},
+  '외식':{kcal:750,prot:28,carb:95,fat:18},
+  '백반':{kcal:650,prot:25,carb:90,fat:15},
+  '라면 1개':{kcal:500,prot:10,carb:75,fat:18},
+  '라면':{kcal:500,prot:10,carb:75,fat:18},
+  '치킨 반마리':{kcal:900,prot:80,carb:40,fat:45},
+  '치킨 한마리':{kcal:1800,prot:160,carb:80,fat:90},
+  '피자 2조각':{kcal:560,prot:22,carb:64,fat:24},
+  '아이스아메리카노':{kcal:10,prot:0.3,carb:2,fat:0},
+  '아메리카노':{kcal:10,prot:0.3,carb:2,fat:0},
+  '커피':{kcal:10,prot:0.3,carb:2,fat:0},
+  '프로틴바':{kcal:200,prot:20,carb:22,fat:7},
+  '샌드위치':{kcal:400,prot:18,carb:45,fat:14},
+  '소고기 150g':{kcal:300,prot:30,carb:0,fat:18},
+  '연어 150g':{kcal:250,prot:30,carb:0,fat:14},
+  '두부 100g':{kcal:76,prot:8,carb:2,fat:4},
+  '우유 200ml':{kcal:130,prot:6.4,carb:9.6,fat:7.2},
+  '올리브오일 1큰술':{kcal:120,prot:0,carb:0,fat:14},
 };
 var ALL_EXERCISES=['벤치프레스','인클라인 덤벨프레스','케이블 플라이','딥스','오버헤드 프레스','덤벨 레터럴 레이즈','케이블 레터럴 레이즈','리어 델트 플라이','바벨 컬','인클라인 덤벨 컬','해머 컬','케이블 트라이셉','오버헤드 트라이셉','렛풀다운','바벨 로우','원암 덤벨 로우','시티드 케이블 로우','페이스풀','풀업','케이블 크런치','레그레이즈','플랭크','레그컬','레그익스텐션','힙 쓰러스트','케이블 킥백','레그프레스','불가리안 스플릿 스쿼트','바벨 스쿼트','루마니안 데드리프트','카프레이즈'];
 var MET={weight:6,climbing:8.5,bike:7.5,rehab:3};
 
-var selectedExTypes=[];var selectedDietType='workout';var foodRows=[];var menuChanges=[];var weightSets=[];var selectedCond=3;var selectedLiftExercise='';var logFilterCurrent='all';
+var selectedExTypes=[];var selectedCond=3;var selectedLiftExercise='';var logFilterCurrent='all';
+/* 웨이트 블록: [{id, name, sets:[{kg,reps}]}] */
+var exerciseBlocks=[];
+/* 음식 항목: [{id, text}] */
+var foodEntries=[];
+/* 영양 분석 결과 캐시 */
+var lastNutResult=null;
 
-function setToday(){var d=new Date();var s=d.toISOString().slice(0,10);document.getElementById('log-date').value=s;document.getElementById('lift-date').value=s;document.getElementById('ib-date').value=s;}
+/* ─ 날짜 / 초기화 ─ */
+function setToday(){
+  var s=new Date().toISOString().slice(0,10);
+  ['log-date','lift-date','ib-date'].forEach(id=>{var el=document.getElementById(id);if(el)el.value=s;});
+}
+function confirmResetLog(){
+  if(!confirm('오늘 기록 입력 내용을 모두 초기화할까요?'))return;
+  resetDailyLog();
+}
+function resetDailyLog(){
+  /* 운동 유형 */
+  selectedExTypes=[];
+  document.querySelectorAll('#ex-type-btns .type-btn').forEach(b=>b.classList.remove('on'));
+  document.getElementById('cardio-time-wrap').style.display='none';
+  document.getElementById('weight-log-wrap').style.display='none';
+  /* 웨이트 블록 */
+  exerciseBlocks=[];
+  renderExerciseBlocks();
+  /* 음식 */
+  foodEntries=[];
+  renderFoodEntries();
+  document.getElementById('food-analysis-result').innerHTML='';
+  document.getElementById('nutrition-bars').style.display='none';
+  /* 수분 */
+  var wm=document.getElementById('water-ml');if(wm)wm.value=2500;
+  var wv=document.getElementById('water-val');if(wv)wv.textContent='2.5L';
+  /* 영양제 */
+  document.querySelectorAll('[id^="sc-"]').forEach(cb=>{if(cb.type==='checkbox')cb.checked=true;});
+  /* 컨디션 */
+  selectedCond=3;
+  document.querySelectorAll('.cond-btn').forEach(b=>{b.classList.toggle('on',b.getAttribute('data-val')==='3');});
+  /* 수면/발목 */
+  var sh=document.getElementById('sleep-hours');if(sh)sh.value=7;
+  var sv=document.getElementById('sleep-val');if(sv){sv.textContent='7시간';sv.style.color='#1d9e75';}
+  var ap=document.getElementById('ankle-pain');if(ap)ap.value=0;
+  var av=document.getElementById('ankle-val');if(av){av.textContent='0 / 10';av.style.color='#1d9e75';}
+  /* 합계 초기화 */
+  ['sum-kcal','sum-burn','sum-net','sum-prot','sum-carb','sum-fat'].forEach(id=>{var el=document.getElementById(id);if(el)el.textContent='-';});
+  var ow=document.getElementById('over-warn');if(ow)ow.style.display='none';
+  /* 메모 */
+  var memo=document.getElementById('log-memo');if(memo)memo.value='';
+  lastNutResult=null;
+}
+
+/* ─ 운동 유형 ─ */
+function toggleType(btn){
+  var val=btn.getAttribute('data-val');
+  btn.classList.toggle('on');
+  if(btn.classList.contains('on')){if(!selectedExTypes.includes(val))selectedExTypes.push(val);}
+  else selectedExTypes=selectedExTypes.filter(v=>v!==val);
+  var hasCardio=selectedExTypes.includes('climbing')||selectedExTypes.includes('bike');
+  var hasWeight=selectedExTypes.includes('weight');
+  document.getElementById('cardio-time-wrap').style.display=hasCardio?'block':'none';
+  document.getElementById('weight-log-wrap').style.display=hasWeight?'block':'none';
+  if(hasCardio)renderCardioInputs();
+  updateBurnCalc();
+}
+function renderCardioInputs(){
+  var el=document.getElementById('cardio-inputs');if(!el)return;
+  var h='';
+  if(selectedExTypes.includes('climbing'))h+=`<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px"><span style="font-size:11px;min-width:60px">클라이밍</span><input type="number" id="cardio-climbing" min="30" max="300" step="15" value="90" style="font-family:inherit;font-size:11px;padding:5px 8px;border:1.5px solid #b0bfee;border-radius:7px;width:64px;outline:none" oninput="updateBurnCalc()"><span style="font-size:11px;color:#888">분</span></div>`;
+  if(selectedExTypes.includes('bike'))h+=`<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px"><span style="font-size:11px;min-width:60px">로드바이크</span><input type="number" id="cardio-bike" min="30" max="300" step="15" value="60" style="font-family:inherit;font-size:11px;padding:5px 8px;border:1.5px solid #b0bfee;border-radius:7px;width:64px;outline:none" oninput="updateBurnCalc()"><span style="font-size:11px;color:#888">분</span></div>`;
+  el.innerHTML=h;
+}
+
+/* ─ 웨이트 블록 (종목별 세트 관리) ─ */
+function addExerciseBlock(){
+  var id='ex_'+Date.now();
+  exerciseBlocks.push({id,name:'',sets:[{kg:'',reps:''}]});
+  renderExerciseBlocks();
+  /* 새로 추가된 입력칸에 포커스 */
+  setTimeout(()=>{var el=document.getElementById('exname_'+id);if(el)el.focus();},50);
+}
+function removeExerciseBlock(id){
+  exerciseBlocks=exerciseBlocks.filter(b=>b.id!==id);
+  renderExerciseBlocks();
+  updateBurnCalc();
+}
+function addSet(blockId){
+  var b=exerciseBlocks.find(b=>b.id===blockId);
+  if(b)b.sets.push({kg:'',reps:''});
+  renderExerciseBlocks();
+}
+function removeSet(blockId,si){
+  var b=exerciseBlocks.find(b=>b.id===blockId);
+  if(b&&b.sets.length>1)b.sets.splice(si,1);
+  renderExerciseBlocks();
+  updateBurnCalc();
+}
+function syncBlockData(){
+  /* 렌더 전 현재 입력값을 데이터에 동기화 */
+  exerciseBlocks.forEach(b=>{
+    var nameEl=document.getElementById('exname_'+b.id);
+    if(nameEl)b.name=nameEl.value;
+    b.sets.forEach((s,si)=>{
+      var kg=document.getElementById('set_kg_'+b.id+'_'+si);
+      var rp=document.getElementById('set_rp_'+b.id+'_'+si);
+      if(kg)s.kg=kg.value;
+      if(rp)s.reps=rp.value;
+    });
+  });
+}
+function renderExerciseBlocks(){
+  var el=document.getElementById('exercise-blocks');if(!el)return;
+  if(!exerciseBlocks.length){el.innerHTML='<div style="text-align:center;color:#888;font-size:11px;padding:12px">종목 추가 버튼을 눌러 운동을 입력하세요.</div>';updateBurnCalc();return;}
+  var h='';
+  exerciseBlocks.forEach(b=>{
+    h+=`<div style="background:#fff;border:1.5px solid #dceefb;border-radius:9px;padding:10px;margin-bottom:8px">`;
+    /* 종목명 + 삭제 */
+    h+=`<div style="display:flex;gap:6px;align-items:center;margin-bottom:8px">
+      <input type="text" id="exname_${b.id}" value="${b.name||''}" placeholder="종목 (예: 벤치프레스)" list="ex-datalist"
+        style="flex:1;font-family:inherit;font-size:12px;font-weight:700;padding:6px 10px;border:1.5px solid #ddd;border-radius:7px;outline:none;background:#fafafa;color:#1a1a1a"
+        oninput="syncBlockData();updateBurnCalc()" onchange="syncBlockData()">
+      <button onclick="removeExerciseBlock('${b.id}')" style="font-family:inherit;font-size:18px;color:#ccc;background:none;border:none;cursor:pointer;padding:0 4px;line-height:1">×</button>
+    </div>`;
+    /* 세트 목록 */
+    h+=`<div style="display:flex;gap:4px;margin-bottom:4px"><span style="font-size:9px;color:#888;width:28px;text-align:center">세트</span><span style="font-size:9px;color:#888;flex:1;text-align:center">중량 (kg)</span><span style="font-size:9px;color:#888;flex:1;text-align:center">횟수</span><span style="width:24px"></span></div>`;
+    b.sets.forEach((s,si)=>{
+      h+=`<div style="display:flex;gap:4px;align-items:center;margin-bottom:4px">
+        <span style="font-size:11px;font-weight:700;color:#185fa5;width:28px;text-align:center;flex-shrink:0">${si+1}</span>
+        <input type="number" id="set_kg_${b.id}_${si}" value="${s.kg||''}" placeholder="60" step="0.5"
+          style="flex:1;font-family:inherit;font-size:12px;font-weight:700;padding:5px 6px;border:1.5px solid #ddd;border-radius:6px;outline:none;text-align:center;background:#fff;color:#1a1a1a"
+          oninput="syncBlockData();updateBurnCalc()">
+        <input type="number" id="set_rp_${b.id}_${si}" value="${s.reps||''}" placeholder="8" step="1"
+          style="flex:1;font-family:inherit;font-size:12px;font-weight:700;padding:5px 6px;border:1.5px solid #ddd;border-radius:6px;outline:none;text-align:center;background:#fff;color:#1a1a1a"
+          oninput="syncBlockData()">
+        <button onclick="syncBlockData();removeSet('${b.id}',${si})" style="font-size:14px;color:#ccc;background:none;border:none;cursor:pointer;padding:0;width:24px;flex-shrink:0;line-height:1">×</button>
+      </div>`;
+    });
+    h+=`<button onclick="syncBlockData();addSet('${b.id}')" style="font-family:inherit;font-size:10px;padding:4px 10px;border:1.5px dashed #b0bfee;border-radius:6px;background:#f8fbff;color:#185fa5;cursor:pointer;width:100%;margin-top:2px">+ 세트 추가</button>`;
+    h+='</div>';
+  });
+  el.innerHTML=h;
+  updateBurnCalc();
+}
+/* datalist for exercise name autocomplete */
+function ensureExDatalist(){
+  if(document.getElementById('ex-datalist'))return;
+  var dl=document.createElement('datalist');dl.id='ex-datalist';
+  ALL_EXERCISES.forEach(e=>{var o=document.createElement('option');o.value=e;dl.appendChild(o);});
+  document.body.appendChild(dl);
+}
+
+/* ─ 음식 자유 입력 ─ */
+function addFoodEntry(){
+  var id='food_'+Date.now();
+  foodEntries.push({id,text:''});
+  renderFoodEntries();
+  setTimeout(()=>{var el=document.getElementById('fe_'+id);if(el)el.focus();},50);
+}
+function removeFoodEntry(id){
+  foodEntries=foodEntries.filter(f=>f.id!==id);
+  renderFoodEntries();
+}
+function syncFoodData(){
+  foodEntries.forEach(f=>{
+    var el=document.getElementById('fe_'+f.id);
+    if(el)f.text=el.value;
+  });
+}
+function renderFoodEntries(){
+  var el=document.getElementById('food-entries');if(!el)return;
+  if(!foodEntries.length){el.innerHTML='<div style="text-align:center;color:#aaa;font-size:11px;padding:8px">+ 추가 버튼으로 음식을 입력하세요</div>';return;}
+  el.innerHTML=foodEntries.map(f=>`
+    <div style="display:flex;gap:6px;align-items:center;margin-bottom:6px">
+      <input type="text" id="fe_${f.id}" value="${f.text||''}" placeholder="예: 닭가슴살 200g, 밥 한공기, 라면"
+        list="food-datalist"
+        style="flex:1;font-family:inherit;font-size:12px;padding:7px 10px;border:1.5px solid #ddd;border-radius:8px;outline:none;background:#fff;color:#1a1a1a"
+        onchange="syncFoodData()">
+      <button onclick="syncFoodData();removeFoodEntry('${f.id}')" style="font-size:18px;color:#ccc;background:none;border:none;cursor:pointer;padding:0 4px;flex-shrink:0;line-height:1">×</button>
+    </div>`).join('');
+}
+function ensureFoodDatalist(){
+  if(document.getElementById('food-datalist'))return;
+  var dl=document.createElement('datalist');dl.id='food-datalist';
+  Object.keys(MENU_DB).forEach(k=>{var o=document.createElement('option');o.value=k;dl.appendChild(o);});
+  document.body.appendChild(dl);
+}
+
+/* ─ 영양소 분석 (로컬 DB + AI) ─ */
+function parseFoodText(text){
+  /* 텍스트에서 DB 매칭 */
+  if(!text)return null;
+  var t=text.trim().toLowerCase();
+  /* 직접 매칭 */
+  for(var key of Object.keys(MENU_DB)){
+    if(t.includes(key.toLowerCase())||key.toLowerCase().includes(t.split(' ')[0])){
+      return{...MENU_DB[key],matched:key};
+    }
+  }
+  return null;
+}
+function calcFoodNutrition(){
+  syncFoodData();
+  var p=APP.profile||{};
+  var bw=p.weight||65;
+  var goalKcal=p.plan?.kcal?.workout||2600;
+  var goalProt=p.plan?.macros?.prot||137;
+  var goalCarb=p.plan?.macros?.carb||294;
+  var goalFat=p.plan?.macros?.fat||68;
+
+  var totalKcal=0,totalProt=0,totalCarb=0,totalFat=0;
+  var matched=[],unmatched=[];
+
+  foodEntries.forEach(f=>{
+    if(!f.text)return;
+    var res=parseFoodText(f.text);
+    if(res){
+      totalKcal+=res.kcal||0;totalProt+=res.prot||0;totalCarb+=res.carb||0;totalFat+=res.fat||0;
+      matched.push({text:f.text,matched:res.matched,kcal:res.kcal,prot:res.prot});
+    }else{
+      unmatched.push(f.text);
+    }
+  });
+
+  /* 로컬 결과 표시 */
+  updateNutritionSummary(totalKcal,totalProt,totalCarb,totalFat,goalKcal,goalProt,goalCarb,goalFat);
+  lastNutResult={kcal:totalKcal,prot:totalProt,carb:totalCarb,fat:totalFat};
+
+  /* 피드백 카드 */
+  var resultEl=document.getElementById('food-analysis-result');
+  var barsEl=document.getElementById('nutrition-bars');
+
+  /* 바 차트 */
+  if(barsEl){
+    barsEl.style.display='block';
+    renderNutBar('nut-bar-prot','단백질',totalProt,goalProt,'g','#1d9e75');
+    renderNutBar('nut-bar-carb','탄수화물',totalCarb,goalCarb,'g','#c47d0e');
+    renderNutBar('nut-bar-fat','지방',totalFat,goalFat,'g','#185fa5');
+    var feedback=generateNutFeedback(totalKcal,totalProt,totalCarb,totalFat,goalKcal,goalProt,goalCarb,goalFat,bw);
+    var fb=document.getElementById('nut-feedback');if(fb)fb.innerHTML=feedback;
+  }
+
+  /* 미매칭 항목이 있으면 AI 분석 시도 */
+  if(unmatched.length&&APP.apiKey){
+    resultEl.innerHTML=`<div class="info" style="margin-top:0;font-size:10px">DB에 없는 항목: ${unmatched.join(', ')} → AI로 추가 분석 중...</div>`;
+    callClaudeForNutrition(unmatched,totalKcal,totalProt,totalCarb,totalFat,goalKcal,goalProt,goalCarb,goalFat,bw);
+  }else if(unmatched.length){
+    resultEl.innerHTML=`<div style="font-size:10px;color:#888;margin-top:4px">⚠ DB 미매칭: ${unmatched.join(', ')} (API키 연결 시 AI 분석)</div>`;
+  }else{
+    resultEl.innerHTML='';
+  }
+}
+
+function renderNutBar(id,label,val,goal,unit,color){
+  var el=document.getElementById(id);if(!el)return;
+  var pct=goal>0?Math.min(Math.round(val/goal*100),150):0;
+  var bp=Math.min(pct,100);
+  var status=pct>=95&&pct<=115?'✓ 적정':pct>115?'↑ 과잉':pct>=70?'△ 부족':' ✗ 많이 부족';
+  var sc=pct>=95&&pct<=115?'#1d9e75':pct>115?'#e57373':'#ef9f27';
+  el.innerHTML=`<div style="display:flex;justify-content:space-between;font-size:10px;color:#555;margin-bottom:2px">
+    <span style="font-weight:700">${label}</span>
+    <span>${val}${unit} / 목표 ${goal}${unit} &nbsp;<span style="color:${sc};font-weight:700">${status}</span></span>
+  </div>
+  <div style="background:#e8e8e8;border-radius:4px;height:8px;overflow:hidden">
+    <div style="height:100%;border-radius:4px;background:${color};width:${bp}%;transition:width .4s"></div>
+  </div>`;
+}
+
+function generateNutFeedback(kcal,prot,carb,fat,gKcal,gProt,gCarb,gFat,bw){
+  var msgs=[];
+  /* 단백질 */
+  if(prot<gProt*0.85)msgs.push(`🥩 단백질 <b>${prot}g</b> → 목표 <b>${gProt}g</b> 대비 ${Math.round(prot/gProt*100)}%<br>→ 닭가슴살 100g(+23g) 또는 프로틴 30g(+24g) 추가 권장`);
+  else if(prot>=gProt*0.95)msgs.push(`✅ 단백질 <b>${prot}g</b> 목표 달성`);
+  /* 칼로리 */
+  if(kcal<gKcal*0.80)msgs.push(`⚡ 칼로리 부족 (${kcal}/${gKcal}kcal) → 탄수화물 추가: 현미밥 한공기(330kcal) 또는 바나나 1개(105kcal)`);
+  else if(kcal>gKcal*1.20)msgs.push(`⚠ 칼로리 초과 (${kcal}kcal) → 지방·정제탄수 확인 필요`);
+  /* 탄수 */
+  if(carb<gCarb*0.70)msgs.push(`🍚 탄수화물 부족 → 운동 퍼포먼스 저하 가능. 밥 or 고구마 추가`);
+  /* 지방 */
+  if(fat>gFat*1.3)msgs.push(`🫒 지방 ${fat}g → 목표 초과. 튀김·기름진 음식 확인`);
+  /* 수분 */
+  var wl=parseInt(document.getElementById('water-ml')?.value||2500);
+  if(wl<2500)msgs.push(`💧 수분 ${(wl/1000).toFixed(1)}L → 목표 2.5L 이상 권장`);
+  return msgs.length?msgs.join('<br><br>'):'✅ 오늘 영양 섭취가 전반적으로 적절합니다!';
+}
+
+async function callClaudeForNutrition(items,baseKcal,baseProt,baseCarb,baseFat,gKcal,gProt,gCarb,gFat,bw){
+  var resultEl=document.getElementById('food-analysis-result');
+  try{
+    var prompt=`다음 음식들의 영양소를 추정해 JSON만 답하세요 (코드블록 없이):
+음식: ${items.join(', ')}
+JSON: {"items":[{"name":"음식명","kcal":숫자,"prot":숫자,"carb":숫자,"fat":숫자}],"total":{"kcal":합계,"prot":합계,"carb":합계,"fat":합계}}
+단백질·탄수·지방 단위는 g. 최대한 실제 식품 영양 성분에 근거해서.`;
+    var r=await callClaude(APP.apiKey,prompt);
+    var d=JSON.parse(r.replace(/```json?|```/g,'').trim());
+    if(d.total){
+      var newKcal=baseKcal+(d.total.kcal||0);
+      var newProt=baseProt+(d.total.prot||0);
+      var newCarb=baseCarb+(d.total.carb||0);
+      var newFat=baseFat+(d.total.fat||0);
+      updateNutritionSummary(newKcal,newProt,newCarb,newFat,gKcal,gProt,gCarb,gFat);
+      lastNutResult={kcal:newKcal,prot:newProt,carb:newCarb,fat:newFat};
+      renderNutBar('nut-bar-prot','단백질',newProt,gProt,'g','#1d9e75');
+      renderNutBar('nut-bar-carb','탄수화물',newCarb,gCarb,'g','#c47d0e');
+      renderNutBar('nut-bar-fat','지방',newFat,gFat,'g','#185fa5');
+      var fb=document.getElementById('nut-feedback');
+      if(fb)fb.innerHTML=generateNutFeedback(newKcal,newProt,newCarb,newFat,gKcal,gProt,gCarb,gFat,bw);
+      resultEl.innerHTML=`<div style="font-size:10px;color:#0a5c46;margin-top:4px">✓ AI 분석 완료: ${items.join(', ')}</div>`;
+    }
+  }catch(e){resultEl.innerHTML=`<div style="font-size:10px;color:#e57373;margin-top:4px">AI 분석 오류: ${e.message}</div>`;}
+}
+
+function updateNutritionSummary(kcal,prot,carb,fat,gKcal,gProt,gCarb,gFat){
+  var burnKcal=calcBurnKcal();
+  var netKcal=kcal-burnKcal;
+  var fmt=v=>v>0?Math.round(v).toLocaleString():'-';
+  var setT=(id,v)=>{var el=document.getElementById(id);if(el)el.textContent=fmt(v);};
+  setT('sum-kcal',kcal);setT('sum-burn',burnKcal);setT('sum-net',netKcal);
+  setT('sum-prot',prot);setT('sum-carb',carb);setT('sum-fat',fat);
+  /* 경고 */
+  var warn=document.getElementById('over-warn');
+  if(warn){
+    var msgs=[];
+    if(prot<(APP.profile?.weight||65)*1.8)msgs.push('단백질 부족 — 닭가슴살·프로틴 추가');
+    if(netKcal>3200)msgs.push('순 칼로리 매우 높음');
+    if(msgs.length){warn.style.display='block';warn.className='warn';warn.innerHTML=msgs.join('<br>');}
+    else warn.style.display='none';
+  }
+}
+
+function calcBurnKcal(){
+  syncBlockData();
+  var bw=APP.profile?.weight||65;var burn=0;
+  if(selectedExTypes.includes('climbing')){var m=parseFloat(document.getElementById('cardio-climbing')?.value)||90;burn+=Math.round(MET.climbing*bw*m/60);}
+  if(selectedExTypes.includes('bike')){var m=parseFloat(document.getElementById('cardio-bike')?.value)||60;burn+=Math.round(MET.bike*bw*m/60);}
+  if(selectedExTypes.includes('weight')){
+    var totalSets=exerciseBlocks.reduce((a,b)=>a+b.sets.filter(s=>s.kg).length,0);
+    burn+=Math.round(MET.weight*bw*(Math.max(totalSets*3,30))/60);
+  }
+  return burn;
+}
+function updateBurnCalc(){
+  var burn=calcBurnKcal();
+  var el=document.getElementById('sum-burn');if(el)el.textContent=burn>0?burn.toLocaleString():'-';
+}
+
+/* ─ 영양제 체크박스 ─ */
+function initSuppChecks(){
+  var el=document.getElementById('supp-checks');if(!el)return;
+  var supps=['비타민 D3+K2','오메가3','크레아틴 5g','락토핏 코어맥스','마그네슘 글리시네이트'];
+  el.innerHTML=supps.map((s,i)=>`<div class="supp-check"><input type="checkbox" id="sc-${i}" checked><label for="sc-${i}">${s}</label></div>`).join('');
+}
+
+/* ─ 컨디션 / 수면 / 발목 ─ */
+function selectCond(btn){
+  document.querySelectorAll('.cond-btn').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');selectedCond=parseInt(btn.getAttribute('data-val'));
+}
+function updateSleepColor(){var v=parseFloat(document.getElementById('sleep-hours').value);var el=document.getElementById('sleep-val');if(el)el.style.color=v>=7?'#1d9e75':v>=6?'#ef9f27':'#e57373';}
+function updateAnkleColor(){var v=parseInt(document.getElementById('ankle-pain').value);var el=document.getElementById('ankle-val');if(el)el.style.color=v===0?'#1d9e75':v<=3?'#ef9f27':'#e57373';}
+
+/* ─ 기록 저장 ─ */
+function saveLog(){
+  var date=document.getElementById('log-date').value;
+  if(!date){alert('날짜를 선택해주세요');return;}
+  syncBlockData();syncFoodData();
+  var memo=document.getElementById('log-memo').value;
+  var sleep=parseFloat(document.getElementById('sleep-hours').value)||7;
+  var ankle=parseInt(document.getElementById('ankle-pain').value)||0;
+  var water=parseInt(document.getElementById('water-ml').value)||2500;
+  var supps=[];
+  for(var i=0;i<5;i++){var cb=document.getElementById('sc-'+i);if(cb&&cb.checked)supps.push(cb.nextElementSibling?.textContent||'');}
+  var logs=getStore('logs');
+  logs=logs.filter(l=>l.date!==date);
+  logs.unshift({
+    date,
+    exTypes:[...selectedExTypes],
+    exercises:exerciseBlocks.map(b=>({name:b.name,sets:b.sets.filter(s=>s.kg||s.reps)})),
+    foods:foodEntries.map(f=>f.text).filter(Boolean),
+    nutrition:lastNutResult,
+    sleep,ankle,water,cond:selectedCond,supps,memo,
+    savedAt:new Date().toISOString()
+  });
+  logs=logs.slice(0,90);
+  setStore('logs',logs);
+  var msg=document.getElementById('save-msg');if(msg){msg.style.display='block';setTimeout(()=>msg.style.display='none',2500);}
+}
+
+function filterLogs(type){
+  logFilterCurrent=type;
+  document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('on'));
+  document.getElementById('fb-'+type)?.classList.add('on');
+  renderLogHistory();
+}
+function renderLogHistory(){
+  var el=document.getElementById('log-hist-list');if(!el)return;
+  var logs=getStore('logs');
+  var filtered=logFilterCurrent==='all'?logs:logs.filter(l=>
+    l.exTypes?.includes(logFilterCurrent)||
+    (logFilterCurrent==='cheat'&&l.dietType==='cheat')||
+    (logFilterCurrent==='rest'&&l.exTypes?.includes('rest'))
+  );
+  if(!filtered.length){el.innerHTML='<div style="text-align:center;color:#888;font-size:12px;padding:20px">기록이 없어요.</div>';return;}
+  var ws=document.getElementById('weekly-stats');
+  if(ws){
+    var recent=logs.slice(0,7);
+    var wDays=recent.filter(l=>l.exTypes?.includes('weight')).length;
+    var avgSleep=recent.length?Math.round(recent.reduce((a,l)=>a+(l.sleep||7),0)/recent.length*10)/10:0;
+    var maxAnkle=recent.reduce((m,l)=>Math.max(m,l.ankle||0),0);
+    ws.innerHTML=`<div style="display:flex;gap:6px;flex-wrap:wrap">
+      <div class="sb" style="flex:1;min-width:70px"><div class="sv" style="color:#185fa5;font-size:16px">${wDays}일</div><div class="sl">주간 웨이트</div></div>
+      <div class="sb" style="flex:1;min-width:70px"><div class="sv" style="color:#1d9e75;font-size:16px">${avgSleep}h</div><div class="sl">평균 수면</div></div>
+      <div class="sb" style="flex:1;min-width:70px"><div class="sv" style="color:${maxAnkle===0?'#1d9e75':maxAnkle<=3?'#ef9f27':'#e57373'};font-size:16px">${maxAnkle}</div><div class="sl">최대 발목 통증</div></div>
+    </div>`;
+  }
+  el.innerHTML=filtered.map(l=>{
+    var tags=(l.exTypes||[]).map(t=>({weight:'웨이트',climbing:'클라이밍',bike:'바이크',rehab:'재활',rest:'휴식'}[t]||t))
+      .map(t=>`<span class="log-tag" style="background:#f0f4ff;color:#185fa5;border-color:#b0bfee">${t}</span>`).join('');
+    var exStr=l.exercises?.map(e=>`${e.name}${e.sets?.length?' '+e.sets.length+'세트':''}`).join(' · ')||'';
+    var foodStr=l.foods?.slice(0,3).join(', ')+(l.foods?.length>3?' 외 '+(l.foods.length-3)+'개':'');
+    var nutStr=l.nutrition?`<span class="log-nut-item">🍽 ${Math.round(l.nutrition.kcal||0)}kcal · 단백질 ${Math.round(l.nutrition.prot||0)}g</span>`:'';
+    return`<div class="log-card">
+      <div class="log-card-head"><span class="log-date-lbl">${l.date}</span><button class="log-del" onclick="deleteLog('${l.date}')">삭제</button></div>
+      <div class="log-tags">${tags}</div>
+      ${exStr?`<div style="font-size:10px;color:#185fa5;margin-bottom:4px">🏋️ ${exStr}</div>`:''}
+      ${foodStr?`<div style="font-size:10px;color:#555;margin-bottom:4px">🥗 ${foodStr}</div>`:''}
+      <div class="log-nut">${nutStr}<span class="log-nut-item">💤 ${l.sleep||7}h</span><span class="log-nut-item" style="color:${(l.ankle||0)===0?'#1d9e75':'#ef9f27'}">🦶 ${l.ankle||0}/10</span><span class="log-nut-item">💧 ${((l.water||2500)/1000).toFixed(1)}L</span><span class="log-nut-item">😊 ${l.cond||3}/5</span></div>
+      ${l.memo?`<div style="font-size:10px;color:#555;margin-top:4px">${l.memo}</div>`:''}
+    </div>`;
+  }).join('');
+}
+function deleteLog(date){
+  if(!confirm(date+' 기록을 삭제할까요?'))return;
+  setStore('logs',getStore('logs').filter(l=>l.date!==date));
+  renderLogHistory();
+}
+
+var ALL_EXERCISES=['벤치프레스','인클라인 덤벨프레스','케이블 플라이','딥스','오버헤드 프레스','덤벨 레터럴 레이즈','케이블 레터럴 레이즈','리어 델트 플라이','바벨 컬','인클라인 덤벨 컬','해머 컬','케이블 트라이셉','오버헤드 트라이셉','렛풀다운','바벨 로우','원암 덤벨 로우','시티드 케이블 로우','페이스풀','풀업','케이블 크런치','레그레이즈','플랭크','레그컬','레그익스텐션','힙 쓰러스트','케이블 킥백','레그프레스','불가리안 스플릿 스쿼트','바벨 스쿼트','루마니안 데드리프트','카프레이즈'];
+var MET={weight:6,climbing:8.5,bike:7.5,rehab:3};
+
+
+
+
 function toggleType(btn){
   var val=btn.getAttribute('data-val');
   btn.classList.toggle('on');
@@ -3140,6 +3642,10 @@ function setPage(pageId,btn,cat){
 function initLogTab(){
   setToday();
   initSuppChecks();
+  ensureExDatalist();
+  ensureFoodDatalist();
+  renderExerciseBlocks();
+  renderFoodEntries();
   renderLogHistory();
   renderInbodyHistory();
   renderLiftHistory();
@@ -3400,6 +3906,21 @@ async function autoLoginCheck(){
     if(!GH.encToken&&u.writeToken){GH.token=u.writeToken;GH.writeMode=true;GH.needEncryptWarning=true;}
     await loadUserProfile(u);
   }catch(e){showScreen('login');fetchAndRenderUserChips();}
+}
+
+function clearAllStorage(){
+  if(!confirm('로컬 저장 데이터(세션·쿠키·스토리지)를 모두 삭제할까요?\n\nGitHub 저장소의 데이터는 삭제되지 않습니다.'))return;
+  /* localStorage */
+  localStorage.clear();
+  /* sessionStorage */
+  sessionStorage.clear();
+  /* cookies */
+  document.cookie.split(';').forEach(c=>{
+    var k=c.trim().split('=')[0];
+    if(k)document.cookie=k+'=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/';
+  });
+  alert('삭제 완료. 페이지를 새로고침합니다.');
+  location.reload();
 }
 
 document.addEventListener('DOMContentLoaded',function(){autoLoginCheck();});
