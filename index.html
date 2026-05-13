@@ -36,9 +36,7 @@ body{font-family:-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;
 .user-chip-id{font-size:10px;color:#a0aec0;}
 .login-divider{display:flex;align-items:center;gap:8px;margin:14px 0;color:#718096;font-size:11px;}
 .login-divider::before,.login-divider::after{content:'';flex:1;height:1px;background:rgba(255,255,255,.1);}
-
-/* ─── 초기 로그인 화면 repo,git 선택 폼 ─── */
-.repo-mini{background:rgba(0,0,0,.2);border-radius:12px;padding:12px;margin-top:14px; display: none;}
+.repo-mini{background:rgba(0,0,0,.2);border-radius:12px;padding:12px;margin-top:14px;}
 .repo-mini-title{font-size:10px;color:#718096;font-weight:600;margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px;}
 .repo-mini-row{display:flex;gap:6px;margin-bottom:6px;}
 .repo-mini-input{flex:1;font-family:inherit;font-size:11px;padding:7px 10px;border:1px solid rgba(255,255,255,.1);border-radius:8px;background:rgba(255,255,255,.06);color:#e2e8f0;outline:none;}
@@ -267,12 +265,7 @@ body{font-family:-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;
           <button class="repo-mini-btn" onclick="saveLoginRepo()">저장</button>
         </div>
       </div>
-      <!-- 처음 설정 안내 -->
-      <div id="first-setup-hint" style="margin-top:12px;padding:10px 12px;background:rgba(239,159,39,.12);border:1px solid rgba(239,159,39,.4);border-radius:10px;display:none">
-        <div style="font-size:11px;color:#fcd34d;font-weight:700;margin-bottom:4px">⚠ 처음 사용하시나요?</div>
-        <div style="font-size:10px;color:#fbbf24;line-height:1.7;margin-bottom:8px">저장소를 설정하고 첫 사용자를 만들어야 해요.<br>아래 버튼으로 단계별 설정을 시작하세요.</div>
-        <button onclick="goSetup()" style="font-family:inherit;font-size:11px;font-weight:700;padding:7px 14px;border-radius:8px;border:none;background:linear-gradient(135deg,#7b72e9,#a78bfa);color:#fff;cursor:pointer;width:100%">⚙ 처음 설정 시작하기 →</button>
-      </div>
+
     </div>
 
     <!-- 사용자 생성 패널 -->
@@ -1182,10 +1175,8 @@ function loadRepoConfig(){
   if(o&&GH.owner)o.value=GH.owner;if(r&&GH.repo)r.value=GH.repo;
 }
 function saveLoginRepo(){
-  //var owner=(document.getElementById('rml-owner').value||'').trim();
-  //var repo=(document.getElementById('rml-repo').value||'').trim();
-  var owner = "Bangsuhyun96";
-  var repo = "health-dashborad";
+  var owner=(document.getElementById('rml-owner').value||'').trim();
+  var repo=(document.getElementById('rml-repo').value||'').trim();
   if(!owner||!repo){alert('사용자명과 저장소명을 입력해주세요');return;}
   GH.owner=owner;GH.repo=repo;
   lSet('v5_repo',{owner,repo,branch:'main'});
@@ -3379,12 +3370,10 @@ async function autoLoginCheck(){
   loadRepoConfig();
   var uid=sessionStorage.getItem('v5_uid');
 
-  /* 저장소 미설정 → 처음 설정 버튼 표시 */
+  /* 저장소 미설정 → 로그인 화면으로 */
   if(!GH.owner||!GH.repo){
     showScreen('login');
     fetchAndRenderUserChips();
-    var hint=document.getElementById('first-setup-hint');
-    if(hint)hint.style.display='block';
     return;
   }
 
