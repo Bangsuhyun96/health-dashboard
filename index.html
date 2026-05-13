@@ -308,7 +308,7 @@ body{font-family:-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;
       <button onclick="clearAllStorage()" style="background:none;border:none;color:rgba(255,255,255,.2);font-size:10px;cursor:pointer;font-family:inherit;padding:4px 8px;border-radius:4px;transition:color .2s" onmouseover="this.style.color='rgba(255,255,255,.5)'" onmouseout="this.style.color='rgba(255,255,255,.2)'">⟳ 앱 초기화</button>
     </div>
   </div>
-</div>
+</div> (토큰/JSON 없을 때) ==================== -->
 <div id="setup-screen">
 <div class="setup-wrap">
   <div class="setup-logo">
@@ -1216,30 +1216,19 @@ async function ghPut(path,json){
 
 /* ─── 저장소 설정 ─── */
 function loadRepoConfig(){
-  var c = lGet('v5_repo');
-  if(c){ GH.owner=c.owner||''; GH.repo=c.repo||''; GH.branch=c.branch||'main'; }
-  else {
-    /* localStorage 없으면 default값으로 자동 설정 */
-    GH.owner = DEFAULT_REPO.owner;
-    GH.repo  = DEFAULT_REPO.repo;
-    GH.branch = DEFAULT_REPO.branch;
-    lSet('v5_repo', DEFAULT_REPO);
-  }
-  GH.encToken = lGet('v5_enc_token') || null;
-  var o=document.getElementById('rml-owner'), r=document.getElementById('rml-repo');
-  if(o&&GH.owner) o.value=GH.owner;
-  if(r&&GH.repo)  r.value=GH.repo;
+  var c=lGet('v5_repo');
+  if(c){GH.owner=c.owner||'';GH.repo=c.repo||'';GH.branch=c.branch||'main';}
+  GH.encToken=lGet('v5_enc_token')||null;
+  /* 로그인 화면 입력란 채우기 */
+  var o=document.getElementById('rml-owner'),r=document.getElementById('rml-repo');
+  if(o&&GH.owner)o.value=GH.owner;if(r&&GH.repo)r.value=GH.repo;
 }
-/* 기본값 — 나중에 복구 시 여기만 수정 */
-var DEFAULT_REPO = { owner: 'Bangsuhyun96', repo: 'health-dashboard', branch: 'main' };
-
 function saveLoginRepo(){
-  /* 폼이 숨겨진 동안은 default값 사용 */
-  var owner = (document.getElementById('rml-owner').value||'').trim() || DEFAULT_REPO.owner;
-  var repo   = (document.getElementById('rml-repo').value||'').trim()  || DEFAULT_REPO.repo;
+  var owner=(document.getElementById('rml-owner').value||'').trim();
+  var repo=(document.getElementById('rml-repo').value||'').trim();
   if(!owner||!repo){alert('사용자명과 저장소명을 입력해주세요');return;}
-  GH.owner=owner; GH.repo=repo;
-  lSet('v5_repo',{owner, repo, branch:'main'});
+  GH.owner=owner;GH.repo=repo;
+  lSet('v5_repo',{owner,repo,branch:'main'});
   showSyncBar('저장소 저장됨 ✓','#1d9e75');
   fetchAndRenderUserChips();
 }
@@ -2720,23 +2709,32 @@ function updateBurnCalc(){
 
 /* ─ 웨이트 블록 (종목별 세트 관리) ─ */
 function addExerciseBlock(){
+  syncBlockData(); /* ← 기존 입력값 먼저 저장 */
   var id='ex_'+Date.now();
   exerciseBlocks.push({id,name:'',sets:[{kg:'',reps:''}]});
   renderExerciseBlocks();
-  /* 새로 추가된 입력칸에 포커스 */
   setTimeout(()=>{var el=document.getElementById('exname_'+id);if(el)el.focus();},50);
 }
 function removeExerciseBlock(id){
+  syncBlockData(); /* ← 먼저 저장 */
   exerciseBlocks=exerciseBlocks.filter(b=>b.id!==id);
   renderExerciseBlocks();
   updateBurnCalc();
 }
 function addSet(blockId){
+  syncBlockData(); /* ← 먼저 저장 */
   var b=exerciseBlocks.find(b=>b.id===blockId);
   if(b)b.sets.push({kg:'',reps:''});
   renderExerciseBlocks();
+  /* 새 세트 중량 칸에 포커스 */
+  setTimeout(()=>{
+    var si=b.sets.length-1;
+    var el=document.getElementById('set_kg_'+blockId+'_'+si);
+    if(el)el.focus();
+  },50);
 }
 function removeSet(blockId,si){
+  syncBlockData(); /* ← 먼저 저장 */
   var b=exerciseBlocks.find(b=>b.id===blockId);
   if(b&&b.sets.length>1)b.sets.splice(si,1);
   renderExerciseBlocks();
