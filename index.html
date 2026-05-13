@@ -2068,78 +2068,293 @@ function renderExercise(){
 
 function renderWeeklyRoutine(plan,p){
   var el=document.getElementById('wk-c');if(!el)return;
-  if(plan?.routine?.length){
-    /* AI 생성 루틴 */
-    var h='';
-    var dayCol={월:'#185fa5',화:'#1d9e75',수:'#185fa5',목:'#1d9e75',금:'#185fa5',토:'#7b72e9',일:'#888'};
-    var dayBg={월:'#e6f0ff',화:'#eaf3de',수:'#e6f0ff',목:'#eaf3de',금:'#e6f0ff',토:'#f3f0ff',일:'#f5f5f5'};
-    plan.routine.forEach(r=>{
-      var c=dayCol[r.day]||'#888',bg=dayBg[r.day]||'#f5f5f5';
-      h+=`<div class="day-card" style="background:${bg};border-color:${c}44">`;
-      h+=`<div class="day-head"><span style="font-size:14px;font-weight:700;color:${c}">${r.day}요일</span><span class="day-badge" style="background:${c}22;color:${c}">${r.type} — ${r.focus}</span></div>`;
-      h+=`<div class="day-ex">${r.detail}</div></div>`;
-    });
-    el.innerHTML=h;
-  }else{
-    /* 방수현 기본 루틴 */
-    renderBangRoutine(el);
-  }
+  /* 항상 상세 루틴 렌더링 — 프로필 데이터 기반 */
+  renderDetailedRoutine(el,p);
 }
 
-function renderBangRoutine(el){
+function renderDetailedRoutine(el,p){
+  var bench=p?.performance?.bench||65;
+  var squat=p?.performance?.squat||60;
+  var lat=p?.performance?.lat||54;
+  var dead=p?.performance?.dead||60;
+  var hasClimb=p?.sports?.includes('climbing');
+  var hasBike=p?.sports?.includes('bike');
+  var noInjury=!p?.injuries?.length||p.injuries.includes('none')||p.injuryStage==='healed';
+
+  /* 각 운동 현재 무게 기준 목표 무게 */
+  var benchT=bench+10, squatT=squat+15, latT=lat+12, deadT=dead+15;
+
   var wk=[
-    {day:'월요일',type:'가슴 + 삼두',color:'#e6f0ff',bc:'#b0bfee',tc:'#185fa5',tag:'웨이트 — 클라이밍 전 상체 비관련 부위',
-     ex:[{g:'메인',items:['벤치프레스 4×6~8 (현재 65kg, 목표 70kg)','인클라인 덤벨프레스 3×8~10','케이블 플라이 or 펙덱 3×12~15','딥스 (가슴 버전) 3×8~10','케이블 트라이셉 푸쉬다운 3×12','오버헤드 트라이셉 익스텐션 2×12']},
-          {g:'하체 (발목 무관)',items:['레그컬 3×12','레그 익스텐션 3×12','힙 쓰러스트 3×10']},
-          {g:'발목 재활 (필수)',items:['알파벳 쓰기 3세트','한발 서기 30~60초 × 3세트']}],
-     note:'화요일 클라이밍 전날 — 등·전완 운동 금지. 가슴·삼두만.'},
-    {day:'화요일',type:'클라이밍',color:'#eaf3de',bc:'#7db940',tc:'#275a0a',tag:'클라이밍 고정',
-     ex:[{g:'현재 가능',items:['상체 위주 버티컬·슬랩 루트','풋홀드 체중 최소화','손가락·등·전완 집중']},
-          {g:'금지',items:['고점 점프 다운 — 반드시 내려서 내려올 것','힐훅·토훅 (재활 8주 이후)','오버행 다이나믹 무브 (재활 6주 이후)']},
-          {g:'발목 재활 (귀가 후)',items:['타월 발가락 집기 30회 × 3세트','한발 서기 60초 × 3세트']}],
-     note:'클라이밍 자체가 등·전완·코어 훈련. 웨이트 추가 없음.'},
-    {day:'수요일',type:'어깨 + 이두 + 코어',color:'#e6f0ff',bc:'#b0bfee',tc:'#185fa5',tag:'웨이트',
-     ex:[{g:'어깨',items:['시티드 오버헤드 프레스 4×6~8','덤벨 레터럴 레이즈 4×12~15','케이블 레터럴 레이즈 3×15','리어 델트 플라이 3×15']},
-          {g:'이두',items:['바벨 컬 3×10','인클라인 덤벨 컬 3×10','해머 컬 2×12']},
-          {g:'코어',items:['케이블 크런치 3×15','레그레이즈 3×15','플랭크 3×45~60초']},
-          {g:'발목 재활',items:['밴드 외번·내번 저항 15회 × 3세트','한발 서기 눈 감고 15~30초 × 3세트']}],
-     note:'등·전완은 화요일 클라이밍으로 이미 자극됨. 어깨·이두 집중.'},
-    {day:'목요일',type:'클라이밍',color:'#eaf3de',bc:'#7db940',tc:'#275a0a',tag:'클라이밍 고정',
-     ex:[{g:'현재 가능',items:['화요일보다 소폭 하향 (주 2회 누적 피로)','손가락 컨디션 체크 후 결정','테크닉·풋워크 집중 세션']},
-          {g:'발목 재활 (귀가 후)',items:['균형 쿠션 한발 서기 20초 × 3세트 (4주 이후)','미니 스쿼트 10~15회 × 3세트 (4주 이후)']}],
-     note:'목요일은 볼륨보다 테크닉 위주가 회복에 유리.'},
-    {day:'금요일',type:'등 보조 + 하체 (단계별)',color:'#e6f0ff',bc:'#b0bfee',tc:'#185fa5',tag:'웨이트',
-     ex:[{g:'등 보조',items:['렛풀다운 3×8~10 (54kg)','시티드 케이블 로우 3×10','페이스풀 3×15']},
-          {g:'하체 Phase 1 (지금)',items:['레그컬 3×12','레그 익스텐션 3×12','힙 쓰러스트 3×10','루마니안 데드리프트 덤벨 (3~4주 후)']},
-          {g:'발목 재활',items:['전체 재활 루틴 풀세트 (10~15분)']}],
-     note:'등은 클라이밍으로 메인 자극. 보조 볼륨만.'},
-    {day:'토요일',type:'하체 메인 + 전신',color:'#e6f0ff',bc:'#b0bfee',tc:'#185fa5',tag:'웨이트',
-     ex:[{g:'하체 Phase 1 메인 (지금)',items:['레그컬 4×12','레그 익스텐션 4×12','힙 쓰러스트 4×10','케이블 킥백 3×15']},
-          {g:'하체 Phase 2 추가 (3~4주 후)',items:['레그프레스 4×10','루마니안 데드리프트 3×10']},
-          {g:'하체 Phase 3 추가 (6~8주 후)',items:['바벨 스쿼트 빈 봉 → 점진적 증량','카프레이즈 양발 → 한발']},
-          {g:'발목 재활',items:['풀세트 + 균형 쿠션 한발 서기']}],
-     note:'주간 하체 볼륨 집중일. 매 세션 오른 발목 통증 체크 필수.'},
-    {day:'일요일',type:'완전 휴식',color:'#f5f5f5',bc:'#ddd',tc:'#555',tag:'회복',
-     ex:[{g:'권장',items:['발목 재활 루틴 10분 (가볍게)','폼롤러 전신 스트레칭 15~20분','산책 (평지, 30분 이내)']},
-          {g:'식단',items:['휴식일 식단 — 탄수 230g, 칼로리 2,350kcal','단백질 125g 이상 유지','취침 전 계란+그릭요거트 동일']}],
-     note:'이 날을 지켜야 주간 퍼포먼스가 유지됨.'}
+    /* ─── 월요일 ─── */
+    {
+      day:'월요일', type:'가슴 + 삼두', tag:'웨이트',
+      color:'#e6f0ff', bc:'#b0bfee', tc:'#185fa5',
+      note:'화요일 클라이밍 전날 — 등·전완 자극 금지. 가슴·삼두 집중.',
+      tip:'벤치프레스는 어깨 과부하 주의. 내리는 동작(편심수축) 3초 버티기.',
+      groups:[
+        {
+          name:'가슴 메인', color:'#dceefb', bc:'#b0bfee', tc:'#185fa5',
+          items:[
+            {n:'벤치프레스',  s:'4×6~8',   w:`${bench}kg → 목표 ${benchT}kg`,  tip:'등 아치 유지, 바가 유두 라인에 닿도록. 내릴 때 3초'},
+            {n:'인클라인 덤벨프레스', s:'3×8~10', w:`${Math.round(bench*0.45)}kg 페어`,  tip:'30~45도 각도. 상부 가슴 고립. 최고점에서 1초 수축'},
+            {n:'케이블 플라이 (로우)',  s:'3×12~15', w:'가동범위 전체',           tip:'팔꿈치 살짝 구부린 채 고정. 가슴 안쪽 조이는 느낌에 집중'},
+            {n:'딥스 (가슴 버전)',      s:'3×8~10',  w:'체중 or +5~10kg 추가',   tip:'상체 앞으로 기울이면 가슴, 세우면 삼두. 지금은 가슴 목적'},
+          ]
+        },
+        {
+          name:'삼두', color:'#f0f4ff', bc:'#b0bfee', tc:'#3c3489',
+          items:[
+            {n:'케이블 트라이셉 푸쉬다운', s:'3×12', w:'팔꿈치 고정 필수',    tip:'팔꿈치를 옆구리에 붙이고 고정. 손목 꺾지 말 것'},
+            {n:'오버헤드 트라이셉 익스텐션', s:'2×12', w:`${Math.round(bench*0.2)}kg 덤벨 or EZ바`, tip:'롱헤드 직접 자극. 팔꿈치가 바깥으로 벌어지지 않도록'},
+          ]
+        },
+        {
+          name:'하체 보조', color:'#f5f5f5', bc:'#ddd', tc:'#555',
+          items:[
+            {n:'레그컬 (누워서)',    s:'3×12', w:`${Math.round(squat*0.4)}kg`,  tip:'햄스트링 완전 수축. 발목 중립 유지'},
+            {n:'레그 익스텐션',     s:'3×12', w:`${Math.round(squat*0.5)}kg`,  tip:'최고점 1초 수축. 무릎 과신전 주의'},
+            {n:'힙 쓰러스트',       s:'3×10', w:`${Math.round(squat*0.8)}kg 바벨`, tip:'어깨-무릎 일직선. 최고점에서 둔근 쥐어짜기 2초'},
+          ]
+        },
+      ]
+    },
+
+    /* ─── 화요일 ─── */
+    {
+      day:'화요일', type:'클라이밍', tag:`볼더링 세션${hasBike?' + 귀가 후 바이크 가벼운 라이딩 선택':''}`,
+      color:'#eaf3de', bc:'#7db940', tc:'#275a0a',
+      note:'클라이밍 자체가 등·전완·코어·손가락 훈련. 웨이트 추가 없음.',
+      tip:'세션 초반 체력 100% 상태에서 갈색 먼저 도전. 보라·남색은 후반.',
+      groups:[
+        {
+          name:'세션 구성 (권장)', color:'#eaf3de', bc:'#7db940', tc:'#275a0a',
+          items:[
+            {n:'워밍업',             s:'20분', w:'초록~파랑 쉬운 문제',        tip:'오픈핸드로만. 손가락 천천히 가열'},
+            {n:'갈색 프로젝트',      s:'30분', w:'체력 100% 상태 선투자',       tip:'크림프·핀치 유형 우선 선택. 세션 초반에만 시도'},
+            {n:'보라 완등 세션',     s:'30분', w:'남은 못 푼 보라 정리',        tip:'1트 목표. 2트 이상 걸리면 다음 세션으로'},
+            {n:'약점 훈련',          s:'20분', w:'슬로퍼·풋테크닉 의식 연습',   tip:'쉬운 문제를 발 먼저 원칙으로. 기술 연습'},
+          ]
+        },
+        {
+          name:'핑거 강화 (세션 마지막)', color:'#fff8ec', bc:'#ef9f27', tc:'#5c3400',
+          items:[
+            {n:'행거보드 오픈핸드 데드행', s:'7초×6rep × 3세트', w:'18~20mm 엣지',   tip:'세트 간 3분 완전 휴식. 통증 0 유지'},
+            {n:'하프크림프 데드행',        s:'7초×5rep × 3세트', w:'20mm 엣지',       tip:'4주 이후 도입. 지금은 오픈핸드만'},
+          ]
+        },
+        {
+          name:'풋테크닉 드릴', color:'#f5f5f5', bc:'#ddd', tc:'#555',
+          items:[
+            {n:'발 먼저 원칙',    s:'매 무브', w:'손 잡기 전 발 홀드 먼저',    tip:'손 잡고 → 멈춤 → 발 찾고 → 무게중심 이동 확인 → 다음 무브'},
+            {n:'슬로퍼 감각 훈련', s:'10~15분', w:'손목 10~20도 굴곡 유지',    tip:'손등 힘 빠지는 각도 찾기. 엄지 힘 의식적으로 빼기'},
+          ]
+        },
+      ]
+    },
+
+    /* ─── 수요일 ─── */
+    {
+      day:'수요일', type:'어깨 + 이두 + 코어', tag:'웨이트',
+      color:'#e6f0ff', bc:'#b0bfee', tc:'#185fa5',
+      note:'등·전완은 화요일 클라이밍으로 충분히 자극됨. 어깨·이두·코어 집중.',
+      tip:'오버헤드프레스는 클라이밍 어깨 안정성에 직접 기여. 가장 중요한 날.',
+      groups:[
+        {
+          name:'어깨 메인', color:'#dceefb', bc:'#b0bfee', tc:'#185fa5',
+          items:[
+            {n:'시티드 오버헤드프레스', s:'4×6~8',  w:`${Math.round(bench*0.65)}kg → 목표 ${Math.round(bench*0.8)}kg`, tip:'코어 잡고 허리 과신전 금지. 바가 귀 옆을 지나도록'},
+            {n:'덤벨 레터럴 레이즈',   s:'4×12~15', w:`${Math.round(bench*0.15)}kg 페어`, tip:'팔꿈치 살짝 구부리고 새끼손가락 살짝 위로. 반동 금지'},
+            {n:'케이블 레터럴 레이즈', s:'3×15',    w:'저중량 고반복',           tip:'레터럴레이즈보다 일정한 장력. 측면 삼각근 고립'},
+            {n:'리어 델트 플라이',     s:'3×15',    w:`${Math.round(bench*0.12)}kg 페어`, tip:'후면 삼각근. 클라이밍 어깨 균형에 필수. 페이스풀로 대체 가능'},
+            {n:'페이스풀',             s:'3×15',    w:'케이블 중량',              tip:'외회전근 강화. 슬로퍼·오버행에서 어깨 안정성 직결'},
+          ]
+        },
+        {
+          name:'이두', color:'#f0f4ff', bc:'#b0bfee', tc:'#3c3489',
+          items:[
+            {n:'바벨 컬',        s:'3×10', w:`${Math.round(bench*0.3)}kg`,         tip:'손목 중립. 팔꿈치 고정. 내릴 때 천천히'},
+            {n:'인클라인 덤벨 컬', s:'3×10', w:`${Math.round(bench*0.15)}kg 페어`, tip:'장두 완전 스트레치. 클라이밍 크림프 보조근'},
+            {n:'해머 컬',        s:'2×12', w:`${Math.round(bench*0.18)}kg 페어`,    tip:'완요골근 강화. 전완 두께. 크림프 지구력에 기여'},
+          ]
+        },
+        {
+          name:'코어', color:'#f5f5f5', bc:'#ddd', tc:'#555',
+          items:[
+            {n:'케이블 크런치', s:'3×15', w:'중량 조절',     tip:'복직근 직접 자극. 클라이밍 루프·오버행 코어 기반'},
+            {n:'행잉 레그레이즈', s:'3×12', w:'풀업바 매달려서', tip:'하복부 집중. 다리 올릴 때 골반 후방 경사 의식'},
+            {n:'플랭크',         s:'3×60초', w:'체중',        tip:'어깨-발뒤꿈치 일직선. 둔근 수축 유지. 호흡 끊지 말 것'},
+          ]
+        },
+      ]
+    },
+
+    /* ─── 목요일 ─── */
+    {
+      day:'목요일', type:'클라이밍 — 테크닉 세션', tag:'볼더링 (화요일보다 강도 ↓)',
+      color:'#eaf3de', bc:'#7db940', tc:'#275a0a',
+      note:'주 2회 클라이밍 누적 피로 있음. 볼륨보다 테크닉·풋워크 집중.',
+      tip:'화요일 못 푼 문제 다시 시도하되, 방법을 다르게. 같은 방법 반복은 의미 없음.',
+      groups:[
+        {
+          name:'세션 구성', color:'#eaf3de', bc:'#7db940', tc:'#275a0a',
+          items:[
+            {n:'워밍업',          s:'15~20분', w:'초록~파랑',             tip:'손가락 컨디션 먼저 체크. 뻐근하면 볼륨 줄이기'},
+            {n:'테크닉 드릴',     s:'30~40분', w:'남색~보라 문제',         tip:'의도적으로 발 먼저 사용. 평소보다 느리게 등반'},
+            {n:'풋테크닉 집중',   s:'20분',    w:'슬로퍼·토모아 연습',     tip:'쉬운 문제에서 발 기술만 집중. 근력 쓰지 말 것'},
+            {n:'행거보드 마무리', s:'10분',    w:'오픈핸드 데드행',         tip:'화요일보다 볼륨 절반. 유지 자극만'},
+          ]
+        },
+        {
+          name:'토모아 드릴 (약점 집중)', color:'#fff8ec', bc:'#ef9f27', tc:'#5c3400',
+          items:[
+            {n:'무게중심 먼저 이동', s:'매 무브 의식', w:'발 올리기 전 중심 홀드 위로', tip:'발이 문제가 아니라 중심이 먼저. 이게 토모아의 핵심'},
+            {n:'신발 안쪽 날 사용', s:'빅토우 아래', w:'발끝 말고 안쪽 날',           tip:'토모아는 발끝이 아닌 엄지발가락 아래 볼 부분으로 올라탐'},
+          ]
+        },
+      ]
+    },
+
+    /* ─── 금요일 ─── */
+    {
+      day:'금요일', type:'등 + 하체', tag:'웨이트 — 주간 최대 볼륨',
+      color:'#e6f0ff', bc:'#b0bfee', tc:'#185fa5',
+      note:'클라이밍으로 등은 이미 자극됨. 보조 볼륨 + 하체 메인.',
+      tip:'렛풀다운은 등 보조. 과볼륨 금지. 하체에 에너지 아껴야 함.',
+      groups:[
+        {
+          name:'등 보조', color:'#dceefb', bc:'#b0bfee', tc:'#185fa5',
+          items:[
+            {n:'렛풀다운',           s:'4×8~10', w:`${lat}kg → 목표 ${latT}kg`,  tip:'완전 신전 → 완전 수축. 등으로 당기는 느낌. 팔꿈치를 뒷주머니로'},
+            {n:'시티드 케이블 로우', s:'3×10',   w:`${Math.round(lat*0.9)}kg`,   tip:'상체 살짝 앞으로 기울여 스트레치 → 수직으로 당기며 수축'},
+            {n:'원암 덤벨 로우',     s:'3×10',   w:`${Math.round(lat*0.7)}kg`,   tip:'반대 손·무릎 벤치에 지지. 팔꿈치 천장 방향으로'},
+          ]
+        },
+        {
+          name:'하체 메인', color:'#f3f0ff', bc:'#a89ee8', tc:'#3c3489',
+          items:[
+            {n:'바벨 스쿼트',       s:'4×6~8',  w:`${squat}kg → 목표 ${squatT}kg`, tip:'힙 힌지로 내려가기. 무릎이 발끝 방향. 올라올 때 발뒤꿈치로 밀기'},
+            {n:'루마니안 데드리프트', s:'3×10',  w:`${dead}kg → 목표 ${deadT}kg`,   tip:'햄스트링 스트레치 느끼며 내리기. 허리 중립 필수. 무릎 약간만 굽힘'},
+            {n:'레그프레스',        s:'3×12',   w:`${Math.round(squat*1.6)}kg`,     tip:'발 위치 높이면 햄스트링, 낮추면 쿼드. 무릎 완전 신전 금지'},
+            {n:'불가리안 스플릿 스쿼트', s:'3×10(각)', w:`${Math.round(squat*0.25)}kg 덤벨 페어`, tip:'클라이밍 발목 안정성 훈련에도 기여. 앞발로 밀기'},
+            {n:'카프레이즈',        s:'4×15',   w:'체중 or 스미스머신',             tip:'발목 완전 신전 → 완전 저굴. 각 자세 1초 유지'},
+          ]
+        },
+        {
+          name:'전완 보조 (클라이밍 지구력)', color:'#fff8ec', bc:'#ef9f27', tc:'#5c3400',
+          items:[
+            {n:'핀치 블록 홀드',     s:'3×10초', w:`${Math.round(lat*0.15)}kg 플레이트 끝 핀치`, tip:'엄지-나머지손가락 대립. 핀치 강점 강화'},
+            {n:'손목 롤러 or 바 롤',  s:'2×완전회전', w:'가벼운 중량',                            tip:'전완 굴곡·신전 균형. 크림프 지구력 보조'},
+          ]
+        },
+      ]
+    },
+
+    /* ─── 토요일 ─── */
+    {
+      day:'토요일', type:'상체 보완 + 코어', tag:`웨이트${hasBike?' + 오후 바이크 라이딩 선택':''}`,
+      color:'#f3f0ff', bc:'#a89ee8', tc:'#3c3489',
+      note:'주간 못 채운 부위 보완 세션. 볼륨 과하지 않게.',
+      tip:'일요일 완전 휴식을 위해 토요일 후반 강도 조절 필수.',
+      groups:[
+        {
+          name:'가슴·어깨 보완', color:'#f0f4ff', bc:'#b0bfee', tc:'#185fa5',
+          items:[
+            {n:'인클라인 바벨프레스',    s:'3×8',   w:`${Math.round(bench*0.8)}kg`, tip:'상부 가슴. 월요일 벤치와 각도 달리해서 자극 분산'},
+            {n:'케이블 크로스오버 (하이)', s:'3×12', w:'가벼운 중량',               tip:'하부 가슴 마무리. 가동범위 최대'},
+            {n:'사이드 레터럴 슈퍼셋',   s:'3×15+15', w:`${Math.round(bench*0.12)}kg 덤벨`, tip:'레터럴+리어델트 슈퍼셋. 어깨 펌핑'},
+          ]
+        },
+        {
+          name:'코어 집중', color:'#f5f5f5', bc:'#ddd', tc:'#555',
+          items:[
+            {n:'케이블 우드쵸프',    s:'3×12(각)', w:'중량 조절',   tip:'클라이밍 회전 코어 강화. 루프·오버행 직결'},
+            {n:'행잉 와이퍼',        s:'3×10',     w:'체중',        tip:'고급 코어. 클라이밍 플래깅 능력에 기여'},
+            {n:'어브 휠 (복근 롤러)', s:'3×8~10',  w:'체중',        tip:'전면 코어 최강 자극. 허리 과신전 주의'},
+          ]
+        },
+        {
+          name:'크림프 회복 훈련 (행거보드)', color:'#fff8ec', bc:'#ef9f27', tc:'#5c3400',
+          items:[
+            {n:'Max Hang 오픈핸드',   s:'10초×5세트', w:'20mm 엣지, 세트 간 3분', tip:'체력 있을 때 해야 효과. 세션 마지막 전에'},
+            {n:'Max Hang 하프크림프', s:'7초×5세트',  w:'20~22mm 엣지',           tip:'4주 이후 도입. 지금은 오픈핸드만'},
+            {n:'데드행 최대 유지',    s:'1회 최장 시간', w:'편한 홀드',             tip:'현재 기록 측정용. 매주 체크해서 회복 추적'},
+          ]
+        },
+      ]
+    },
+
+    /* ─── 일요일 ─── */
+    {
+      day:'일요일', type:'완전 휴식 + 능동 회복', tag:'회복',
+      color:'#f5f5f5', bc:'#ddd', tc:'#555',
+      note:'이 날을 지켜야 주간 퍼포먼스가 유지됨. 아무것도 안 하는 게 훈련.',
+      tip:'고강도 운동 충동이 와도 참기. 근육은 쉬는 동안 성장함.',
+      groups:[
+        {
+          name:'능동 회복 (선택)', color:'#f5f5f5', bc:'#ddd', tc:'#555',
+          items:[
+            {n:'폼롤러 전신',  s:'15~20분', w:'흉추·IT밴드·종아리·전완',    tip:'통증 부위에서 30초 멈추기. 빠르게 굴리는 건 의미 없음'},
+            {n:'스트레칭',     s:'10~15분', w:'어깨·고관절·손가락 굴곡근',   tip:'클라이밍 후 굳어진 전완 굴곡근 스트레칭 필수'},
+            {n:'가벼운 산책',  s:'30분 이내', w:'평지',                      tip:'혈류 촉진. 젖산 제거. 관절 윤활'},
+          ]
+        },
+        {
+          name:'휴식일 식단 체크', color:'#e6fdf2', bc:'#5dcaa5', tc:'#0a5c46',
+          items:[
+            {n:'칼로리',  s:'목표', w:`${p?.plan?.kcal?.rest||2071}kcal`,         tip:'탄수 줄이고 단백질 유지. 칼로리만 줄이면 됨'},
+            {n:'단백질',  s:'목표', w:`${Math.round((p?.weight||65)*2.0)}g 이상`, tip:'쉬는 날이 오히려 근육 합성 최대. 단백질 절대 줄이지 말 것'},
+            {n:'탄수화물', s:'목표', w:`${Math.round((p?.plan?.macros?.carb||294)*0.75)}g`,  tip:'운동 안 하니 글리코겐 소모 없음. 탄수 15~25% 감량'},
+          ]
+        },
+      ]
+    },
   ];
+
+  /* ── 렌더링 ── */
   var h='';
+  /* 현재 중량 요약 배너 */
+  h+=`<div class="good" style="margin-bottom:12px">
+    📊 현재 기준 중량 —
+    벤치 <b>${bench}kg</b> · 스쿼트 <b>${squat}kg</b> · 렛풀 <b>${lat}kg</b> · 데드 <b>${dead}kg</b>
+    &nbsp;|&nbsp; 클라이밍 서울숲 보라 안정 / 갈색 진입 중
+  </div>`;
+
   wk.forEach(w=>{
-    h+=`<div class="day-card" style="background:${w.color};margin-bottom:10px;border:1.5px solid ${w.bc};padding:12px 14px">`;
-    h+=`<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;flex-wrap:wrap;gap:4px"><span style="font-size:14px;font-weight:700;color:${w.tc}">${w.day}</span><span style="font-size:10px;font-weight:700;padding:2px 9px;border-radius:10px;background:${w.color};border:1px solid ${w.bc};color:${w.tc}">${w.type}</span></div>`;
-    h+=`<div style="font-size:10px;color:${w.tc};opacity:.7;margin-bottom:10px">${w.tag}</div>`;
-    w.ex.forEach(g=>{
-      var isDanger=g.g==='금지',isRehab=g.g.includes('재활'),isLower=g.g.includes('하체');
-      var bgc=isDanger?'#fdecea':isRehab?'#fff8ec':isLower?'#f0f4ff':'#fff';
-      var bdc=isDanger?'#e57373':isRehab?'#ef9f27':isLower?'#b0bfee':'rgba(0,0,0,.08)';
-      var tc2=isDanger?'#6b1a1a':isRehab?'#5c3400':isLower?'#2a3fa5':w.tc;
-      h+=`<div style="background:${bgc};border:1px solid ${bdc};border-radius:7px;padding:8px 10px;margin-bottom:6px"><div style="font-size:10px;font-weight:700;color:${tc2};margin-bottom:5px">${g.g}</div>`;
-      g.items.forEach(it=>h+=`<div style="font-size:11px;color:#333;padding:2px 0;display:flex;gap:5px"><span style="color:${tc2};flex-shrink:0">·</span><span>${it}</span></div>`);
+    h+=`<div style="background:${w.color};border:1.5px solid ${w.bc};border-radius:12px;padding:14px;margin-bottom:12px">`;
+    /* 헤더 */
+    h+=`<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px;flex-wrap:wrap;gap:6px">
+      <div>
+        <span style="font-size:15px;font-weight:800;color:${w.tc}">${w.day}</span>
+        <span style="font-size:11px;font-weight:700;margin-left:8px;padding:2px 9px;border-radius:10px;background:rgba(0,0,0,.06);color:${w.tc}">${w.type}</span>
+      </div>
+      <span style="font-size:10px;color:${w.tc};opacity:.7;font-weight:600">${w.tag}</span>
+    </div>`;
+    /* 팁 */
+    h+=`<div style="font-size:10px;background:rgba(0,0,0,.04);border-left:2px solid ${w.bc};padding:4px 8px;border-radius:0 5px 5px 0;color:${w.tc};margin-bottom:10px;line-height:1.6">💡 ${w.tip}</div>`;
+
+    /* 그룹별 운동 */
+    w.groups.forEach(g=>{
+      h+=`<div style="background:${g.color};border:1px solid ${g.bc};border-radius:8px;padding:10px 12px;margin-bottom:8px">
+        <div style="font-size:10px;font-weight:700;color:${g.tc};margin-bottom:8px;text-transform:uppercase;letter-spacing:.3px">${g.name}</div>`;
+      g.items.forEach(it=>{
+        h+=`<div style="display:flex;gap:8px;padding:6px 0;border-bottom:1px solid rgba(0,0,0,.06);align-items:flex-start">
+          <div style="flex:1">
+            <div style="font-size:12px;font-weight:700;color:#1a1a1a;margin-bottom:1px">${it.n}
+              <span style="font-size:10px;font-weight:600;color:${g.tc};margin-left:6px">${it.s}</span>
+            </div>
+            <div style="font-size:10px;color:#555;margin-bottom:2px">${it.w}</div>
+            <div style="font-size:10px;color:#888;line-height:1.5;background:rgba(255,255,255,.6);padding:2px 6px;border-radius:4px">${it.tip}</div>
+          </div>
+        </div>`;
+      });
       h+='</div>';
     });
-    h+=`<div style="font-size:10px;color:${w.tc};opacity:.8;margin-top:6px;padding:6px 8px;background:rgba(0,0,0,.04);border-radius:5px">💡 ${w.note}</div></div>`;
+
+    /* 노트 */
+    h+=`<div style="font-size:10px;color:${w.tc};opacity:.8;padding:6px 8px;background:rgba(0,0,0,.04);border-radius:5px;margin-top:4px">📌 ${w.note}</div>`;
+    h+='</div>';
   });
+
   el.innerHTML=h;
 }
 
