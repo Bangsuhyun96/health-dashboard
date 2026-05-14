@@ -62,7 +62,7 @@
     {"id":"thoracic_mobility","name":"흉추 스트레칭","category":"코어","muscleGroup":["흉추","척추가동성"],"met":2.5,"defaultSets":2,"defaultReps":"15회","tips":"허리 대신 흉추 회전에 집중"},
     {"id":"ankle_mobility","name":"발목 가동성 스트레칭","category":"코어","muscleGroup":["비복근","가자미근","발목"],"met":2.5,"defaultSets":3,"defaultReps":"15초","tips":"발뒤꿈치 들리지 않게 발목 전방 이동"},
     {"id":"shin_mobility","name":"정강이 스트레칭","category":"코어","muscleGroup":["전경골근","발목"],"met":2.0,"defaultSets":3,"defaultReps":"15초","tips":"폼롤러 위에서 천천히 압박"},
-    {"id":"adductor_mobility","name":"내전근 스트레칭","category":"코어","muscleGroup":["내전근","고관절"],"met":2.5,"defaultSets":3,"defaultReps":"15초","tips":"골반 회전과 함께 내전근 이완"}
+    {"id":"adductor_mobility","name":"내전근 스트레칭","category":"코어","muscleGroup":["내전근","고관절"],"met":2.5,"defaultSets":3,"defaultReps":"15초","tips":"골반 회전과 함께 내전근 이완"},
 
     {"id":"hangboard_open","name":"행거보드 오픈핸드","category":"클라이밍","muscleGroup":["FDS","FDP","A2도르래"],"met":6.5,"defaultSets":3,"defaultReps":"7초×6","tips":"18~20mm 엣지. 통증 0 유지. 세트 간 3분"},
     {"id":"hangboard_half","name":"행거보드 하프크림프","category":"클라이밍","muscleGroup":["FDP","A2도르래"],"met":6.5,"defaultSets":3,"defaultReps":"7초×5","tips":"20mm 엣지. 4주 이후 도입"},
