@@ -1654,14 +1654,13 @@ async function createUser(){
     GH.sha['data/user.json']=sha;
     await ghPut('data/user.json',{users}); /* user.json 루트 유지 */
     /* 초기 파일 생성 */
-    var base='data/users/'+id+'/';
     var initFiles={
       [uPath(id,'profile')]:{userId:id,name,age,gender,height:h,weight:w,onboardingDone:false},
       [uPath(id,'inbody')]:{inbody:[],updatedAt:new Date().toISOString()},
       [uPath(id,'lifts')]:{lifts:[],updatedAt:new Date().toISOString()},
       [uPath(id,'logs')]:{logs:[],month:currentYM(),updatedAt:new Date().toISOString()}
     };
-    for(var fn in initFiles){try{await ghPut(base+fn,initFiles[fn]);}catch(ex){}}
+    for(var fn in initFiles){try{await ghPut(fn,initFiles[fn]);}catch(ex){}}
     msg.textContent='';
     ok.textContent='✓ 생성 완료! ID: '+id+' — 이 ID를 사용자에게 전달하세요';
     ok.style.display='block';
@@ -3753,8 +3752,8 @@ function updateSyncStatusUI(){
 var pushTimer=null;
 function schedulePush(){
   if(pushTimer)clearTimeout(pushTimer);
-  pushTimer=setTimeout(pushToGitHub,3000);
-  showSyncBar('변경사항 감지 — 3초 후 저장 예정','#ef9f27');
+  pushTimer=setTimeout(pushToGitHub,8000);
+  showSyncBar('변경사항 감지 — 8초 후 저장 예정','#ef9f27');
 }
 async function pullFromGitHub(force){
   if(!GH.owner||!GH.repo){alert('저장소 설정이 필요합니다');return;}
@@ -4160,8 +4159,8 @@ async function loadDB(){
   }
   try{
     var [exRes,foodRes]=await Promise.all([
-      fetch('https://raw.githubusercontent.com/'+GH.owner+'/'+GH.repo+'/data/db/exercises.json'),
-      fetch('https://raw.githubusercontent.com/'+GH.owner+'/'+GH.repo+'/data/db/foods.json')
+      fetch('https://raw.githubusercontent.com/'+GH.owner+'/'+GH.repo+'/main/data/db/exercises.json'),
+      fetch('https://raw.githubusercontent.com/'+GH.owner+'/'+GH.repo+'/main/data/db/foods.json')
     ]);
     if(exRes.ok)DB.exercises=await exRes.json();
     if(foodRes.ok)DB.foods=await foodRes.json();
