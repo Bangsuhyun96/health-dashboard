@@ -1078,7 +1078,11 @@ body{font-family:-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;
 <!-- 기록 내역 -->
 <div id="l-hist" class="page">
 <div class="card">
-  <div class="ctitle">기록 내역</div>
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+    <div class="ctitle" style="margin-bottom:0;border-bottom:none;padding-bottom:0">기록 내역</div>
+    <button onclick="pushToGitHub()" id="hist-push-btn" style="font-family:inherit;font-size:11px;font-weight:700;padding:6px 14px;border:none;border-radius:9px;background:linear-gradient(135deg,#1d9e75,#34d399);color:#fff;cursor:pointer;box-shadow:0 2px 8px rgba(29,158,117,.3)">⬆ GitHub 전송</button>
+  </div>
+  <div id="push-status" style="font-size:10px;text-align:right;color:#888;margin-bottom:8px;min-height:14px"></div>
 
   <!-- 뷰 모드 전환 -->
   <div style="display:flex;gap:5px;margin-bottom:8px">
@@ -1365,6 +1369,28 @@ async function sha256(str){
 
 /* ─── GitHub API 헬퍼 ─── */
 function ghBase(){return'https://api.github.com/repos/'+GH.owner+'/'+GH.repo+'/';}
+/* ─── 경로 헬퍼 ─── */
+function uPath(userId,type,ym){
+  /* 새 구조:
+     profile  → data/users/{id}/profile.json
+     inbody   → data/users/{id}/inbody.json
+     lifts    → data/users/{id}/lifts.json
+     logs     → data/users/{id}/logs/YYYY-MM.json
+     users    → data/user.json
+     db_ex    → data/db/exercises.json
+     db_food  → data/db/foods.json  */
+  var base='data/users/'+userId+'/';
+  if(type==='profile') return base+'profile.json';
+  if(type==='inbody')  return base+'inbody.json';
+  if(type==='lifts')   return base+'lifts.json';
+  if(type==='logs')    return base+'logs/'+(ym||currentYM())+'.json';
+  return base+type;
+}
+function currentYM(){
+  var d=new Date();
+  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');
+}
+
 function ghHead(tok){return{'Authorization':'token '+tok,'Content-Type':'application/json','Accept':'application/vnd.github.v3+json'};}
 
 async function ghGet(path){
@@ -1524,7 +1550,7 @@ async function loadUserProfile(u){
   if(cached){APP.profile=cached;}
   else{
     try{
-      var profile=await ghGet('data/users/'+u.id+'/profile.json');
+      var profile=await ghGet(uPath(u.id,'profile'));
       APP.profile=profile;
       lSet('v5_profile_'+u.id,profile);/* 캐시 저장 */
     }catch(e){APP.profile=null;}
@@ -1626,12 +1652,14 @@ async function createUser(){
       createdAt:new Date().toISOString().slice(0,10),onboardingDone:false};
     users.push(newUser);
     GH.sha['data/user.json']=sha;
-    await ghPut('data/user.json',{users});
+    await ghPut('data/user.json',{users}); /* user.json 루트 유지 */
     /* 초기 파일 생성 */
     var base='data/users/'+id+'/';
     var initFiles={
-      'profile.json':{userId:id,name,age,gender,height:h,weight:w,onboardingDone:false},
-      'health.json':{logs:[],inbody:[],lifts:[],updatedAt:new Date().toISOString()}
+      [uPath(id,'profile')]:{userId:id,name,age,gender,height:h,weight:w,onboardingDone:false},
+      [uPath(id,'inbody')]:{inbody:[],updatedAt:new Date().toISOString()},
+      [uPath(id,'lifts')]:{lifts:[],updatedAt:new Date().toISOString()},
+      [uPath(id,'logs')]:{logs:[],month:currentYM(),updatedAt:new Date().toISOString()}
     };
     for(var fn in initFiles){try{await ghPut(base+fn,initFiles[fn]);}catch(ex){}}
     msg.textContent='';
@@ -1855,12 +1883,12 @@ async function finishOnboarding(){
   /* GitHub 저장 (쓰기 권한 있으면) */
   if(GH.writeMode&&GH.token){
     try{
-      await ghPut('data/users/'+APP.user.id+'/profile.json',profile);
+      await ghPut(uPath(APP.user.id,'profile'),profile);
       /* users.json의 onboardingDone 업데이트 */
       var {users,sha}=await fetchUsers();
       users=users.map(u=>u.id===APP.user.id?{...u,onboardingDone:true}:u);
       GH.sha['data/user.json']=sha;
-      await ghPut('data/user.json',{users});
+      await ghPut('data/user.json',{users}); /* user.json 루트 유지 */
     }catch(e){console.warn('온보딩 GitHub 저장 실패',e);}
   }
   showScreen('app');
@@ -1875,7 +1903,7 @@ function initApp(){
   if(GH.needEncryptWarning)setTimeout(()=>showSyncBar('⚠ writeToken 평문 노출 → 동기화설정 Step 2 암호화 권장','#ef9f27'),1500);
   if(APP._pendingHashUpdate&&GH.writeMode&&GH.token){
     var{id,newHash}=APP._pendingHashUpdate;APP._pendingHashUpdate=null;
-    (async()=>{try{var{users}=await fetchUsers();users=users.map(u=>u.id===id?{...u,passwordHash:newHash}:u);await ghPut('data/user.json',{users});showSyncBar('✓ 비밀번호 해시 업데이트 완료','#1d9e75');}catch(e){console.warn(e);}})();
+    (async()=>{try{var{users}=await fetchUsers();users=users.map(u=>u.id===id?{...u,passwordHash:newHash}:u);await ghPut('data/user.json',{users}); /* user.json 루트 유지 */showSyncBar('✓ 비밀번호 해시 업데이트 완료','#1d9e75');}catch(e){console.warn(e);}})();
   }
 }
 
@@ -3732,28 +3760,66 @@ async function pullFromGitHub(force){
   if(!GH.owner||!GH.repo){alert('저장소 설정이 필요합니다');return;}
   showSyncBar('GitHub에서 불러오는 중...','#185fa5');
   try{
-    var userId=APP.user?.id;if(!userId)return;
-    var health=await ghGet('data/users/'+userId+'/health.json');
-    if(health.logs)lSet(uk('logs'),health.logs);
-    if(health.inbody)lSet(uk('inbody'),health.inbody);
-    if(health.lifts)lSet(uk('lifts'),health.lifts);
+    var uid=APP.user?.id;if(!uid)return;
+    /* 이번 달 + 지난달 logs fetch */
+    var ym=currentYM();
+    var ymPrev=prevYM();
+    var fetched=[];
+    try{var d=await ghGet(uPath(uid,'logs',ym));if(d.logs)fetched=fetched.concat(d.logs);}catch(e){}
+    try{var d2=await ghGet(uPath(uid,'logs',ymPrev));if(d2.logs)fetched=fetched.concat(d2.logs);}catch(e){}
+    if(fetched.length){
+      /* 로컬과 병합 (날짜 기준 dedupe, 최신 우선) */
+      var local=getStore('logs');
+      var merged=mergeByDate(fetched,local);
+      lSet(uk('logs'),merged);
+    }
+    /* inbody */
+    try{var ib=await ghGet(uPath(uid,'inbody'));if(ib.inbody)lSet(uk('inbody'),ib.inbody);}catch(e){}
+    /* lifts */
+    try{var lf=await ghGet(uPath(uid,'lifts'));if(lf.lifts)lSet(uk('lifts'),lf.lifts);}catch(e){}
+    lSet('v5_last_pull_'+uid, Date.now());
     showSyncBar('✓ GitHub에서 불러오기 완료','#1d9e75');
     var res=document.getElementById('sync-action-result');if(res)res.textContent='완료 — '+new Date().toLocaleString('ko');
-    if(document.getElementById('l-hist').classList.contains('on'))renderLogHistory();
-    if(document.getElementById('l-inbody').classList.contains('on'))renderInbodyHistory();
-    if(document.getElementById('l-lift').classList.contains('on'))renderLiftHistory();
+    if(document.getElementById('l-hist')?.classList.contains('on'))renderLogHistory();
+    if(document.getElementById('l-inbody')?.classList.contains('on'))renderInbodyHistory();
+    if(document.getElementById('l-lift')?.classList.contains('on'))renderLiftHistory();
   }catch(e){showSyncBar('불러오기 실패: '+e.message,'#e57373');}
 }
 async function pushToGitHub(){
+  /* 수동 전송 — 기록내역 탭 상단 [전송] 버튼 */
   if(!GH.writeMode||!GH.token){showSyncBar('쓰기 모드가 필요합니다','#e57373');return;}
   showSyncBar('GitHub에 저장 중...','#185fa5');
   try{
-    var userId=APP.user?.id;if(!userId)return;
-    var health={logs:getStore('logs'),inbody:getStore('inbody'),lifts:getStore('lifts'),updatedAt:new Date().toISOString()};
-    await ghPut('data/users/'+userId+'/health.json',health);
-    showSyncBar('✓ GitHub 저장 완료','#1d9e75');
-    var res=document.getElementById('sync-action-result');if(res)res.textContent='완료 — '+new Date().toLocaleString('ko');
-  }catch(e){showSyncBar('저장 실패: '+e.message,'#e57373');}
+    var uid=APP.user?.id;if(!uid)return;
+    /* 로그를 월별로 그룹핑해서 각 파일에 저장 */
+    var logs=getStore('logs');
+    var byMonth={};
+    logs.forEach(l=>{
+      var m=l.date?.slice(0,7)||currentYM();
+      if(!byMonth[m])byMonth[m]=[];
+      byMonth[m].push(l);
+    });
+    for(var m in byMonth){
+      await ghPut(uPath(uid,'logs',m),{logs:byMonth[m],month:m,updatedAt:new Date().toISOString()});
+    }
+    /* inbody, lifts 저장 */
+    await ghPut(uPath(uid,'inbody'),{inbody:getStore('inbody'),updatedAt:new Date().toISOString()});
+    await ghPut(uPath(uid,'lifts'),{lifts:getStore('lifts'),updatedAt:new Date().toISOString()});
+    showSyncBar('✓ GitHub 전송 완료','#1d9e75');
+    var res=document.getElementById('sync-action-result');if(res)res.textContent='전송 완료 — '+new Date().toLocaleString('ko');
+    var ps=document.getElementById('push-status');if(ps)ps.textContent='마지막 전송: '+new Date().toLocaleString('ko');
+  }catch(e){showSyncBar('전송 실패: '+e.message,'#e57373');}
+}
+function prevYM(){
+  var d=new Date();d.setMonth(d.getMonth()-1);
+  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');
+}
+function mergeByDate(a,b){
+  /* 두 배열을 날짜 기준 병합, 중복 시 a(GitHub) 우선 */
+  var map={};
+  b.forEach(l=>{if(l.date)map[l.date]=l;});
+  a.forEach(l=>{if(l.date)map[l.date]=l;}); /* GitHub 우선 덮어쓰기 */
+  return Object.values(map).sort((x,y)=>y.date.localeCompare(x.date));
 }
 function exportJSON(){
   var data={logs:getStore('logs'),inbody:getStore('inbody'),lifts:getStore('lifts'),exportedAt:new Date().toISOString(),user:APP.user?.id};
@@ -4016,12 +4082,12 @@ async function setupStep4Create() {
     await ghPut('data/user.json', { users });
     /* 사용자 폴더 초기 파일 생성 */
     var base = 'data/users/' + id + '/';
-    await ghPut(base + 'profile.json', {
+    await ghPut(uPath(id,'profile'), {
       userId: id, name, age, gender, height, weight, onboardingDone: false
     });
-    await ghPut(base + 'health.json', {
-      logs: [], inbody: [], lifts: [], updatedAt: new Date().toISOString()
-    });
+    await ghPut(uPath(id,'inbody'), {inbody:[],updatedAt:new Date().toISOString()});
+    await ghPut(uPath(id,'lifts'), {lifts:[],updatedAt:new Date().toISOString()});
+    await ghPut(uPath(id,'logs'), {logs:[],month:currentYM(),updatedAt:new Date().toISOString()});
     loading.style.display = 'none';
     /* 완료 화면 */
     var doneInfo = document.getElementById('setup-done-info');
