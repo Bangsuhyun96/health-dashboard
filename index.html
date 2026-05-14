@@ -1095,17 +1095,24 @@ body{font-family:-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;
   </div>
 
   <!-- 주간 네비 -->
-  <div id="lv-week-nav" style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
-    <button onclick="logWeekNav(-1)" style="font-family:inherit;font-size:13px;padding:4px 10px;border:1.5px solid #ddd;border-radius:7px;background:#fff;cursor:pointer">←</button>
-    <span style="font-size:11px;color:#555;flex:1;text-align:center" id="lv-week-label">이번 주</span>
-    <button onclick="logWeekNav(1)" style="font-family:inherit;font-size:13px;padding:4px 10px;border:1.5px solid #ddd;border-radius:7px;background:#fff;cursor:pointer">→</button>
+  <div id="lv-week-nav" style="display:flex;align-items:center;gap:6px;margin-bottom:8px">
+    <button onclick="logWeekNav(-1)"
+      style="font-family:inherit;font-size:16px;width:36px;height:36px;border:1.5px solid #e0e0e0;border-radius:9px;background:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;color:#555">‹</button>
+    <div style="flex:1;text-align:center">
+      <div id="lv-week-label" style="font-size:12px;font-weight:700;color:#1a1a1a">이번 주</div>
+      <div id="lv-week-range" style="font-size:10px;color:#888;margin-top:1px"></div>
+    </div>
+    <button onclick="logWeekNav(1)"
+      style="font-family:inherit;font-size:16px;width:36px;height:36px;border:1.5px solid #e0e0e0;border-radius:9px;background:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;color:#555">›</button>
   </div>
 
   <!-- 월간 네비 -->
-  <div id="lv-month-nav" style="display:none;align-items:center;gap:8px;margin-bottom:8px">
-    <button onclick="logMonthNav(-1)" style="font-family:inherit;font-size:13px;padding:4px 10px;border:1.5px solid #ddd;border-radius:7px;background:#fff;cursor:pointer">←</button>
-    <span style="font-size:11px;color:#555;flex:1;text-align:center" id="lv-month-label"></span>
-    <button onclick="logMonthNav(1)" style="font-family:inherit;font-size:13px;padding:4px 10px;border:1.5px solid #ddd;border-radius:7px;background:#fff;cursor:pointer">→</button>
+  <div id="lv-month-nav" style="display:none;align-items:center;gap:6px;margin-bottom:8px">
+    <button onclick="logMonthNav(-1)"
+      style="font-family:inherit;font-size:16px;width:36px;height:36px;border:1.5px solid #e0e0e0;border-radius:9px;background:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;color:#555">‹</button>
+    <span id="lv-month-label" style="font-size:12px;font-weight:700;color:#1a1a1a;flex:1;text-align:center"></span>
+    <button onclick="logMonthNav(1)"
+      style="font-family:inherit;font-size:16px;width:36px;height:36px;border:1.5px solid #e0e0e0;border-radius:9px;background:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;color:#555">›</button>
   </div>
 
   <!-- 날짜 검색 -->
@@ -3360,7 +3367,9 @@ function renderLogHistory(){
     var ws=weekStart.toISOString().slice(0,10), we=weekEnd.toISOString().slice(0,10);
     viewLogs=filtered.filter(l=>l.date>=ws&&l.date<=we);
     var diff=logView.weekOffset===0?'이번 주':logView.weekOffset===-1?'지난 주':`${Math.abs(logView.weekOffset)}주 전`;
-    viewTitle=`${diff} (${ws} ~ ${we})`;
+    viewTitle=`${diff}`;
+    var wLabel=document.getElementById('lv-week-label');if(wLabel)wLabel.textContent=diff;
+    var wRange=document.getElementById('lv-week-range');if(wRange)wRange.textContent=ws+' ~ '+we;
   }else if(logView.mode==='month'){
     var y=logView.monthYear, m=logView.monthMonth;
     var ms=`${y}-${String(m+1).padStart(2,'0')}-01`;
