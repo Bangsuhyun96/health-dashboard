@@ -3753,8 +3753,8 @@ function updateSyncStatusUI(){
 var pushTimer=null;
 function schedulePush(){
   if(pushTimer)clearTimeout(pushTimer);
-  pushTimer=setTimeout(pushToGitHub,8000);
-  showSyncBar('변경사항 감지 — 8초 후 저장 예정','#ef9f27');
+  pushTimer=setTimeout(pushToGitHub,3000);
+  showSyncBar('변경사항 감지 — 3초 후 저장 예정','#ef9f27');
 }
 async function pullFromGitHub(force){
   if(!GH.owner||!GH.repo){alert('저장소 설정이 필요합니다');return;}
