@@ -1408,7 +1408,18 @@ async function ghPut(path,json){
   var body={message:'health update '+new Date().toLocaleString('ko'),content,branch:GH.branch||'main'};
   if(GH.sha[path])body.sha=GH.sha[path];
   var r=await fetch(ghBase()+'contents/'+path,{method:'PUT',headers:ghHead(GH.token),body:JSON.stringify(body)});
-  if(!r.ok){var e=await r.json();throw new Error(e.message||'HTTP '+r.status);}
+  if(!r.ok){
+    var e=await r.json();
+    /* 422 = SHA 불일치 (파일 삭제됐거나 SHA 캐시 오류) → SHA 제거 후 재시도 */
+    if(r.status===422&&GH.sha[path]){
+      delete GH.sha[path];
+      var body2={message:'health update '+new Date().toLocaleString('ko'),content,branch:GH.branch||'main'};
+      var r2=await fetch(ghBase()+'contents/'+path,{method:'PUT',headers:ghHead(GH.token),body:JSON.stringify(body2)});
+      if(!r2.ok){var e2=await r2.json();throw new Error(e2.message||'HTTP '+r2.status);}
+      var d2=await r2.json();GH.sha[path]=d2.content.sha;return d2;
+    }
+    throw new Error(e.message||'HTTP '+r.status);
+  }
   var d=await r.json();
   GH.sha[path]=d.content.sha;
   return d;
@@ -2977,21 +2988,38 @@ function renderExerciseBlocks(){
   exerciseBlocks.forEach(b=>{
     h+=`<div style="background:#fff;border:1.5px solid #dceefb;border-radius:9px;padding:10px;margin-bottom:8px">`;
     /* 종목명 + 삭제 */
-    h+=`<div style="display:flex;gap:6px;align-items:center;margin-bottom:8px">
-      <input type="text" id="exname_${b.id}" value="${b.name||''}" placeholder="종목 (예: 벤치프레스)" list="ex-datalist"
-        style="flex:1;font-family:inherit;font-size:12px;font-weight:700;padding:6px 10px;border:1.5px solid #ddd;border-radius:7px;outline:none;background:#fafafa;color:#1a1a1a"
-        oninput="syncBlockData();updateBurnCalc()" onchange="syncBlockData()">
-      <button onclick="removeExerciseBlock('${b.id}')" style="font-family:inherit;font-size:18px;color:#ccc;background:none;border:none;cursor:pointer;padding:0 4px;line-height:1">×</button>
-    </div>`;
+    /* 종목 정보 표시 */
+    var exInfo=b.exId?getExerciseById(b.exId):null;
+    var catColor={가슴:'#185fa5',등:'#1d9e75',하체:'#7b72e9',어깨:'#ef9f27',팔:'#e57373',코어:'#888',클라이밍:'#275a0a',유산소:'#c47d0e'};
+    var catC=exInfo?catColor[exInfo.category]||'#555':'#555';
+    h+=`<div style="display:flex;gap:6px;align-items:center;margin-bottom:${exInfo?'4px':'8px'}">
+      <div style="flex:1">
+        <input type="text" id="exname_${b.id}" value="${b.name||''}" placeholder="종목명 직접 입력 or DB에서 선택" list="ex-datalist"
+          style="width:100%;font-family:inherit;font-size:12px;font-weight:700;padding:6px 10px;border:1.5px solid ${exInfo?catC+'66':'#ddd'};border-radius:7px;outline:none;background:#fafafa;color:#1a1a1a"
+          oninput="syncBlockData();updateBurnCalc()" onchange="syncBlockData()">
+      </div>
+      <button onclick="openExercisePicker('${b.id}')" style="font-size:11px;padding:5px 8px;border:1.5px solid #1d9e75;border-radius:7px;background:#e6fdf2;color:#0a5c46;cursor:pointer;font-family:inherit;white-space:nowrap;flex-shrink:0">DB</button>
+      <button onclick="removeExerciseBlock('${b.id}')" style="font-size:16px;color:#ccc;background:none;border:none;cursor:pointer;padding:0;flex-shrink:0;line-height:1">×</button>
+    </div>
+    ${exInfo?`<div style="font-size:10px;color:${catC};margin-bottom:6px;padding:3px 8px;background:${catC}11;border-radius:5px;display:flex;gap:8px;flex-wrap:wrap">
+      <span>${exInfo.category}</span>
+      <span>기본 ${exInfo.defaultSets}×${exInfo.defaultReps}</span>
+      ${exInfo.tips?`<span style="color:#888">${exInfo.tips}</span>`:''}
+    </div>`:''}`;
     /* 세트 목록 */
-    h+=`<div style="display:flex;gap:4px;margin-bottom:4px"><span style="font-size:9px;color:#888;width:28px;text-align:center">세트</span><span style="font-size:9px;color:#888;flex:1;text-align:center">중량 (kg)</span><span style="font-size:9px;color:#888;flex:1;text-align:center">횟수</span><span style="width:24px"></span></div>`;
+    h+=`<div style="display:flex;gap:4px;margin-bottom:4px">
+      <span style="font-size:9px;color:#888;width:28px;text-align:center">세트</span>
+      <span style="font-size:9px;color:#888;flex:1;text-align:center">중량 (kg)</span>
+      <span style="font-size:9px;color:#888;flex:1;text-align:center">횟수/시간</span>
+      <span style="width:24px"></span>
+    </div>`;
     b.sets.forEach((s,si)=>{
       h+=`<div style="display:flex;gap:4px;align-items:center;margin-bottom:4px">
         <span style="font-size:11px;font-weight:700;color:#185fa5;width:28px;text-align:center;flex-shrink:0">${si+1}</span>
         <input type="number" id="set_kg_${b.id}_${si}" value="${s.kg||''}" placeholder="60" step="0.5"
           style="flex:1;font-family:inherit;font-size:12px;font-weight:700;padding:5px 6px;border:1.5px solid #ddd;border-radius:6px;outline:none;text-align:center;background:#fff;color:#1a1a1a"
           oninput="syncBlockData();updateBurnCalc()">
-        <input type="number" id="set_rp_${b.id}_${si}" value="${s.reps||''}" placeholder="8" step="1"
+        <input type="text" id="set_rp_${b.id}_${si}" value="${s.reps||''}" placeholder="8"
           style="flex:1;font-family:inherit;font-size:12px;font-weight:700;padding:5px 6px;border:1.5px solid #ddd;border-radius:6px;outline:none;text-align:center;background:#fff;color:#1a1a1a"
           oninput="syncBlockData()">
         <button onclick="syncBlockData();removeSet('${b.id}',${si})" style="font-size:14px;color:#ccc;background:none;border:none;cursor:pointer;padding:0;width:24px;flex-shrink:0;line-height:1">×</button>
@@ -4272,7 +4300,15 @@ function addExerciseBlockFromDB(){
   renderExPickerList('전체');
 }
 function openExercisePicker(blockId){
-  exPickCallback=blockId;
+  /* blockId 있으면 해당 블록 교체, 없으면 새 블록 생성 */
+  if(blockId){
+    exPickCallback=blockId;
+  }else{
+    syncBlockData();
+    var newId='ex_'+Date.now();
+    exerciseBlocks.push({id:newId,name:'',sets:[{kg:'',reps:''}]});
+    exPickCallback=newId;
+  }
   var m=document.getElementById('ex-picker-modal');if(!m)return;
   m.style.display='block';
   var tabs=m.querySelector('#exp-cat-tabs');
