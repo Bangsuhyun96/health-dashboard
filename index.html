@@ -1078,9 +1078,12 @@ body{font-family:-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;
 <!-- 기록 내역 -->
 <div id="l-hist" class="page">
 <div class="card">
-  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
     <div class="ctitle" style="margin-bottom:0;border-bottom:none;padding-bottom:0">기록 내역</div>
-    <button onclick="pushToGitHub()" id="hist-push-btn" style="font-family:inherit;font-size:11px;font-weight:700;padding:6px 14px;border:none;border-radius:9px;background:linear-gradient(135deg,#1d9e75,#34d399);color:#fff;cursor:pointer;box-shadow:0 2px 8px rgba(29,158,117,.3)">⬆ GitHub 전송</button>
+    <div style="display:flex;gap:6px">
+      <button onclick="pullFromGitHub(true)" style="font-family:inherit;font-size:11px;font-weight:700;padding:6px 10px;border:1.5px solid #185fa5;border-radius:9px;background:#dceefb;color:#185fa5;cursor:pointer">⬇ 불러오기</button>
+      <button onclick="pushToGitHub()" id="hist-push-btn" style="font-family:inherit;font-size:11px;font-weight:700;padding:6px 10px;border:none;border-radius:9px;background:linear-gradient(135deg,#1d9e75,#34d399);color:#fff;cursor:pointer;box-shadow:0 2px 8px rgba(29,158,117,.3)">⬆ 전송</button>
+    </div>
   </div>
   <div id="push-status" style="font-size:10px;text-align:right;color:#888;margin-bottom:8px;min-height:14px"></div>
 
@@ -1932,10 +1935,19 @@ function initApp(){
   loadDB().then(()=>{renderExDBList();renderFoodDBList();renderExerciseBlocks();});
   renderDiet();renderExercise();renderRehab();loadSyncConfig();
   showTodayBanner();
+
+  /* ── 자동 pull (접속 시 1시간 이상 지났으면 백그라운드 sync) ── */
+  var uid=APP.user?.id;
+  var lastPull=lGet('v5_last_pull_'+uid)||0;
+  var ONE_HOUR=60*60*1000;
+  if(GH.owner&&GH.repo&&(Date.now()-lastPull>ONE_HOUR)){
+    setTimeout(()=>pullFromGitHub(false),1500); /* 앱 렌더 완료 후 백그라운드 */
+  }
+
   if(GH.needEncryptWarning)setTimeout(()=>showSyncBar('⚠ writeToken 평문 노출 → 동기화설정 Step 2 암호화 권장','#ef9f27'),1500);
   if(APP._pendingHashUpdate&&GH.writeMode&&GH.token){
     var{id,newHash}=APP._pendingHashUpdate;APP._pendingHashUpdate=null;
-    (async()=>{try{var{users}=await fetchUsers();users=users.map(u=>u.id===id?{...u,passwordHash:newHash}:u);await ghPut('data/user.json',{users}); /* user.json 루트 유지 */showSyncBar('✓ 비밀번호 해시 업데이트 완료','#1d9e75');}catch(e){console.warn(e);}})();
+    (async()=>{try{var{users}=await fetchUsers();users=users.map(u=>u.id===id?{...u,passwordHash:newHash}:u);await ghPut('data/user.json',{users});showSyncBar('✓ 비밀번호 해시 업데이트 완료','#1d9e75');}catch(e){console.warn(e);}})();
   }
 }
 
@@ -3005,50 +3017,79 @@ function syncBlockData(){
 }
 function renderExerciseBlocks(){
   var el=document.getElementById('exercise-blocks');if(!el)return;
-  if(!exerciseBlocks.length){el.innerHTML='<div style="text-align:center;color:#888;font-size:11px;padding:12px">종목 추가 버튼을 눌러 운동을 입력하세요.</div>';updateBurnCalc();return;}
+  if(!exerciseBlocks.length){
+    el.innerHTML='<div style="text-align:center;color:#aaa;font-size:12px;padding:16px 0">종목을 추가하세요</div>';
+    updateBurnCalc();return;
+  }
+  var catColor={가슴:'#185fa5',등:'#1d9e75',하체:'#7b72e9',어깨:'#ef9f27',팔:'#e57373',코어:'#888',클라이밍:'#275a0a',유산소:'#c47d0e'};
   var h='';
-  exerciseBlocks.forEach(b=>{
-    h+=`<div style="background:#fff;border:1.5px solid #dceefb;border-radius:9px;padding:10px;margin-bottom:8px">`;
-    /* 종목명 + 삭제 */
-    /* 종목 정보 표시 */
+  exerciseBlocks.forEach((b,bi)=>{
     var exInfo=b.exId?getExerciseById(b.exId):null;
-    var catColor={가슴:'#185fa5',등:'#1d9e75',하체:'#7b72e9',어깨:'#ef9f27',팔:'#e57373',코어:'#888',클라이밍:'#275a0a',유산소:'#c47d0e'};
-    var catC=exInfo?catColor[exInfo.category]||'#555':'#555';
-    h+=`<div style="display:flex;gap:6px;align-items:center;margin-bottom:${exInfo?'4px':'8px'}">
-      <div style="flex:1">
-        <input type="text" id="exname_${b.id}" value="${b.name||''}" placeholder="종목명 직접 입력 or DB에서 선택" list="ex-datalist"
-          style="width:100%;font-family:inherit;font-size:12px;font-weight:700;padding:6px 10px;border:1.5px solid ${exInfo?catC+'66':'#ddd'};border-radius:7px;outline:none;background:#fafafa;color:#1a1a1a"
-          oninput="syncBlockData();updateBurnCalc()" onchange="syncBlockData()">
-      </div>
-      <button onclick="openExercisePicker('${b.id}')" style="font-size:11px;padding:5px 8px;border:1.5px solid #1d9e75;border-radius:7px;background:#e6fdf2;color:#0a5c46;cursor:pointer;font-family:inherit;white-space:nowrap;flex-shrink:0">DB</button>
-      <button onclick="removeExerciseBlock('${b.id}')" style="font-size:16px;color:#ccc;background:none;border:none;cursor:pointer;padding:0;flex-shrink:0;line-height:1">×</button>
-    </div>
-    ${exInfo?`<div style="font-size:10px;color:${catC};margin-bottom:6px;padding:3px 8px;background:${catC}11;border-radius:5px;display:flex;gap:8px;flex-wrap:wrap">
-      <span>${exInfo.category}</span>
-      <span>기본 ${exInfo.defaultSets}×${exInfo.defaultReps}</span>
-      ${exInfo.tips?`<span style="color:#888">${exInfo.tips}</span>`:''}
-    </div>`:''}`;
-    /* 세트 목록 */
-    h+=`<div style="display:flex;gap:4px;margin-bottom:4px">
-      <span style="font-size:9px;color:#888;width:28px;text-align:center">세트</span>
-      <span style="font-size:9px;color:#888;flex:1;text-align:center">중량 (kg)</span>
-      <span style="font-size:9px;color:#888;flex:1;text-align:center">횟수/시간</span>
-      <span style="width:24px"></span>
+    var catC=exInfo?catColor[exInfo.category]||'#185fa5':'#185fa5';
+    var borderC=exInfo?catC+'44':'#e0e0e0';
+
+    h+=`<div style="background:#fff;border:1.5px solid ${borderC};border-radius:12px;margin-bottom:10px;overflow:hidden">`;
+
+    /* ── 헤더: 카테고리 컬러 바 + 종목명 행 ── */
+    h+=`<div style="background:${catC}11;border-bottom:1px solid ${borderC};padding:10px 12px">`;
+
+    /* 카테고리 + 팁 태그 */
+    if(exInfo){
+      h+=`<div style="display:flex;align-items:center;gap:6px;margin-bottom:6px;flex-wrap:wrap">
+        <span style="font-size:10px;font-weight:700;color:${catC};background:${catC}22;padding:2px 8px;border-radius:10px">${exInfo.category}</span>
+        <span style="font-size:10px;color:#888">${exInfo.defaultSets}세트 × ${exInfo.defaultReps}</span>
+        ${exInfo.tips?`<span style="font-size:10px;color:#aaa;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${exInfo.tips}</span>`:''}
+      </div>`;
+    }
+
+    /* 종목명 입력 + 버튼들 */
+    h+=`<div style="display:flex;align-items:center;gap:8px">
+      <input type="text" id="exname_${b.id}" value="${b.name||''}"
+        placeholder="종목명 입력"
+        list="ex-datalist"
+        style="flex:1;min-width:0;font-family:inherit;font-size:13px;font-weight:700;padding:8px 10px;border:1.5px solid ${exInfo?catC+'66':'#ddd'};border-radius:8px;outline:none;background:#fff;color:#1a1a1a;-webkit-appearance:none"
+        oninput="syncBlockData();updateBurnCalc()" onchange="syncBlockData()">
+      <button onclick="openExercisePicker('${b.id}')"
+        style="font-family:inherit;font-size:11px;font-weight:700;padding:7px 10px;border:1.5px solid ${catC};border-radius:8px;background:${catC}11;color:${catC};cursor:pointer;white-space:nowrap;flex-shrink:0;-webkit-tap-highlight-color:transparent">DB</button>
+      <button onclick="removeExerciseBlock('${b.id}')"
+        style="width:32px;height:32px;font-size:18px;color:#ccc;background:none;border:none;cursor:pointer;flex-shrink:0;line-height:1;-webkit-tap-highlight-color:transparent;display:flex;align-items:center;justify-content:center">×</button>
     </div>`;
+    h+='</div>';/* 헤더 끝 */
+
+    /* ── 세트 목록 ── */
+    h+=`<div style="padding:8px 12px">`;
+
+    /* 헤더 행 */
+    h+=`<div style="display:grid;grid-template-columns:28px 1fr 1fr 36px;gap:4px;margin-bottom:4px;padding:0 2px">
+      <span style="font-size:9px;color:#aaa;text-align:center">#</span>
+      <span style="font-size:9px;color:#aaa;text-align:center">중량 kg</span>
+      <span style="font-size:9px;color:#aaa;text-align:center">횟수</span>
+      <span></span>
+    </div>`;
+
     b.sets.forEach((s,si)=>{
-      h+=`<div style="display:flex;gap:4px;align-items:center;margin-bottom:4px">
-        <span style="font-size:11px;font-weight:700;color:#185fa5;width:28px;text-align:center;flex-shrink:0">${si+1}</span>
-        <input type="number" id="set_kg_${b.id}_${si}" value="${s.kg||''}" placeholder="60" step="0.5"
-          style="flex:1;font-family:inherit;font-size:12px;font-weight:700;padding:5px 6px;border:1.5px solid #ddd;border-radius:6px;outline:none;text-align:center;background:#fff;color:#1a1a1a"
-          oninput="syncBlockData();updateBurnCalc()">
-        <input type="text" id="set_rp_${b.id}_${si}" value="${s.reps||''}" placeholder="8"
-          style="flex:1;font-family:inherit;font-size:12px;font-weight:700;padding:5px 6px;border:1.5px solid #ddd;border-radius:6px;outline:none;text-align:center;background:#fff;color:#1a1a1a"
-          oninput="syncBlockData()">
-        <button onclick="syncBlockData();removeSet('${b.id}',${si})" style="font-size:14px;color:#ccc;background:none;border:none;cursor:pointer;padding:0;width:24px;flex-shrink:0;line-height:1">×</button>
+      var isLast=si===b.sets.length-1;
+      h+=`<div style="display:grid;grid-template-columns:28px 1fr 1fr 36px;gap:4px;margin-bottom:5px;align-items:center">
+        <span style="font-size:12px;font-weight:800;color:${catC};text-align:center;line-height:1">${si+1}</span>
+        <input type="number" id="set_kg_${b.id}_${si}" value="${s.kg||''}" placeholder="kg" step="0.5" inputmode="decimal"
+          style="font-family:inherit;font-size:15px;font-weight:700;padding:9px 4px;border:1.5px solid ${s.kg?catC+'66':'#e0e0e0'};border-radius:8px;outline:none;text-align:center;background:#fff;color:#1a1a1a;width:100%;-webkit-appearance:none;min-height:40px"
+          oninput="syncBlockData();updateBurnCalc();this.style.borderColor=this.value?'${catC}66':'#e0e0e0'">
+        <input type="text" id="set_rp_${b.id}_${si}" value="${s.reps||''}" placeholder="회" inputmode="text"
+          style="font-family:inherit;font-size:15px;font-weight:700;padding:9px 4px;border:1.5px solid ${s.reps?catC+'66':'#e0e0e0'};border-radius:8px;outline:none;text-align:center;background:#fff;color:#1a1a1a;width:100%;-webkit-appearance:none;min-height:40px"
+          oninput="syncBlockData();this.style.borderColor=this.value?'${catC}66':'#e0e0e0'">
+        <button onclick="syncBlockData();removeSet('${b.id}',${si})"
+          style="width:32px;height:40px;font-size:16px;color:#ddd;background:none;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;-webkit-tap-highlight-color:transparent">×</button>
       </div>`;
     });
-    h+=`<button onclick="syncBlockData();addSet('${b.id}')" style="font-family:inherit;font-size:10px;padding:4px 10px;border:1.5px dashed #b0bfee;border-radius:6px;background:#f8fbff;color:#185fa5;cursor:pointer;width:100%;margin-top:2px">+ 세트 추가</button>`;
-    h+='</div>';
+
+    /* + 세트 추가 버튼 */
+    h+=`<button onclick="syncBlockData();addSet('${b.id}')"
+      style="font-family:inherit;font-size:12px;font-weight:600;padding:9px;border:1.5px dashed ${catC}66;border-radius:8px;background:${catC}08;color:${catC};cursor:pointer;width:100%;margin-top:2px;-webkit-tap-highlight-color:transparent;min-height:38px">
+      + 세트 추가
+    </button>`;
+
+    h+='</div>';/* 세트 영역 끝 */
+    h+='</div>';/* 블록 끝 */
   });
   el.innerHTML=h;
   updateBurnCalc();
@@ -3806,33 +3847,74 @@ function schedulePush(){
   showSyncBar('변경사항 감지 — 8초 후 저장 예정','#ef9f27');
 }
 async function pullFromGitHub(force){
-  if(!GH.owner||!GH.repo){alert('저장소 설정이 필요합니다');return;}
-  showSyncBar('GitHub에서 불러오는 중...','#185fa5');
+  if(!GH.owner||!GH.repo){if(force)alert('저장소 설정이 필요합니다');return;}
+  var uid=APP.user?.id;if(!uid)return;
+
+  /* force=false면 백그라운드 (배너 없음) */
+  if(force)showSyncBar('GitHub에서 불러오는 중...','#185fa5');
+
+  var pulled={logs:0,inbody:false,lifts:false,profile:false};
+
   try{
-    var uid=APP.user?.id;if(!uid)return;
-    /* 이번 달 + 지난달 logs fetch */
-    var ym=currentYM();
-    var ymPrev=prevYM();
+    /* ── logs: 이번달 + 지난달 ── */
+    var ym=currentYM(), ymPrev=prevYM();
     var fetched=[];
-    try{var d=await ghGet(uPath(uid,'logs',ym));if(d.logs)fetched=fetched.concat(d.logs);}catch(e){}
-    try{var d2=await ghGet(uPath(uid,'logs',ymPrev));if(d2.logs)fetched=fetched.concat(d2.logs);}catch(e){}
+    try{var d=await ghGet(uPath(uid,'logs',ym));if(d.logs){fetched=fetched.concat(d.logs);pulled.logs+=d.logs.length;}}catch(e){}
+    try{var d2=await ghGet(uPath(uid,'logs',ymPrev));if(d2.logs){fetched=fetched.concat(d2.logs);pulled.logs+=d2.logs.length;}}catch(e){}
+
     if(fetched.length){
-      /* 로컬과 병합 (날짜 기준 dedupe, 최신 우선) */
       var local=getStore('logs');
-      var merged=mergeByDate(fetched,local);
+      /* 모바일(로컬 없음)이면 GitHub 데이터가 primary */
+      var merged=local.length?mergeByDate(fetched,local):fetched;
       lSet(uk('logs'),merged);
     }
-    /* inbody */
-    try{var ib=await ghGet(uPath(uid,'inbody'));if(ib.inbody)lSet(uk('inbody'),ib.inbody);}catch(e){}
-    /* lifts */
-    try{var lf=await ghGet(uPath(uid,'lifts'));if(lf.lifts)lSet(uk('lifts'),lf.lifts);}catch(e){}
+
+    /* ── inbody ── */
+    try{
+      var ib=await ghGet(uPath(uid,'inbody'));
+      if(ib.inbody){lSet(uk('inbody'),ib.inbody);pulled.inbody=true;}
+    }catch(e){}
+
+    /* ── lifts ── */
+    try{
+      var lf=await ghGet(uPath(uid,'lifts'));
+      if(lf.lifts){lSet(uk('lifts'),lf.lifts);pulled.lifts=true;}
+    }catch(e){}
+
+    /* ── profile (모바일에서 캐시 없을 때) ── */
+    var cachedProfile=lGet('v5_profile_'+uid);
+    if(!cachedProfile){
+      try{
+        var prof=await ghGet(uPath(uid,'profile'));
+        if(prof){APP.profile=prof;lSet('v5_profile_'+uid,prof);pulled.profile=true;
+          renderProfileHeader();renderDiet();renderExercise();renderRehab();
+        }
+      }catch(e){}
+    }
+
     lSet('v5_last_pull_'+uid, Date.now());
-    showSyncBar('✓ GitHub에서 불러오기 완료','#1d9e75');
-    var res=document.getElementById('sync-action-result');if(res)res.textContent='완료 — '+new Date().toLocaleString('ko');
-    if(document.getElementById('l-hist')?.classList.contains('on'))renderLogHistory();
-    if(document.getElementById('l-inbody')?.classList.contains('on'))renderInbodyHistory();
-    if(document.getElementById('l-lift')?.classList.contains('on'))renderLiftHistory();
-  }catch(e){showSyncBar('불러오기 실패: '+e.message,'#e57373');}
+
+    /* UI 갱신 */
+    var onHist=document.getElementById('l-hist')?.classList.contains('on');
+    var onInbody=document.getElementById('l-inbody')?.classList.contains('on');
+    var onLift=document.getElementById('l-lift')?.classList.contains('on');
+    if(onHist||!force)renderLogHistory();
+    if(onInbody)renderInbodyHistory();
+    if(onLift)renderLiftHistory();
+
+    if(force){
+      var msg='✓ 불러오기 완료 — 기록 '+pulled.logs+'개'+
+        (pulled.inbody?' · 인바디':'')+
+        (pulled.lifts?' · 중량':'');
+      showSyncBar(msg,'#1d9e75');
+      var res=document.getElementById('sync-action-result');
+      if(res)res.textContent=msg+' ('+new Date().toLocaleString('ko')+')';
+    }
+
+  }catch(e){
+    if(force)showSyncBar('불러오기 실패: '+e.message,'#e57373');
+    else console.warn('백그라운드 pull 실패',e);
+  }
 }
 async function pushToGitHub(){
   if(!GH.writeMode||!GH.token){showSyncBar('쓰기 모드가 필요합니다','#e57373');return;}
@@ -3965,6 +4047,14 @@ function initLogTab(){
   renderLogHistory();renderInbodyHistory();renderLiftHistory();
   renderExDBList();renderFoodDBList();
   updateSyncStatusUI();updateWaterComment();
+  /* 마지막 pull 시간 표시 */
+  var uid=APP.user?.id;
+  var ps=document.getElementById('push-status');
+  if(ps&&uid){
+    var last=lGet('v5_last_pull_'+uid);
+    if(last)ps.textContent='마지막 동기화: '+new Date(last).toLocaleString('ko');
+    else ps.textContent='아직 동기화 안 됨 — ⬇ 불러오기로 GitHub 데이터를 가져오세요';
+  }
 }
 
 /* ─── 자동 로그인 체크 ─── */
