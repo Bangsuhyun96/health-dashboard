@@ -52,8 +52,8 @@
     {"id":"chicken_half","name":"치킨 반마리","category":"치팅","kcal":900,"prot":80,"carb":40,"fat":45,"unit":"반마리","verified":false},
     {"id":"pizza2","name":"피자 2조각","category":"치팅","kcal":560,"prot":22,"carb":64,"fat":24,"unit":"2조각","verified":false},
     {"id":"samgyup","name":"삼겹살 200g","category":"치팅","kcal":700,"prot":20,"carb":0,"fat":60,"unit":"200g","verified":false},
-    {"id":"lunch_out","name":"외식 점심 (일반)","category":"치팅","kcal":750,"prot":28,"carb":95,"fat":18,"unit":"1끼","verified":false}
-    {"id":"sodamchon_lunch_set","name":"소담촌 런치세트","category":"치팅","kcal":1120,"prot":46,"carb":122,"fat":48,"unit":"1세트","verified":false}
+    {"id":"lunch_out","name":"외식 점심 (일반)","category":"치팅","kcal":750,"prot":28,"carb":95,"fat":18,"unit":"1끼","verified":false},
+    {"id":"sodamchon_lunch_set","name":"소담촌 런치세트","category":"치팅","kcal":1120,"prot":46,"carb":122,"fat":48,"unit":"1세트","verified":false},
     {"id":"mcd_double_quarter_pounder_large_zero","name":"맥도날드 더블쿼터파운더치즈 라지세트 (제로콜라)","category":"치팅","kcal":1290,"prot":58,"carb":115,"fat":67,"unit":"1세트","verified":true}
   ]
 }
