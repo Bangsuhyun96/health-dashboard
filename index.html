@@ -1359,7 +1359,7 @@ function lSet(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}}
 /* 사용자별 스토리지 키 */
 function uk(k){return 'v5_'+(APP.user?APP.user.id:'_')+'_'+k;}
 function getStore(k){var v=lGet(uk(k));return Array.isArray(v)?v:[];}
-function setStore(k,v){lSet(uk(k),v);if(GH.writeMode&&GH.token)schedulePush();}
+function setStore(k,v){lSet(uk(k),v);/* GitHub 전송은 기록내역 탭 [전송] 버튼으로만 */}
 
 /* ─── SHA-256 (Web Crypto) ─── */
 async function sha256(str){
@@ -1409,16 +1409,21 @@ async function ghPut(path,json){
   if(GH.sha[path])body.sha=GH.sha[path];
   var r=await fetch(ghBase()+'contents/'+path,{method:'PUT',headers:ghHead(GH.token),body:JSON.stringify(body)});
   if(!r.ok){
-    var e=await r.json();
-    /* 422 = SHA 불일치 (파일 삭제됐거나 SHA 캐시 오류) → SHA 제거 후 재시도 */
-    if(r.status===422&&GH.sha[path]){
-      delete GH.sha[path];
-      var body2={message:'health update '+new Date().toLocaleString('ko'),content,branch:GH.branch||'main'};
-      var r2=await fetch(ghBase()+'contents/'+path,{method:'PUT',headers:ghHead(GH.token),body:JSON.stringify(body2)});
-      if(!r2.ok){var e2=await r2.json();throw new Error(e2.message||'HTTP '+r2.status);}
-      var d2=await r2.json();GH.sha[path]=d2.content.sha;return d2;
+    /* 422 = SHA 불일치 → 현재 파일 SHA를 GitHub에서 직접 가져와서 재시도 */
+    if(r.status===422){
+      try{
+        var cur=await fetch(ghBase()+'contents/'+path+'?ref='+(GH.branch||'main'),{headers:{'Authorization':'token '+GH.token,'Accept':'application/vnd.github.v3+json'}});
+        if(cur.ok){
+          var curData=await cur.json();
+          GH.sha[path]=curData.sha;
+          var body2={message:'health update '+new Date().toLocaleString('ko'),content,branch:GH.branch||'main',sha:curData.sha};
+          var r2=await fetch(ghBase()+'contents/'+path,{method:'PUT',headers:ghHead(GH.token),body:JSON.stringify(body2)});
+          if(r2.ok){var d2=await r2.json();GH.sha[path]=d2.content.sha;return d2;}
+          var e2=await r2.json();throw new Error(e2.message||'HTTP '+r2.status);
+        }
+      }catch(retryErr){throw retryErr;}
     }
-    throw new Error(e.message||'HTTP '+r.status);
+    var e=await r.json();throw new Error(e.message||'HTTP '+r.status);
   }
   var d=await r.json();
   GH.sha[path]=d.content.sha;
