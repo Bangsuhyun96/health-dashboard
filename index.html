@@ -4160,8 +4160,8 @@ async function loadDB(){
   }
   try{
     var [exRes,foodRes]=await Promise.all([
-      fetch('https://raw.githubusercontent.com/'+GH.owner+'/'+GH.repo+'/main/data/db/exercises.json'),
-      fetch('https://raw.githubusercontent.com/'+GH.owner+'/'+GH.repo+'/main/data/db/foods.json')
+      fetch('https://raw.githubusercontent.com/'+GH.owner+'/'+GH.repo+'/data/db/exercises.json'),
+      fetch('https://raw.githubusercontent.com/'+GH.owner+'/'+GH.repo+'/data/db/foods.json')
     ]);
     if(exRes.ok)DB.exercises=await exRes.json();
     if(foodRes.ok)DB.foods=await foodRes.json();
