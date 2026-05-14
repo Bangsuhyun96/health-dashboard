@@ -647,7 +647,7 @@ body{font-family:-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;
 <!-- ==================== 메인 앱 ==================== -->
 <div id="app-screen">
 <div id="sync-bar"></div>
-<!-- 오늘의 배너 -->
+<!-- 오늘의 배너 (앱 푸시 예정 - 현재 비활성) -->
 <div id="today-banner" style="display:none;background:linear-gradient(135deg,#185fa5,#7b72e9);border-radius:14px;padding:14px 16px;margin:12px 12px 0;box-shadow:0 4px 15px rgba(24,95,165,.3)"></div>
 
 <!-- 종목 선택 모달 -->
@@ -972,7 +972,7 @@ body{font-family:-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;
   <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
     <div class="ctitle" style="margin-bottom:0;border-bottom:none;padding-bottom:0">웨이트 기록</div>
     <div style="display:flex;gap:5px">
-      <button onclick="openExercisePicker(null);exPickCallback='new'" style="font-family:inherit;font-size:11px;font-weight:700;padding:5px 10px;border:1.5px solid #1d9e75;border-radius:8px;background:#e6fdf2;color:#0a5c46;cursor:pointer">DB에서 선택</button>
+      <button onclick="addExerciseBlockFromDB()" style="font-family:inherit;font-size:11px;font-weight:700;padding:5px 10px;border:1.5px solid #1d9e75;border-radius:8px;background:#e6fdf2;color:#0a5c46;cursor:pointer">DB에서 선택</button>
       <button onclick="addExerciseBlock()" style="font-family:inherit;font-size:11px;font-weight:700;padding:5px 10px;border:1.5px solid #185fa5;border-radius:8px;background:#dceefb;color:#185fa5;cursor:pointer">직접 입력</button>
     </div>
   </div>
@@ -3039,12 +3039,32 @@ function updateAnkleColor(){
 
 /* ─ 영양소 분석 (로컬 DB + AI) ─ */
 function parseFoodText(text){
-  /* 텍스트에서 DB 매칭 */
   if(!text)return null;
   var t=text.trim().toLowerCase();
-  /* 직접 매칭 */
+
+  /* 1순위: DB.foods (foods.json) — name 완전 매칭 또는 포함 */
+  var foodList=DB.foods?.foods||[];
+  for(var f of foodList){
+    var fn=f.name.toLowerCase();
+    if(t===fn||t.includes(fn)||fn.includes(t)){
+      return{kcal:f.kcal,prot:f.prot,carb:f.carb,fat:f.fat,matched:f.name};
+    }
+  }
+  /* 첫 단어로 재시도 (예: "오렌지 1개" → "오렌지") */
+  var firstWord=t.split(/\s+/)[0];
+  if(firstWord.length>=2){
+    for(var f of foodList){
+      var fn=f.name.toLowerCase();
+      if(fn.includes(firstWord)||firstWord.includes(fn.split(/\s+/)[0])){
+        return{kcal:f.kcal,prot:f.prot,carb:f.carb,fat:f.fat,matched:f.name};
+      }
+    }
+  }
+
+  /* 2순위: MENU_DB (구 내장 DB) */
   for(var key of Object.keys(MENU_DB)){
-    if(t.includes(key.toLowerCase())||key.toLowerCase().includes(t.split(' ')[0])){
+    var kl=key.toLowerCase();
+    if(t.includes(kl)||kl.includes(firstWord)){
       return{...MENU_DB[key],matched:key};
     }
   }
@@ -4174,6 +4194,18 @@ function deleteFoodDBItem(id){
 
 /* ─ 종목 선택 피커 ─ */
 var exPickCallback=null;
+function addExerciseBlockFromDB(){
+  /* 새 빈 블록 먼저 추가 후 피커 열기 */
+  syncBlockData();
+  var id='ex_'+Date.now();
+  exerciseBlocks.push({id,name:'',sets:[{kg:'',reps:''}]});
+  exPickCallback=id;
+  var m=document.getElementById('ex-picker-modal');if(!m)return;
+  m.style.display='block';
+  var tabs=m.querySelector('#exp-cat-tabs');
+  if(tabs)tabs.querySelectorAll('.filter-btn').forEach(b=>b.classList.toggle('on',b.textContent==='전체'));
+  renderExPickerList('전체');
+}
 function openExercisePicker(blockId){
   exPickCallback=blockId;
   var m=document.getElementById('ex-picker-modal');if(!m)return;
@@ -4191,15 +4223,24 @@ function renderExPickerList(cat){
     <div style="font-size:10px;color:#888">${ex.defaultSets}×${ex.defaultReps}${ex.tips?' · '+ex.tips:''}</div></div>`).join('');
 }
 function selectExerciseFromPicker(exId){
-  var ex=getExerciseById(exId);if(!ex||exPickCallback===null)return;
+  var ex=getExerciseById(exId);if(!ex)return;
   syncBlockData();
-  var b=exerciseBlocks.find(b=>b.id===exPickCallback);
-  if(b){
-    b.name=ex.name;b.exId=ex.id;
-    if(b.sets.length===1&&!b.sets[0].kg&&!b.sets[0].reps){b.sets=[];for(var i=0;i<(ex.defaultSets||3);i++)b.sets.push({kg:'',reps:ex.defaultReps||'10'});}
+  var b=exPickCallback?exerciseBlocks.find(b=>b.id===exPickCallback):null;
+  if(!b){
+    /* 매칭 블록 없으면 새 블록 생성 */
+    var id='ex_'+Date.now();
+    b={id,name:'',sets:[{kg:'',reps:''}]};
+    exerciseBlocks.push(b);
+  }
+  b.name=ex.name;b.exId=ex.id;
+  /* 세트가 1개이고 비어있으면 defaultSets/Reps 자동 채우기 */
+  if(b.sets.length===1&&!b.sets[0].kg&&!b.sets[0].reps){
+    b.sets=[];
+    for(var i=0;i<(ex.defaultSets||3);i++)b.sets.push({kg:'',reps:String(ex.defaultReps||'10')});
   }
   document.getElementById('ex-picker-modal').style.display='none';
-  exPickCallback=null;renderExerciseBlocks();
+  exPickCallback=null;
+  renderExerciseBlocks();
 }
 function closeExPickerModal(){document.getElementById('ex-picker-modal').style.display='none';exPickCallback=null;}
 
@@ -4242,7 +4283,7 @@ function showTodayBanner(){
   var msg=MOTIVATIONAL[seed%MOTIVATIONAL.length];
   var rText=todayR?`<div style="font-size:12px;font-weight:700;color:#fff;margin-bottom:2px">💪 오늘 — ${todayKor}요일 · ${todayR.type||''} (${todayR.focus||''})</div><div style="font-size:11px;color:rgba(255,255,255,.8)">${(todayR.detail||'').split(' · ').slice(0,3).join(' · ')}</div>`:'<div style="font-size:11px;color:rgba(255,255,255,.8)">루틴 정보가 없어요</div>';
   el.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px"><div style="flex:1">${rText}<div style="font-size:10px;color:rgba(255,255,255,.6);margin-top:6px;font-style:italic">"${msg}"</div></div><button onclick="startTodayWorkout()" style="font-family:inherit;font-size:11px;font-weight:700;padding:7px 12px;border:none;border-radius:9px;background:rgba(255,255,255,.2);color:#fff;cursor:pointer;flex-shrink:0;white-space:nowrap">기록 시작 →</button></div>`;
-  el.style.display='block';
+  /* 배너는 앱 푸시 예정이라 표시 안 함 — el.style.display='block'; */
   if(APP.apiKey){setTimeout(async()=>{try{var r=await callClaude(APP.apiKey,`${p.name||''}님, ${todayKor}요일${todayR?' '+todayR.type:''}. 기분 좋은 아침 멘트 한 문장만. (20자 내외, 존댓말, 이모지 1개)`);var m=el.querySelector('[style*="italic"]');if(m&&r)m.innerHTML='"'+r.replace(/"/g,'').trim()+'"';}catch(e){}},500);}
 }
 function startTodayWorkout(){
