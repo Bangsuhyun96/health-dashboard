@@ -1403,28 +1403,45 @@ async function ghGet(path){
   return JSON.parse(decodeURIComponent(escape(atob(d.content.replace(/\n/g,'')))));
 }
 
+/* SHA 조회 (파일 존재 여부 확인 겸용) */
+async function ghGetSha(path){
+  try{
+    var r=await fetch(ghBase()+'contents/'+path+'?ref='+(GH.branch||'main'),
+      {headers:{'Authorization':'token '+GH.token,'Accept':'application/vnd.github.v3+json'}});
+    if(!r.ok)return null; /* 404 = 파일 없음 */
+    var d=await r.json();
+    GH.sha[path]=d.sha;
+    return d.sha;
+  }catch(e){return null;}
+}
+
 async function ghPut(path,json){
   var content=btoa(unescape(encodeURIComponent(JSON.stringify(json,null,2))));
+
+  /* SHA 모르면 GitHub에서 먼저 조회 */
+  if(!GH.sha[path]){
+    await ghGetSha(path); /* 파일 없으면 null 반환 — SHA 없이 신규 생성 */
+  }
+
   var body={message:'health update '+new Date().toLocaleString('ko'),content,branch:GH.branch||'main'};
   if(GH.sha[path])body.sha=GH.sha[path];
+
   var r=await fetch(ghBase()+'contents/'+path,{method:'PUT',headers:ghHead(GH.token),body:JSON.stringify(body)});
+
   if(!r.ok){
-    /* 422 = SHA 불일치 → 현재 파일 SHA를 GitHub에서 직접 가져와서 재시도 */
     if(r.status===422){
-      try{
-        var cur=await fetch(ghBase()+'contents/'+path+'?ref='+(GH.branch||'main'),{headers:{'Authorization':'token '+GH.token,'Accept':'application/vnd.github.v3+json'}});
-        if(cur.ok){
-          var curData=await cur.json();
-          GH.sha[path]=curData.sha;
-          var body2={message:'health update '+new Date().toLocaleString('ko'),content,branch:GH.branch||'main',sha:curData.sha};
-          var r2=await fetch(ghBase()+'contents/'+path,{method:'PUT',headers:ghHead(GH.token),body:JSON.stringify(body2)});
-          if(r2.ok){var d2=await r2.json();GH.sha[path]=d2.content.sha;return d2;}
-          var e2=await r2.json();throw new Error(e2.message||'HTTP '+r2.status);
-        }
-      }catch(retryErr){throw retryErr;}
+      /* SHA 캐시가 stale할 수 있음 → 강제로 현재 SHA 재조회 후 1회 재시도 */
+      delete GH.sha[path];
+      var freshSha=await ghGetSha(path);
+      var body2={message:'health update '+new Date().toLocaleString('ko'),content,branch:GH.branch||'main'};
+      if(freshSha)body2.sha=freshSha;
+      var r2=await fetch(ghBase()+'contents/'+path,{method:'PUT',headers:ghHead(GH.token),body:JSON.stringify(body2)});
+      if(r2.ok){var d2=await r2.json();GH.sha[path]=d2.content.sha;return d2;}
+      var e2=await r2.json();throw new Error(e2.message||'PUT 재시도 실패 '+r2.status);
     }
     var e=await r.json();throw new Error(e.message||'HTTP '+r.status);
   }
+
   var d=await r.json();
   GH.sha[path]=d.content.sha;
   return d;
@@ -3818,29 +3835,55 @@ async function pullFromGitHub(force){
   }catch(e){showSyncBar('불러오기 실패: '+e.message,'#e57373');}
 }
 async function pushToGitHub(){
-  /* 수동 전송 — 기록내역 탭 상단 [전송] 버튼 */
   if(!GH.writeMode||!GH.token){showSyncBar('쓰기 모드가 필요합니다','#e57373');return;}
-  showSyncBar('GitHub에 저장 중...','#185fa5');
+  var uid=APP.user?.id;if(!uid)return;
+  var ps=document.getElementById('push-status');
+  var res=document.getElementById('sync-action-result');
+  showSyncBar('GitHub에 전송 중...','#185fa5');
+  if(ps)ps.textContent='전송 중...';
+
+  var results=[];
+
+  /* ① 로그 — 월별 그룹핑 */
+  var logs=getStore('logs');
+  var byMonth={};
+  logs.forEach(l=>{
+    var m=l.date?.slice(0,7)||currentYM();
+    if(!byMonth[m])byMonth[m]=[];
+    byMonth[m].push(l);
+  });
+  for(var m in byMonth){
+    var path=uPath(uid,'logs',m);
+    try{
+      await ghPut(path,{logs:byMonth[m],month:m,updatedAt:new Date().toISOString()});
+      results.push('logs/'+m+' ✓');
+    }catch(e){results.push('logs/'+m+' ✗('+e.message+')');}
+  }
+
+  /* ② inbody */
   try{
-    var uid=APP.user?.id;if(!uid)return;
-    /* 로그를 월별로 그룹핑해서 각 파일에 저장 */
-    var logs=getStore('logs');
-    var byMonth={};
-    logs.forEach(l=>{
-      var m=l.date?.slice(0,7)||currentYM();
-      if(!byMonth[m])byMonth[m]=[];
-      byMonth[m].push(l);
-    });
-    for(var m in byMonth){
-      await ghPut(uPath(uid,'logs',m),{logs:byMonth[m],month:m,updatedAt:new Date().toISOString()});
-    }
-    /* inbody, lifts 저장 */
     await ghPut(uPath(uid,'inbody'),{inbody:getStore('inbody'),updatedAt:new Date().toISOString()});
+    results.push('inbody ✓');
+  }catch(e){results.push('inbody ✗('+e.message+')');}
+
+  /* ③ lifts */
+  try{
     await ghPut(uPath(uid,'lifts'),{lifts:getStore('lifts'),updatedAt:new Date().toISOString()});
+    results.push('lifts ✓');
+  }catch(e){results.push('lifts ✗('+e.message+')');}
+
+  var allOk=results.every(r=>r.includes('✓'));
+  var ts=new Date().toLocaleString('ko');
+  if(allOk){
     showSyncBar('✓ GitHub 전송 완료','#1d9e75');
-    var res=document.getElementById('sync-action-result');if(res)res.textContent='전송 완료 — '+new Date().toLocaleString('ko');
-    var ps=document.getElementById('push-status');if(ps)ps.textContent='마지막 전송: '+new Date().toLocaleString('ko');
-  }catch(e){showSyncBar('전송 실패: '+e.message,'#e57373');}
+    if(ps)ps.textContent='마지막 전송: '+ts;
+    if(res)res.textContent='전송 완료 — '+ts;
+  }else{
+    var failed=results.filter(r=>r.includes('✗'));
+    showSyncBar('일부 전송 실패: '+failed.join(', '),'#ef9f27');
+    if(ps)ps.textContent='전송 부분 실패 — '+ts;
+    if(res)res.textContent=results.join(' | ');
+  }
 }
 function prevYM(){
   var d=new Date();d.setMonth(d.getMonth()-1);
