@@ -1275,7 +1275,8 @@ body.app-ready #theme-toggle{display:flex;}
     <div><div style="font-size:10px;color:#555;margin-bottom:4px">인바디 점수</div><input type="number" id="ib-score" placeholder="81" style="font-family:inherit;font-size:11px;padding:6px 8px;border:1.5px solid #ddd;border-radius:8px;width:100%;background:#fff;color:#1a1a1a;outline:none"></div>
     <div><div style="font-size:10px;color:#555;margin-bottom:4px">기초대사량 (kcal)</div><input type="number" id="ib-bmr" placeholder="1534" style="font-family:inherit;font-size:11px;padding:6px 8px;border:1.5px solid #ddd;border-radius:8px;width:100%;background:#fff;color:#1a1a1a;outline:none"></div>
   </div>
-  <button onclick="saveInbody()" style="font-family:inherit;font-size:13px;font-weight:700;padding:10px;border:none;border-radius:10px;background:#1d9e75;color:#fff;cursor:pointer;width:100%;margin-bottom:10px">인바디 기록 추가</button>
+  <button onclick="saveInbody()" style="font-family:inherit;font-size:13px;font-weight:700;padding:10px;border:none;border-radius:10px;background:#1d9e75;color:#fff;cursor:pointer;width:100%;margin-bottom:8px">인바디 기록 추가</button>
+  <button onclick="pushInbodyLifts()" style="font-family:inherit;font-size:12px;font-weight:600;padding:8px;border:1.5px solid #1d9e75;border-radius:10px;background:#e6fdf2;color:#0a5c46;cursor:pointer;width:100%;margin-bottom:10px">☁️ GitHub에 저장 (인바디 + 중량)</button>
   <div id="ib-save-msg" style="text-align:center;font-size:11px;margin-bottom:10px;color:#0a5c46;display:none">저장됐어요!</div>
   <div id="inbody-history"></div>
 </div>
@@ -1303,7 +1304,8 @@ body.app-ready #theme-toggle{display:flex;}
     <div style="flex:1"><div style="font-size:10px;color:#555;margin-bottom:3px">컨디션</div><select id="lift-feel" style="font-family:inherit;font-size:11px;padding:7px 4px;border:1.5px solid #ddd;border-radius:8px;width:100%;background:#fff;color:#1a1a1a;outline:none"><option>😄 쉬움</option><option selected>😐 적당</option><option>😤 힘듦</option><option>😵 한계</option></select></div>
   </div>
   <textarea id="lift-memo" placeholder="특이사항..." style="font-family:inherit;font-size:11px;width:100%;padding:7px 10px;border:1.5px solid #ddd;border-radius:8px;background:#fff;color:#1a1a1a;resize:none;height:48px;outline:none;margin-bottom:10px"></textarea>
-  <button onclick="saveLift()" style="font-family:inherit;font-size:13px;font-weight:700;padding:10px;border:none;border-radius:10px;background:#185fa5;color:#fff;cursor:pointer;width:100%;margin-bottom:10px">중량 기록 추가</button>
+  <button onclick="saveLift()" style="font-family:inherit;font-size:13px;font-weight:700;padding:10px;border:none;border-radius:10px;background:#185fa5;color:#fff;cursor:pointer;width:100%;margin-bottom:8px">중량 기록 추가</button>
+  <button onclick="pushInbodyLifts()" style="font-family:inherit;font-size:12px;font-weight:600;padding:8px;border:1.5px solid #185fa5;border-radius:10px;background:#dceefb;color:#185fa5;cursor:pointer;width:100%;margin-bottom:10px">☁️ GitHub에 저장 (인바디 + 중량)</button>
   <div id="lift-save-msg" style="text-align:center;font-size:11px;margin-bottom:10px;color:#0a5c46;display:none">저장됐어요!</div>
   <input type="text" id="lift-filter-search" placeholder="종목 검색..." oninput="renderLiftHistory()" style="font-family:inherit;font-size:11px;padding:6px 10px;border:1.5px solid #ddd;border-radius:8px;width:100%;background:#fff;color:#1a1a1a;outline:none;margin-bottom:10px">
   <div id="lift-history"></div>
@@ -4292,6 +4294,30 @@ async function pullFromGitHub(force){
   }catch(e){
     if(force)showSyncBar('불러오기 실패: '+e.message,'#e57373');
     else console.warn('백그라운드 pull 실패',e);
+  }
+}
+/* 인바디 + 중량 전용 GitHub 전송 */
+async function pushInbodyLifts(){
+  if(!GH.writeMode||!GH.token){
+    showSyncBar('쓰기 모드가 필요합니다 — ⚙️ 설정에서 토큰을 입력하세요','#e57373');
+    return;
+  }
+  var uid=APP.user?.id;if(!uid)return;
+  showSyncBar('인바디 · 중량 전송 중...','#185fa5');
+  var results=[];
+  try{
+    await ghPut(uPath(uid,'inbody'),{inbody:getStore('inbody'),updatedAt:new Date().toISOString()});
+    results.push('인바디 ✓');
+  }catch(e){results.push('인바디 ✗('+e.message+')');}
+  try{
+    await ghPut(uPath(uid,'lifts'),{lifts:getStore('lifts'),updatedAt:new Date().toISOString()});
+    results.push('중량 ✓');
+  }catch(e){results.push('중량 ✗('+e.message+')');}
+  var allOk=results.every(r=>r.includes('✓'));
+  if(allOk){
+    showSyncBar('☁️ '+results.join(' · ')+' — GitHub 저장 완료','#1d9e75');
+  }else{
+    showSyncBar('일부 실패: '+results.join(' · '),'#ef9f27');
   }
 }
 async function pushToGitHub(){
