@@ -875,8 +875,8 @@ body.app-ready #theme-toggle{display:flex;}
 
 <!-- 중분류 탭 -->
 <div class="sub-tabs" id="sub-today">
-  <button class="sub-tab on-today" onclick="setPage('l-daily',this,'today')">기록하기</button>
-  <button class="sub-tab" onclick="setPage('l-hist',this,'today')">기록내역</button>
+  <button class="sub-tab on-today" onclick="setPage('l-hist',this,'today')">기록내역</button>
+  <button class="sub-tab" onclick="setPage('l-daily',this,'today')">기록하기</button>
   <button class="sub-tab" onclick="setPage('e-wk',this,'today')">오늘루틴</button>
 </div>
 <div class="sub-tabs" id="sub-train" style="display:none">
@@ -1056,7 +1056,7 @@ body.app-ready #theme-toggle{display:flex;}
 
 <!-- ======== 기록 탭들 ======== -->
 <!-- 일일기록 -->
-<div id="l-daily" class="page on">
+<div id="l-daily" class="page">
 <div id="daily-record-banner" style="display:none;padding:10px 14px;border-radius:10px;margin-bottom:10px;"></div>
 
 <!-- ① 날짜 + 초기화 -->
@@ -1196,7 +1196,7 @@ body.app-ready #theme-toggle{display:flex;}
 </div>
 
 <!-- 기록 내역 -->
-<div id="l-hist" class="page">
+<div id="l-hist" class="page on">
 <div class="card">
   <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
     <div class="ctitle" style="margin-bottom:0;border-bottom:none;padding-bottom:0">기록 내역</div>
@@ -1227,13 +1227,29 @@ body.app-ready #theme-toggle{display:flex;}
   </div>
 
   <!-- 월간 네비 -->
-  <div id="lv-month-nav" style="display:none;align-items:center;gap:6px;margin-bottom:8px">
+  <div id="lv-month-nav" style="display:none;align-items:center;gap:6px;margin-bottom:6px">
     <button onclick="logMonthNav(-1)"
       style="font-family:inherit;font-size:16px;width:36px;height:36px;border:1.5px solid #e0e0e0;border-radius:9px;background:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;color:#555">‹</button>
     <span id="lv-month-label" style="font-size:12px;font-weight:700;color:#1a1a1a;flex:1;text-align:center"></span>
     <button onclick="logMonthNav(1)"
       style="font-family:inherit;font-size:16px;width:36px;height:36px;border:1.5px solid #e0e0e0;border-radius:9px;background:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;color:#555">›</button>
   </div>
+  <!-- 월간 캘린더 그리드 -->
+  <div id="lv-cal-wrap" style="display:none;margin-bottom:8px">
+    <div class="cal-grid" id="lv-cal-labels">
+      <div class="cal-day-label">일</div><div class="cal-day-label">월</div><div class="cal-day-label">화</div>
+      <div class="cal-day-label">수</div><div class="cal-day-label">목</div><div class="cal-day-label">금</div><div class="cal-day-label">토</div>
+    </div>
+    <div class="cal-grid" id="lv-cal-grid"></div>
+    <div class="cal-legend">
+      <div class="cal-legend-item"><div class="cal-legend-dot" style="background:#5dcaa5"></div>기록 있음</div>
+      <div class="cal-legend-item"><div class="cal-legend-dot" style="background:#185fa5"></div>웨이트</div>
+      <div class="cal-legend-item"><div class="cal-legend-dot" style="background:#1d9e75"></div>클라이밍</div>
+      <div class="cal-legend-item"><div class="cal-legend-dot" style="background:#ef9f27"></div>바이크</div>
+    </div>
+  </div>
+  <!-- 선택 날짜 상세 (캘린더 클릭 시) -->
+  <div id="lv-cal-detail" style="display:none;margin-bottom:8px"></div>
 
   <!-- 날짜 검색 -->
   <div id="lv-search-nav" style="display:none;gap:6px;margin-bottom:8px">
@@ -1632,7 +1648,7 @@ function showScreen(n){
   document.getElementById('onboarding-screen').style.display=n==='onboarding'?'block':'none';
   document.getElementById('app-screen').style.display=n==='app'?'block':'none';
   /* 앱 화면 진입 시 theme-toggle 표시 */
-  if(n==='app')document.body.classList.add('app-ready');
+  if(n==='app')document.body.classList.add('app-ready light-mode');
   else document.body.classList.remove('app-ready');
 }
 
@@ -3679,10 +3695,10 @@ function renderLogHistory(){
     var wRange=document.getElementById('lv-week-range');if(wRange)wRange.textContent=ws+' ~ '+we;
   }else if(logView.mode==='month'){
     var y=logView.monthYear, m=logView.monthMonth;
-    var ms=`${y}-${String(m+1).padStart(2,'0')}-01`;
-    var me=`${y}-${String(m+1).padStart(2,'0')}-${new Date(y,m+1,0).getDate()}`;
-    viewLogs=filtered.filter(l=>l.date>=ms&&l.date<=me);
-    viewTitle=`${y}년 ${m+1}월`;
+    var ml=document.getElementById('lv-month-label');
+    if(ml)ml.textContent=`${y}년 ${m+1}월`;
+    renderCalendar(y,m,filtered);
+    return; /* 캘린더는 별도 렌더 */
   }else if(logView.mode==='search'){
     if(logView.searchDate) viewLogs=filtered.filter(l=>l.date===logView.searchDate);
     else viewLogs=filtered.slice(0,30);
@@ -3737,6 +3753,102 @@ function renderLogHistory(){
   }).join('');
 }
 
+function renderCalendar(y,m,filtered){
+  var grid=document.getElementById('lv-cal-grid');
+  var wsEl=document.getElementById('weekly-stats');
+  var el=document.getElementById('log-hist-list');
+  var detailEl=document.getElementById('lv-cal-detail');
+  if(!grid)return;
+
+  var today=new Date().toISOString().slice(0,10);
+  var ms=`${y}-${String(m+1).padStart(2,'0')}-01`;
+  var daysInMonth=new Date(y,m+1,0).getDate();
+  var me=`${y}-${String(m+1).padStart(2,'0')}-${daysInMonth}`;
+  var monthLogs=filtered.filter(l=>l.date>=ms&&l.date<=me);
+
+  /* 월 통계 */
+  if(wsEl){
+    var wDays=monthLogs.filter(l=>l.exTypes?.includes('weight')).length;
+    var climbDays=monthLogs.filter(l=>l.exTypes?.includes('climbing')).length;
+    var avgSleep=monthLogs.length?Math.round(monthLogs.reduce((a,l)=>a+(l.sleep||7),0)/monthLogs.length*10)/10:0;
+    wsEl.innerHTML=`
+      <div style="font-size:10px;font-weight:700;color:#555;margin-bottom:6px">${y}년 ${m+1}월 통계</div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap">
+        <div class="sb" style="flex:1;min-width:70px"><div class="sv" style="color:#185fa5;font-size:16px">${wDays}일</div><div class="sl">웨이트</div></div>
+        <div class="sb" style="flex:1;min-width:70px"><div class="sv" style="color:#1d9e75;font-size:16px">${climbDays}회</div><div class="sl">클라이밍</div></div>
+        <div class="sb" style="flex:1;min-width:70px"><div class="sv" style="color:#7b72e9;font-size:16px">${avgSleep}h</div><div class="sl">평균 수면</div></div>
+        <div class="sb" style="flex:1;min-width:70px"><div class="sv" style="color:#ef9f27;font-size:16px">${monthLogs.length}일</div><div class="sl">총 기록</div></div>
+      </div>`;
+  }
+
+  /* 달력 그리드 */
+  var logMap={};
+  monthLogs.forEach(l=>{logMap[l.date]=l;});
+
+  var firstDow=new Date(y,m,1).getDay(); /* 0=일 */
+  var cells='';
+
+  /* 빈 칸 */
+  for(var i=0;i<firstDow;i++){
+    cells+=`<div class="cal-cell empty"></div>`;
+  }
+
+  var typeColor={weight:'#185fa5',climbing:'#1d9e75',bike:'#ef9f27',rest:'#aaa',rehab:'#7b72e9'};
+
+  for(var d=1;d<=daysInMonth;d++){
+    var dateStr=`${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    var log=logMap[dateStr];
+    var isToday=dateStr===today;
+    var isFuture=dateStr>today;
+    var cls='cal-cell';
+    if(isFuture)cls+=' future';
+    else if(log)cls+=' has-log';
+    else cls+=' no-log';
+    if(isToday)cls+=' today';
+
+    var dots='';
+    if(log&&log.exTypes?.length){
+      dots='<div class="cal-dot">'+log.exTypes.slice(0,3).map(t=>`<div class="cal-dot-item" style="background:${typeColor[t]||'#aaa'}"></div>`).join('')+'</div>';
+    }
+    var click=log?`onclick="showCalDetail('${dateStr}')"`:isFuture?'':'';
+    cells+=`<div class="${cls}" ${click}><span>${d}</span>${dots}</div>`;
+  }
+
+  grid.innerHTML=cells;
+  if(el)el.innerHTML='';
+  if(detailEl)detailEl.style.display='none';
+}
+
+function showCalDetail(date){
+  var log=getStore('logs').find(l=>l.date===date);
+  var detailEl=document.getElementById('lv-cal-detail');
+  if(!detailEl)return;
+  if(!log){detailEl.style.display='none';return;}
+
+  var tags=(log.exTypes||[]).map(t=>({weight:'웨이트',climbing:'클라이밍',bike:'바이크',rehab:'재활',rest:'휴식'}[t]||t))
+    .map(t=>`<span class="log-tag" style="background:#f0f4ff;color:#185fa5;border-color:#b0bfee">${t}</span>`).join('');
+  var exStr=log.exercises?.filter(e=>e.name).map(e=>`${e.name}${e.sets?.length?' '+e.sets.length+'세트':''}`).join(' · ')||'';
+  var foodStr=log.foods?.length?(log.foods.slice(0,3).join(', ')+(log.foods.length>3?' 외 '+(log.foods.length-3)+'개':'')):'' ;
+  var nutStr=log.nutrition?`<span class="log-nut-item">🍽 ${log.nutrition.kcal}kcal · 단백질 ${log.nutrition.prot}g</span>`:'';
+  var ankleColor=(log.ankle||0)===0?'#1d9e75':(log.ankle||0)<=3?'#ef9f27':'#e57373';
+
+  detailEl.style.display='block';
+  detailEl.innerHTML=`<div class="log-card" onclick="loadLogToDaily('${date}')" style="cursor:pointer;border:2px solid #f5c518">
+    <div class="log-card-head">
+      <span class="log-date-lbl">📅 ${date}</span>
+      <div style="display:flex;gap:6px;align-items:center">
+        <span style="font-size:10px;color:#a0a0a0">↗ 상세보기</span>
+        <button class="log-del" onclick="event.stopPropagation();deleteLog('${date}');showCalDetail('${date}')">삭제</button>
+      </div>
+    </div>
+    <div class="log-tags">${tags}</div>
+    ${exStr?`<div style="font-size:10px;color:#185fa5;margin-bottom:3px">🏋️ ${exStr}</div>`:''}
+    ${foodStr?`<div style="font-size:10px;color:#555;margin-bottom:3px">🥗 ${foodStr}</div>`:''}
+    <div class="log-nut">${nutStr}<span class="log-nut-item">💤 ${log.sleep||7}h</span><span class="log-nut-item" style="color:${ankleColor}">🦶 ${log.ankle||0}/10</span><span class="log-nut-item">💧 ${((log.water||1800)/1000).toFixed(1)}L</span></div>
+    ${log.memo?`<div style="font-size:10px;color:#888;margin-top:3px">${log.memo}</div>`:''}
+  </div>`;
+}
+
 function switchLogView(mode){
   logView.mode=mode;
   if(mode==='week')logView.weekOffset=0;
@@ -3746,10 +3858,16 @@ function switchLogView(mode){
     if(btn)btn.classList.toggle('on',m===mode);
   });
   /* 네비 표시 */
-  var wNav=document.getElementById('lv-week-nav');var mNav=document.getElementById('lv-month-nav');var sNav=document.getElementById('lv-search-nav');
+  var wNav=document.getElementById('lv-week-nav');
+  var mNav=document.getElementById('lv-month-nav');
+  var sNav=document.getElementById('lv-search-nav');
+  var calWrap=document.getElementById('lv-cal-wrap');
+  var detailEl=document.getElementById('lv-cal-detail');
   if(wNav)wNav.style.display=mode==='week'?'flex':'none';
   if(mNav)mNav.style.display=mode==='month'?'flex':'none';
   if(sNav)sNav.style.display=mode==='search'?'flex':'none';
+  if(calWrap)calWrap.style.display=mode==='month'?'block':'none';
+  if(detailEl&&mode!=='month')detailEl.style.display='none';
   renderLogHistory();
 }
 function logWeekNav(dir){logView.weekOffset+=dir;renderLogHistory();}
@@ -4426,7 +4544,7 @@ function setCat(cat,btn){
   /* 모든 페이지 숨기기 */
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('on'));
   /* 첫 페이지 보이기 */
-  var firstPages={today:'l-daily',train:'l-exdb',stat:'e-tr',diet:'d-tl',ex:'e-wk',rehab:'r-dx',log:'l-daily'};
+  var firstPages={today:'l-hist',train:'l-exdb',stat:'e-tr',diet:'d-tl',ex:'e-wk',rehab:'r-dx',log:'l-hist'};
   var fp=document.getElementById(firstPages[cat]);if(fp)fp.classList.add('on');
   /* 첫 중분류 버튼 활성화 */
   var subBtns=document.querySelectorAll('#sub-'+cat+' .sub-tab');
@@ -4437,7 +4555,24 @@ function setCat(cat,btn){
   if(cat==='train'){renderExDBList();renderInbodyHistory();renderLiftHistory();}
   if(cat==='stat'){var p=APP.profile||{};renderTrend(p);renderCurrentState(p);}
 }
-/* ─── 탭 사용 추적 (T-1~T-3) ─── */
+/* ─── 월간 캘린더 ─── */
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;margin-top:6px;}
+.cal-day-label{font-size:9px;font-weight:700;text-align:center;padding:4px 0;color:#888;}
+.cal-day-label:first-child{color:#e57373;}
+.cal-day-label:last-child{color:#185fa5;}
+.cal-cell{aspect-ratio:1;border-radius:8px;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:11px;font-weight:600;cursor:pointer;position:relative;transition:all .15s;border:1.5px solid transparent;min-height:38px;}
+.cal-cell.empty{cursor:default;}
+.cal-cell.has-log{background:#e6fdf2;border-color:#5dcaa5;color:#0a5c46;}
+.cal-cell.has-log:active{transform:scale(0.95);}
+.cal-cell.today{border-color:#f5c518 !important;box-shadow:0 0 0 2px rgba(245,197,24,0.25);}
+.cal-cell.no-log{background:#f5f5f5;color:#bbb;}
+.cal-cell.future{background:transparent;color:#ddd;cursor:default;}
+.cal-dot{display:flex;gap:2px;margin-top:2px;flex-wrap:wrap;justify-content:center;max-width:28px;}
+.cal-dot-item{width:4px;height:4px;border-radius:50%;}
+.cal-legend{display:flex;gap:10px;font-size:10px;color:#888;margin-top:8px;flex-wrap:wrap;}
+.cal-legend-item{display:flex;align-items:center;gap:3px;}
+.cal-legend-dot{width:8px;height:8px;border-radius:50%;}
+
 function trackTab(tabId){
   var log=lGet('v5_tab_log')||[];
   log.push({tab:tabId,ts:Date.now(),hour:new Date().getHours()});
@@ -5012,7 +5147,7 @@ function toggleAiType(btn){
 }
 function startTodayWorkout(){
   var btn=document.querySelector('.cat-tab-today');if(btn)setCat('today',btn);
-  var dt=document.querySelector('#sub-today .sub-tab');if(dt){setPage('l-daily',dt,'today');}
+  var dt=document.querySelector('#sub-today .sub-tab');if(dt){setPage('l-hist',dt,'today');}
   document.getElementById('l-daily')?.scrollIntoView({behavior:'smooth',block:'start'});
   loadTodayRoutineToBlocks();
 }
