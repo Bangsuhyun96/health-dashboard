@@ -370,6 +370,23 @@ body.app-ready #theme-toggle{display:flex;}
 .photo-drop{border:2px dashed #c4b5fd;border-radius:12px;padding:20px;text-align:center;cursor:pointer;transition:background .15s;margin-bottom:12px;}
 .photo-drop:hover{background:#f5f3ff;}
 .photo-drop input{display:none;}
+/* ─── 월간 캘린더 ─── */
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;margin-top:6px;}
+.cal-day-label{font-size:9px;font-weight:700;text-align:center;padding:4px 0;color:#888;}
+.cal-day-label:first-child{color:#e57373;}
+.cal-day-label:last-child{color:#185fa5;}
+.cal-cell{aspect-ratio:1;border-radius:8px;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:11px;font-weight:600;cursor:pointer;position:relative;transition:all .15s;border:1.5px solid transparent;min-height:38px;}
+.cal-cell.empty{cursor:default;}
+.cal-cell.has-log{background:#e6fdf2;border-color:#5dcaa5;color:#0a5c46;}
+.cal-cell.has-log:active{transform:scale(0.95);}
+.cal-cell.today{border-color:#f5c518 !important;box-shadow:0 0 0 2px rgba(245,197,24,0.25);}
+.cal-cell.no-log{background:#f5f5f5;color:#bbb;}
+.cal-cell.future{background:transparent;color:#ddd;cursor:default;}
+.cal-dot{display:flex;gap:2px;margin-top:2px;flex-wrap:wrap;justify-content:center;max-width:28px;}
+.cal-dot-item{width:4px;height:4px;border-radius:50%;}
+.cal-legend{display:flex;gap:10px;font-size:10px;color:#888;margin-top:8px;flex-wrap:wrap;}
+.cal-legend-item{display:flex;align-items:center;gap:3px;}
+.cal-legend-dot{width:8px;height:8px;border-radius:50%;}
 </style>
 <!-- 테마 토글 버튼 (항상 표시) -->
 <button id="theme-toggle" onclick="toggleTheme()" title="다크/라이트 모드 전환">🌙</button>
@@ -4555,24 +4572,6 @@ function setCat(cat,btn){
   if(cat==='train'){renderExDBList();renderInbodyHistory();renderLiftHistory();}
   if(cat==='stat'){var p=APP.profile||{};renderTrend(p);renderCurrentState(p);}
 }
-/* ─── 월간 캘린더 ─── */
-.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;margin-top:6px;}
-.cal-day-label{font-size:9px;font-weight:700;text-align:center;padding:4px 0;color:#888;}
-.cal-day-label:first-child{color:#e57373;}
-.cal-day-label:last-child{color:#185fa5;}
-.cal-cell{aspect-ratio:1;border-radius:8px;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:11px;font-weight:600;cursor:pointer;position:relative;transition:all .15s;border:1.5px solid transparent;min-height:38px;}
-.cal-cell.empty{cursor:default;}
-.cal-cell.has-log{background:#e6fdf2;border-color:#5dcaa5;color:#0a5c46;}
-.cal-cell.has-log:active{transform:scale(0.95);}
-.cal-cell.today{border-color:#f5c518 !important;box-shadow:0 0 0 2px rgba(245,197,24,0.25);}
-.cal-cell.no-log{background:#f5f5f5;color:#bbb;}
-.cal-cell.future{background:transparent;color:#ddd;cursor:default;}
-.cal-dot{display:flex;gap:2px;margin-top:2px;flex-wrap:wrap;justify-content:center;max-width:28px;}
-.cal-dot-item{width:4px;height:4px;border-radius:50%;}
-.cal-legend{display:flex;gap:10px;font-size:10px;color:#888;margin-top:8px;flex-wrap:wrap;}
-.cal-legend-item{display:flex;align-items:center;gap:3px;}
-.cal-legend-dot{width:8px;height:8px;border-radius:50%;}
-
 function trackTab(tabId){
   var log=lGet('v5_tab_log')||[];
   log.push({tab:tabId,ts:Date.now(),hour:new Date().getHours()});
