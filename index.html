@@ -4312,7 +4312,8 @@ function analyzeTabUsage(){
   return cnt;
 }
 function setPage(pageId,btn,cat){
-  trackTab(pageId); 모든 페이지 숨기기 */
+  trackTab(pageId);
+  /* 이 카테고리의 모든 페이지 숨기기 */
   var pagePfx={diet:'d-',ex:'e-',rehab:'r-',log:'l-'};
   var pfx=pagePfx[cat];
   document.querySelectorAll('.page').forEach(p=>{if(p.id.startsWith(pfx))p.classList.remove('on');});
