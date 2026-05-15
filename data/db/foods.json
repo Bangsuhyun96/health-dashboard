@@ -54,7 +54,8 @@
     {"id":"samgyup","name":"삼겹살 200g","category":"치팅","kcal":700,"prot":20,"carb":0,"fat":60,"unit":"200g","verified":false},
     {"id":"lunch_out","name":"외식 점심 (일반)","category":"치팅","kcal":750,"prot":28,"carb":95,"fat":18,"unit":"1끼","verified":false},
     {"id":"sodamchon_lunch_set","name":"소담촌 런치세트","category":"치팅","kcal":1120,"prot":46,"carb":122,"fat":48,"unit":"1세트","verified":false},
-    {"id":"mcd_double_quarter_pounder_large_zero","name":"맥도날드 더블쿼터파운더치즈 라지세트 (제로콜라)","category":"치팅","kcal":1290,"prot":58,"carb":115,"fat":67,"unit":"1세트","verified":true},
-    {"id": "Yominam_bacon_cream_pasta_extra","name": "베이컨 크림 파스타(곱)","category": "치팅","kcal": 1300,"prot": 32,"carb": 125,"fat": 72,"unit": "1인분","verified": false}
+    {"id":"mcd_double_quarter_pounder_large_zero","name":"맥도날드 더블쿼터파운더L-Set (제로)","category":"치팅","kcal":1290,"prot":58,"carb":115,"fat":67,"unit":"1세트","verified":true},
+    {"id":"Yominam_bacon_cream_pasta_extra","name": "베이컨 크림 파스타(곱)","category": "치팅","kcal": 1300,"prot": 32,"carb": 125,"fat": 72,"unit": "1인분","verified": false},
+    {"id":"mcd_quarter_set_zero_coleslaw","name": "맥도날드 쿼터파운더 세트 (제로 + 코울슬로)","category": "치팅","kcal": 1040,"prot": 39,"carb": 108,"fat": 49,"unit": "1세트","verified": false}
   ]
 }
