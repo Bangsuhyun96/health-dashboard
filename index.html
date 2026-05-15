@@ -3606,9 +3606,12 @@ function saveLog(){
   var supps=[];
   for(var i=0;i<5;i++){var cb=document.getElementById('sc-'+i);if(cb&&cb.checked)supps.push(cb.nextElementSibling?.textContent||'');}
   var nut=lastNutResult?{kcal:Math.round(lastNutResult.kcal||0),prot:Math.round(lastNutResult.prot||0),carb:Math.round(lastNutResult.carb||0),fat:Math.round(lastNutResult.fat||0)}:null;
+  /* 유산소 시간 저장 */
+  var climbingMin=parseFloat(document.getElementById('cardio-climbing')?.value)||null;
+  var bikeMin=parseFloat(document.getElementById('cardio-bike')?.value)||null;
   var logs=getStore('logs');
   logs=logs.filter(l=>l.date!==date);
-  logs.unshift({date,exTypes:[...selectedExTypes],exercises:exerciseBlocks.map(b=>({name:b.name,sets:b.sets.filter(s=>s.kg||s.reps)})),foods:foodEntries.map(f=>f.text).filter(Boolean),nutrition:nut,sleep,ankle,water,cond:selectedCond,supps,memo,savedAt:new Date().toISOString()});
+  logs.unshift({date,exTypes:[...selectedExTypes],exercises:exerciseBlocks.map(b=>({name:b.name,sets:b.sets.filter(s=>s.kg||s.reps)})),foods:foodEntries.map(f=>f.text).filter(Boolean),nutrition:nut,sleep,ankle,water,cond:selectedCond,supps,memo,climbingMin,bikeMin,savedAt:new Date().toISOString()});
   logs=logs.slice(0,90);
   setStore('logs',logs);
   /* L-3: 웨이트 블록 PR 자동 갱신 */
@@ -3769,11 +3772,18 @@ function deleteLog(date){
 function loadLogToDaily(date){
   var log=getStore('logs').find(l=>l.date===date);
   if(!log)return;
-  /* 일일기록 탭으로 이동 */
-  var tabs=document.querySelectorAll('#sub-today .sub-tab');
-  tabs.forEach(b=>b.classList.remove('on-log'));
-  if(tabs[0])tabs[0].classList.add('on-log');
-  document.querySelectorAll('[id^="l-"]').forEach(p=>p.classList.remove('on'));
+  /* ── 대분류 '오늘' 탭으로 전환 ── */
+  document.querySelectorAll('.cat-tab').forEach(b=>b.classList.remove('on'));
+  var todayTab=document.querySelector('.cat-tab-today');if(todayTab)todayTab.classList.add('on');
+  ['today','train','stat','diet','ex','rehab','log'].forEach(c=>{
+    var st=document.getElementById('sub-'+c);if(st)st.style.display=c==='today'?'flex':'none';
+  });
+  /* ── 중분류 '기록하기' 탭 활성화 ── */
+  var subBtns=document.querySelectorAll('#sub-today .sub-tab');
+  subBtns.forEach(b=>b.classList.remove('on-today','on-log','on-train','on-stat'));
+  if(subBtns[0])subBtns[0].classList.add('on-today');
+  /* ── 페이지 전환 ── */
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('on'));
   var dp=document.getElementById('l-daily');if(dp)dp.classList.add('on');
   /* 날짜 */
   var dateEl=document.getElementById('log-date');if(dateEl)dateEl.value=date;
@@ -3784,7 +3794,15 @@ function loadLogToDaily(date){
   var hasWeight=selectedExTypes.includes('weight');
   document.getElementById('cardio-time-wrap').style.display=hasCardio?'block':'none';
   document.getElementById('weight-log-wrap').style.display=hasWeight?'block':'none';
-  if(hasCardio)renderCardioInputs();
+  if(hasCardio){
+    renderCardioInputs();
+    /* Bug2: 클라이밍/바이크 시간 복원 */
+    setTimeout(()=>{
+      if(log.climbingMin){var ce=document.getElementById('cardio-climbing');if(ce)ce.value=log.climbingMin;}
+      if(log.bikeMin){var be=document.getElementById('cardio-bike');if(be)be.value=log.bikeMin;}
+      updateBurnCalc();
+    },50);
+  }
   /* 웨이트 블록 */
   exerciseBlocks=(log.exercises||[]).map((e,i)=>({id:'exl'+i,name:e.name||'',sets:(e.sets||[]).map(s=>({kg:s.kg||'',reps:s.reps||''}))}));
   if(!exerciseBlocks.length&&hasWeight)exerciseBlocks=[{id:'exl0',name:'',sets:[{kg:'',reps:''}]}];
@@ -3821,7 +3839,7 @@ function loadLogToDaily(date){
   if(ap){ap.value=log.ankle||0;if(av){av.textContent=(log.ankle||0)+' / 10';updateAnkleColor();}}
   /* 메모 */
   var memo=document.getElementById('log-memo');if(memo)memo.value=log.memo||'';
-  /* L-1: 수분 코멘트 갱신 */
+  /* 수분 코멘트 갱신 */
   updateWaterComment();
   /* 스크롤 */
   document.getElementById('l-daily')?.scrollIntoView({behavior:'smooth',block:'start'});
@@ -4390,7 +4408,7 @@ function setCat(cat,btn){
   if(subBtns[0])subBtns[0].classList.add('on-'+cat);
   /* 탭별 초기화 */
   if(cat==='today'){initLogTab();renderWeeklyRoutineTodayFirst();}
-  if(cat==='train'){renderExDBList();}
+  if(cat==='train'){renderExDBList();renderInbodyHistory();renderLiftHistory();}
   if(cat==='stat'){var p=APP.profile||{};renderTrend(p);renderCurrentState(p);}
 }
 /* ─── 탭 사용 추적 (T-1~T-3) ─── */
