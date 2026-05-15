@@ -2121,6 +2121,8 @@ function initApp(){
   loadDB().then(()=>{renderExDBList();renderFoodDBList();renderExerciseBlocks();});
   renderDiet();renderExercise();renderRehab();loadSyncConfig();
   showTodayBanner();
+  /* 기록 탭 초기화 — 기본 화면이 l-hist이므로 앱 진입 즉시 렌더 */
+  initLogTab();
 
   /* ── 자동 pull (접속 시 1시간 이상 지났으면 백그라운드 sync) ── */
   var uid=APP.user?.id;
