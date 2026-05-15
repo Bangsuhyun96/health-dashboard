@@ -62,13 +62,25 @@ body.light-mode{
   background:var(--bg-card);
   backdrop-filter:blur(10px);
   cursor:pointer;font-size:18px;
-  display:flex;align-items:center;justify-content:center;
+  display:none;align-items:center;justify-content:center;
   transition:all 0.3s;box-shadow:var(--shadow-card);
 }
 #theme-toggle:hover{border-color:var(--accent);transform:scale(1.1);}
+/* 앱 화면 진입 후에만 표시 */
+body.app-ready #theme-toggle{display:flex;}
 
 /* ─── 로그인 화면 ─── */
-#login-screen{min-height:100vh;background:var(--bg-primary);display:flex;flex-direction:column;align-items:center;justify-content:flex-start;padding:40px 20px 20px;transition:background 0.3s;}
+/* 로그인 화면 — 항상 다크 (라이트모드 무관) */
+#login-screen{min-height:100vh;background:#0a0a0f !important;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;padding:40px 20px 20px;}
+#login-screen .login-card{background:rgba(255,255,255,0.06) !important;border-color:rgba(255,255,255,0.12) !important;}
+#login-screen .login-input{background:rgba(255,255,255,0.08) !important;border-color:rgba(255,255,255,0.15) !important;color:#fff !important;}
+#login-screen .login-field label{color:#a0aec0 !important;}
+#login-screen .login-tab{color:#a0aec0 !important;}
+#login-screen .user-chip{background:rgba(255,255,255,0.05) !important;border-color:rgba(255,255,255,0.12) !important;}
+#login-screen .user-chip-name{color:#fff !important;}
+#login-screen .user-chip-id{color:#a0aec0 !important;}
+#login-screen .login-divider{color:#718096 !important;}
+#login-screen .login-logo-sub{color:#a0aec0 !important;}
 .login-screen-bg{
   position:fixed;top:0;left:0;right:0;bottom:0;pointer-events:none;overflow:hidden;z-index:0;
 }
@@ -254,6 +266,8 @@ body.light-mode{
 .cat-tabs{display:flex;gap:6px;margin-bottom:10px;}
 .cat-tab{flex:1;font-family:inherit;font-size:12px;font-weight:700;padding:9px 4px;border-radius:10px;border:1.5px solid #ccc;background:#fff;color:#555;cursor:pointer;-webkit-tap-highlight-color:transparent;-webkit-appearance:none;text-align:center;outline:none;}
 .cat-tab.on{color:#fff;border-color:transparent;}
+.cat-tab-today.on{background:#7b72e9;}.cat-tab-train.on{background:#185fa5;}.cat-tab-stat.on{background:#1d9e75;}
+/* 구형 호환 */
 .cat-tab-diet.on{background:#1d9e75;}.cat-tab-ex.on{background:#185fa5;}.cat-tab-rehab.on{background:#ef9f27;}.cat-tab-log.on{background:#7b72e9;}
 .sub-tabs{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:12px;}
 .sub-tab{font-family:inherit;font-size:11px;font-weight:500;padding:6px 11px;border-radius:16px;border:1.5px solid #ccc;background:#fff;color:#555;cursor:pointer;-webkit-tap-highlight-color:transparent;-webkit-appearance:none;white-space:nowrap;outline:none;}
@@ -261,6 +275,9 @@ body.light-mode{
 .sub-tab.on-ex{background:#dceefb;color:#185fa5;border-color:#378add;font-weight:700;}
 .sub-tab.on-rehab{background:#fdf0d8;color:#5c3400;border-color:#ef9f27;font-weight:700;}
 .sub-tab.on-log{background:#f3f0ff;color:#3c3489;border-color:#7b72e9;font-weight:700;}
+.sub-tab.on-today{background:#f3f0ff;color:#3c3489;border-color:#7b72e9;font-weight:700;}
+.sub-tab.on-train{background:#dceefb;color:#185fa5;border-color:#378add;font-weight:700;}
+.sub-tab.on-stat{background:#e6fdf2;color:#0a5c46;border-color:#1d9e75;font-weight:700;}
 .page{display:none;}.page.on{display:block;}
 
 /* 공통 카드/뱃지 */
@@ -851,52 +868,34 @@ body.light-mode{
 
 <!-- 대분류 탭 -->
 <div class="cat-tabs">
-  <button class="cat-tab cat-tab-diet on" onclick="setCat('diet',this)">🥗 식단</button>
-  <button class="cat-tab cat-tab-ex" onclick="setCat('ex',this)">💪 운동</button>
-  <button class="cat-tab cat-tab-rehab" onclick="setCat('rehab',this)">🦶 재활</button>
-  <button class="cat-tab cat-tab-log" onclick="setCat('log',this)">📋 기록</button>
+  <button class="cat-tab cat-tab-today on" onclick="setCat('today',this)">📋 오늘</button>
+  <button class="cat-tab cat-tab-train" onclick="setCat('train',this)">💪 운동</button>
+  <button class="cat-tab cat-tab-stat" onclick="setCat('stat',this)">📊 분석</button>
 </div>
 
 <!-- 중분류 탭 -->
-<div class="sub-tabs" id="sub-diet">
-  <button class="sub-tab on-diet" onclick="setPage('d-tl',this,'diet')">시간표</button>
-  <button class="sub-tab" onclick="setPage('d-nu',this,'diet')">영양소</button>
-  <button class="sub-tab" onclick="setPage('d-sp',this,'diet')">영양제</button>
-  <button class="sub-tab" onclick="setPage('d-wt',this,'diet')">수분</button>
-  <button class="sub-tab" onclick="setPage('d-pr',this,'diet')">가격</button>
-  <button class="sub-tab" onclick="setPage('d-gp',this,'diet')">결핍해결</button>
-  <button class="sub-tab" onclick="setPage('d-rs',this,'diet')">휴식일식단</button>
-  <button class="sub-tab" onclick="setPage('d-ai',this,'diet')" style="background:linear-gradient(135deg,#7b72e9,#a78bfa);color:#fff;border-color:transparent">🤖 AI추천</button>
+<div class="sub-tabs" id="sub-today">
+  <button class="sub-tab on-today" onclick="setPage('l-daily',this,'today')">기록하기</button>
+  <button class="sub-tab" onclick="setPage('l-hist',this,'today')">기록내역</button>
+  <button class="sub-tab" onclick="setPage('e-wk',this,'today')">오늘루틴</button>
 </div>
-<div class="sub-tabs" id="sub-ex" style="display:none">
-  <button class="sub-tab on-ex" onclick="setPage('e-wk',this,'ex')">주간루틴</button>
-  <button class="sub-tab" onclick="setPage('e-pr',this,'ex')">90일예측</button>
-  <button class="sub-tab" onclick="setPage('e-tr',this,'ex')">과거트렌드</button>
-  <button class="sub-tab" onclick="setPage('e-st',this,'ex')">현재상태</button>
-  <button class="sub-tab" onclick="setPage('e-up',this,'ex')">상체현황</button>
-  <button class="sub-tab" onclick="setPage('e-cl',this,'ex')">클라이밍</button>
-  <button class="sub-tab" onclick="setPage('e-str',this,'ex')">숨겨진강점</button>
-  <button class="sub-tab" onclick="setPage('e-ai',this,'ex')" style="background:linear-gradient(135deg,#7b72e9,#a78bfa);color:#fff;border-color:transparent">🤖 증량조언</button>
+<div class="sub-tabs" id="sub-train" style="display:none">
+  <button class="sub-tab on-train" onclick="setPage('l-exdb',this,'train')">🏋️ 운동DB</button>
+  <button class="sub-tab" onclick="setPage('l-fooddb',this,'train')">🥗 식단DB</button>
+  <button class="sub-tab" onclick="setPage('l-inbody',this,'train')">인바디</button>
+  <button class="sub-tab" onclick="setPage('l-lift',this,'train')">중량추적</button>
 </div>
-<div class="sub-tabs" id="sub-rehab" style="display:none">
-  <button class="sub-tab on-rehab" onclick="setPage('r-dx',this,'rehab')">진단분석</button>
-  <button class="sub-tab" onclick="setPage('r-rh',this,'rehab')">발목재활</button>
-  <button class="sub-tab" onclick="setPage('r-ex',this,'rehab')">하체복귀</button>
-  <button class="sub-tab" onclick="setPage('r-nt',this,'rehab')">회복영양</button>
-  <button class="sub-tab" onclick="setPage('r-wn',this,'rehab')">금지목록</button>
-</div>
-<div class="sub-tabs" id="sub-log" style="display:none">
-  <button class="sub-tab on-log" onclick="setPage('l-daily',this,'log')">일일기록</button>
-  <button class="sub-tab" onclick="setPage('l-hist',this,'log')">기록내역</button>
-  <button class="sub-tab" onclick="setPage('l-inbody',this,'log')">인바디추적</button>
-  <button class="sub-tab" onclick="setPage('l-lift',this,'log')">중량추적</button>
-  <button class="sub-tab" onclick="setPage('l-exdb',this,'log')">🏋️운동DB</button>
-  <button class="sub-tab" onclick="setPage('l-fooddb',this,'log')">🥗식단DB</button>
-  <button class="sub-tab" onclick="setPage('l-sync',this,'log')">동기화설정</button>
+<div class="sub-tabs" id="sub-stat" style="display:none">
+  <button class="sub-tab on-stat" onclick="setPage('e-tr',this,'stat')">트렌드</button>
+  <button class="sub-tab" onclick="setPage('e-st',this,'stat')">현재상태</button>
+  <button class="sub-tab" onclick="setPage('e-up',this,'stat')">중량현황</button>
+  <button class="sub-tab" onclick="setPage('d-tl',this,'stat')">식단플랜</button>
+  <button class="sub-tab" onclick="setPage('d-ai',this,'stat')" style="background:linear-gradient(135deg,#f5c518,#c9a000);color:#000;border-color:transparent;font-weight:700">🤖 AI</button>
+  <button class="sub-tab" onclick="setPage('l-sync',this,'stat')">⚙️ 설정</button>
 </div>
 
 <!-- ======== 식단 탭들 ======== -->
-<div id="d-tl" class="page on">
+<div id="d-tl" class="page">
   <div class="sg" id="diet-sg">
     <div class="sb"><div class="sv" style="color:#7b72e9" id="ds-kcal">2,680</div><div class="sl">운동일 kcal</div></div>
     <div class="sb"><div class="sv" style="color:#1d9e75" id="ds-prot">138g</div><div class="sl">단백질</div></div>
@@ -1057,7 +1056,7 @@ body.light-mode{
 
 <!-- ======== 기록 탭들 ======== -->
 <!-- 일일기록 -->
-<div id="l-daily" class="page">
+<div id="l-daily" class="page on">
 
 <!-- ① 날짜 + 초기화 -->
 <div class="card">
@@ -1629,6 +1628,9 @@ function showScreen(n){
   document.getElementById('setup-screen').style.display=n==='setup'?'block':'none';
   document.getElementById('onboarding-screen').style.display=n==='onboarding'?'block':'none';
   document.getElementById('app-screen').style.display=n==='app'?'block':'none';
+  /* 앱 화면 진입 시 theme-toggle 표시 */
+  if(n==='app')document.body.classList.add('app-ready');
+  else document.body.classList.remove('app-ready');
 }
 
 /* ─── 로그인 탭 전환 ─── */
@@ -2493,6 +2495,37 @@ function renderExercise(){
   renderStrengths(p);
 }
 
+/* ─── 주간루틴: 오늘 요일 최상단 표시 (금요일 버그 수정) ─── */
+function renderWeeklyRoutineTodayFirst(){
+  var el=document.getElementById('wk-c');if(!el)return;
+  var p=APP.profile||{};
+  /* renderDetailedRoutine 이 만드는 wk 배열을 재사용하기 위해 호출 후 재정렬 */
+  renderDetailedRoutine(el,p);
+
+  /* getDay(): 0=일,1=월,2=화,3=수,4=목,5=금,6=토 */
+  var dayMap={0:'일요일',1:'월요일',2:'화요일',3:'수요일',4:'목요일',5:'금요일',6:'토요일'};
+  var todayKor=dayMap[new Date().getDay()];
+
+  /* 렌더된 카드들 중 오늘 요일 카드를 찾아 최상단으로 이동 */
+  var cards=Array.from(el.querySelectorAll('.wk-card'));
+  var todayCard=cards.find(c=>{
+    var h=c.querySelector('.wk-day');
+    return h&&h.textContent.trim()===todayKor;
+  });
+  if(todayCard){
+    /* 오늘 카드 하이라이트 */
+    todayCard.style.border='2px solid #f5c518';
+    todayCard.style.boxShadow='0 0 0 3px rgba(245,197,24,0.2)';
+    /* 오늘 배지 삽입 */
+    var dayEl=todayCard.querySelector('.wk-day');
+    if(dayEl&&!dayEl.querySelector('.today-badge')){
+      dayEl.insertAdjacentHTML('beforeend','<span class="today-badge" style="margin-left:8px;font-size:10px;background:#f5c518;color:#000;padding:2px 7px;border-radius:8px;font-weight:700">오늘</span>');
+    }
+    /* 최상단으로 이동 */
+    el.insertBefore(todayCard,el.firstChild);
+  }
+}
+
 function renderWeeklyRoutine(plan,p){
   var el=document.getElementById('wk-c');if(!el)return;
   /* 항상 상세 루틴 렌더링 — 프로필 데이터 기반 */
@@ -2747,11 +2780,11 @@ function renderDetailedRoutine(el,p){
   </div>`;
 
   wk.forEach(w=>{
-    h+=`<div style="background:${w.color};border:1.5px solid ${w.bc};border-radius:12px;padding:14px;margin-bottom:12px">`;
+    h+=`<div class="wk-card" style="background:${w.color};border:1.5px solid ${w.bc};border-radius:12px;padding:14px;margin-bottom:12px">`;
     /* 헤더 */
     h+=`<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px;flex-wrap:wrap;gap:6px">
       <div>
-        <span style="font-size:15px;font-weight:800;color:${w.tc}">${w.day}</span>
+        <span class="wk-day" style="font-size:15px;font-weight:800;color:${w.tc}">${w.day}</span>
         <span style="font-size:11px;font-weight:700;margin-left:8px;padding:2px 9px;border-radius:10px;background:rgba(0,0,0,.06);color:${w.tc}">${w.type}</span>
       </div>
       <span style="font-size:10px;color:${w.tc};opacity:.7;font-weight:600">${w.tag}</span>
@@ -3712,7 +3745,7 @@ function loadLogToDaily(date){
   var log=getStore('logs').find(l=>l.date===date);
   if(!log)return;
   /* 일일기록 탭으로 이동 */
-  var tabs=document.querySelectorAll('#sub-log .sub-tab');
+  var tabs=document.querySelectorAll('#sub-today .sub-tab');
   tabs.forEach(b=>b.classList.remove('on-log'));
   if(tabs[0])tabs[0].classList.add('on-log');
   document.querySelectorAll('[id^="l-"]').forEach(p=>p.classList.remove('on'));
@@ -4267,24 +4300,26 @@ function showSyncBar(msg,color){
 
 /* ─── 탭 전환 ─── */
 function setCat(cat,btn){
-  /* 상위 탭 */
+  /* 대분류 버튼 */
   document.querySelectorAll('.cat-tab').forEach(b=>b.classList.remove('on'));
   btn.classList.add('on');
-  /* 중간 탭 */
-  ['diet','ex','rehab','log'].forEach(c=>{var st=document.getElementById('sub-'+c);if(st)st.style.display=c===cat?'flex':'none';});
-  /* 페이지들 숨기기 */
+  /* 중분류 탭 표시 전환 */
+  ['today','train','stat','diet','ex','rehab','log'].forEach(c=>{
+    var st=document.getElementById('sub-'+c);if(st)st.style.display=c===cat?'flex':'none';
+  });
+  /* 모든 페이지 숨기기 */
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('on'));
   /* 첫 페이지 보이기 */
-  var firstPages={diet:'d-tl',ex:'e-wk',rehab:'r-dx',log:'l-daily'};
+  var firstPages={today:'l-daily',train:'l-exdb',stat:'e-tr',diet:'d-tl',ex:'e-wk',rehab:'r-dx',log:'l-daily'};
   var fp=document.getElementById(firstPages[cat]);if(fp)fp.classList.add('on');
-  /* 각 탭별 처음 활성 버튼 */
-  var firstSub=document.querySelector('#sub-'+cat+' .sub-tab');
-  if(firstSub){
-    document.querySelectorAll('#sub-'+cat+' .sub-tab').forEach(b=>{b.classList.remove('on-diet','on-ex','on-rehab','on-log');});
-    firstSub.classList.add('on-'+cat);
-  }
-  /* 기록 탭 초기화 */
-  if(cat==='log'){initLogTab();}
+  /* 첫 중분류 버튼 활성화 */
+  var subBtns=document.querySelectorAll('#sub-'+cat+' .sub-tab');
+  subBtns.forEach(b=>b.classList.remove('on-today','on-train','on-stat','on-diet','on-ex','on-rehab','on-log'));
+  if(subBtns[0])subBtns[0].classList.add('on-'+cat);
+  /* 탭별 초기화 */
+  if(cat==='today'){initLogTab();renderWeeklyRoutineTodayFirst();}
+  if(cat==='train'){renderExDBList();}
+  if(cat==='stat'){var p=APP.profile||{};renderTrend(p);renderCurrentState(p);}
 }
 /* ─── 탭 사용 추적 (T-1~T-3) ─── */
 function trackTab(tabId){
@@ -4313,17 +4348,22 @@ function analyzeTabUsage(){
 }
 function setPage(pageId,btn,cat){
   trackTab(pageId);
-  /* 이 카테고리의 모든 페이지 숨기기 */
-  var pagePfx={diet:'d-',ex:'e-',rehab:'r-',log:'l-'};
-  var pfx=pagePfx[cat];
-  document.querySelectorAll('.page').forEach(p=>{if(p.id.startsWith(pfx))p.classList.remove('on');});
+  /* 모든 페이지 숨기기 (카테고리 무관하게 전체) */
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('on'));
   var page=document.getElementById(pageId);if(page)page.classList.add('on');
-  /* 탭 버튼 */
-  document.querySelectorAll('#sub-'+cat+' .sub-tab').forEach(b=>{b.classList.remove('on-diet','on-ex','on-rehab','on-log');});
+  /* 중분류 버튼 활성화 */
+  document.querySelectorAll('#sub-'+cat+' .sub-tab').forEach(b=>{
+    b.classList.remove('on-today','on-train','on-stat','on-diet','on-ex','on-rehab','on-log');
+  });
   btn.classList.add('on-'+cat);
   /* 탭별 렌더 연결 */
   if(pageId==='l-exdb')renderExDBList();
   if(pageId==='l-fooddb')renderFoodDBList();
+  if(pageId==='e-wk')renderWeeklyRoutineTodayFirst();
+  if(pageId==='e-tr'){var p=APP.profile||{};renderTrend(p);}
+  if(pageId==='e-st'){var p=APP.profile||{};renderCurrentState(p);}
+  if(pageId==='e-up'){var p=APP.profile||{};renderUpperBody(p);}
+  if(pageId==='l-daily'){initLogTab();}
 }
 function initLogTab(){
   setToday();initSuppChecks();ensureExDatalist();ensureFoodDatalist();
@@ -4828,8 +4868,8 @@ function toggleAiType(btn){
   var target=document.getElementById(map[val]);if(target)target.style.display='block';
 }
 function startTodayWorkout(){
-  var btn=document.querySelector('.cat-tab-log');if(btn)setCat('log',btn);
-  var dt=document.querySelector('#sub-log .sub-tab');if(dt)setPage('l-daily',dt,'log');
+  var btn=document.querySelector('.cat-tab-today');if(btn)setCat('today',btn);
+  var dt=document.querySelector('#sub-today .sub-tab');if(dt){setPage('l-daily',dt,'today');}
   document.getElementById('l-daily')?.scrollIntoView({behavior:'smooth',block:'start'});
   loadTodayRoutineToBlocks();
 }
