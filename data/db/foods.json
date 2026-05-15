@@ -55,5 +55,6 @@
     {"id":"lunch_out","name":"외식 점심 (일반)","category":"치팅","kcal":750,"prot":28,"carb":95,"fat":18,"unit":"1끼","verified":false},
     {"id":"sodamchon_lunch_set","name":"소담촌 런치세트","category":"치팅","kcal":1120,"prot":46,"carb":122,"fat":48,"unit":"1세트","verified":false},
     {"id":"mcd_double_quarter_pounder_large_zero","name":"맥도날드 더블쿼터파운더치즈 라지세트 (제로콜라)","category":"치팅","kcal":1290,"prot":58,"carb":115,"fat":67,"unit":"1세트","verified":true}
+    {"id": "Yominam_bacon_cream_pasta_extra","name": "베이컨 크림 파스타(곱)","category": "치팅","kcal": 1300,"prot": 32,"carb": 125,"fat": 72,"unit": "1인분","verified": false}
   ]
 }
