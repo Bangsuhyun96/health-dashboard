@@ -22,6 +22,9 @@ body:not(.light-mode) #app-screen .wrap{background:#0e0e14;}
 /* ─── 로그인 화면 ─── */
 /* ─── 다크/라이트 모드 CSS 변수 ─── */
 :root{
+  --surface:#ffffff;
+  --surface-2:#f5f5f7;
+  --border:#e8e8e8;
   --bg-primary:#0a0a0f;
   --bg-secondary:#111118;
   --bg-card:rgba(255,255,255,0.05);
@@ -38,7 +41,15 @@ body:not(.light-mode) #app-screen .wrap{background:#0e0e14;}
   --success:#68d391;
   --shadow-card:0 8px 32px rgba(0,0,0,0.4);
 }
+body:not(.light-mode){
+  --surface:#1a1a24;
+  --surface-2:#111118;
+  --border:#2a2a3a;
+}
 body.light-mode{
+  --surface:#ffffff;
+  --surface-2:#f5f5f7;
+  --border:#e8e8e8;
   --bg-primary:#f0f2f5;
   --bg-secondary:#ffffff;
   --bg-card:rgba(0,0,0,0.04);
@@ -266,7 +277,7 @@ body.app-ready #theme-toggle{display:flex;}
 .cat-tabs{display:flex;gap:6px;margin-bottom:10px;}
 .cat-tab{flex:1;font-family:inherit;font-size:12px;font-weight:700;padding:9px 4px;border-radius:10px;border:1.5px solid #ccc;background:#fff;color:#555;cursor:pointer;-webkit-tap-highlight-color:transparent;-webkit-appearance:none;text-align:center;outline:none;}
 .cat-tab.on{color:#fff;border-color:transparent;}
-.cat-tab-today.on{background:#7b72e9;}.cat-tab-train.on{background:#185fa5;}.cat-tab-stat.on{background:#1d9e75;}
+.cat-tab-home.on{background:linear-gradient(135deg,#f5c518,#c9a000);color:#000 !important;}.cat-tab-today.on{background:#7b72e9;}.cat-tab-train.on{background:#185fa5;}.cat-tab-stat.on{background:#1d9e75;}
 /* 구형 호환 */
 .cat-tab-diet.on{background:#1d9e75;}.cat-tab-ex.on{background:#185fa5;}.cat-tab-rehab.on{background:#ef9f27;}.cat-tab-log.on{background:#7b72e9;}
 .sub-tabs{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:12px;}
@@ -387,10 +398,45 @@ body.app-ready #theme-toggle{display:flex;}
 .cal-legend{display:flex;gap:10px;font-size:10px;color:#888;margin-top:8px;flex-wrap:wrap;}
 .cal-legend-item{display:flex;align-items:center;gap:3px;}
 .cal-legend-dot{width:8px;height:8px;border-radius:50%;}
+/* ─── 홈화면 ─── */
+.home-wrap{padding:4px 0 20px;}
+.home-greeting{font-size:18px;font-weight:800;color:var(--text-primary,#1a1a1a);margin-bottom:2px;}
+.home-date{font-size:11px;color:var(--text-secondary,#888);margin-bottom:14px;}
+.home-ai{background:linear-gradient(135deg,rgba(245,197,24,0.12),rgba(245,197,24,0.04));border:1.5px solid rgba(245,197,24,0.35);border-radius:14px;padding:12px 14px;margin-bottom:14px;font-size:12px;color:var(--text-primary,#333);line-height:1.6;position:relative;}
+.home-ai::before{content:'🤖';position:absolute;top:-10px;left:12px;font-size:16px;background:#fff;border-radius:50%;padding:2px;}
+body:not(.light-mode) .home-ai::before{background:#0e0e14;}
+.home-ai-text{font-style:italic;}
+.home-section{margin-bottom:14px;}
+.home-section-title{font-size:11px;font-weight:700;color:var(--text-secondary,#888);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;}
+.home-week-dots{display:flex;gap:6px;align-items:center;margin-bottom:8px;}
+.home-week-dot-wrap{display:flex;flex-direction:column;align-items:center;gap:3px;flex:1;}
+.home-week-dot{width:28px;height:28px;border-radius:50%;border:2px solid #e0e0e0;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:#bbb;transition:all .2s;}
+.home-week-dot.done-weight{background:#185fa5;border-color:#185fa5;color:#fff;}
+.home-week-dot.done-climbing{background:#1d9e75;border-color:#1d9e75;color:#fff;}
+.home-week-dot.done-rest{background:#aaa;border-color:#aaa;color:#fff;}
+.home-week-dot.today-ring{box-shadow:0 0 0 3px rgba(245,197,24,0.5);}
+.home-week-day{font-size:9px;color:var(--text-secondary,#888);font-weight:600;}
+.home-week-bar{height:6px;border-radius:4px;background:#f0f0f0;margin-top:6px;overflow:hidden;}
+.home-week-bar-fill{height:100%;border-radius:4px;background:linear-gradient(90deg,#185fa5,#7b72e9);transition:width .6s ease;}
+.home-rings{display:flex;gap:10px;margin-bottom:14px;}
+.home-ring-card{flex:1;background:var(--surface,#fff);border:1.5px solid var(--border,#e8e8e8);border-radius:14px;padding:12px 8px;display:flex;flex-direction:column;align-items:center;gap:6px;}
+.home-ring-label{font-size:10px;font-weight:700;color:var(--text-secondary,#888);}
+.home-ring-val{font-size:11px;font-weight:700;color:var(--text-primary,#333);}
+.home-spark-card{background:var(--surface,#fff);border:1.5px solid var(--border,#e8e8e8);border-radius:14px;padding:14px;margin-bottom:14px;}
+.home-spark-head{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;}
+.home-spark-title{font-size:12px;font-weight:700;color:var(--text-primary,#333);}
+.home-spark-diff{font-size:11px;font-weight:700;}
+.home-cta{width:100%;font-family:inherit;font-size:15px;font-weight:800;padding:16px;border:none;border-radius:16px;background:linear-gradient(135deg,#f5c518,#c9a000);color:#000;cursor:pointer;box-shadow:0 6px 20px rgba(245,197,24,0.4);letter-spacing:-.3px;transition:transform .1s,box-shadow .1s;}
+.home-cta:active{transform:scale(0.98);box-shadow:0 3px 10px rgba(245,197,24,0.3);}
+/* ─── PR 토스트 ─── */
+#pr-toast{position:fixed;top:70px;left:50%;transform:translateX(-50%);z-index:9998;display:none;background:linear-gradient(135deg,#f5c518,#c9a000);color:#000;font-weight:800;font-size:13px;padding:12px 20px;border-radius:16px;box-shadow:0 6px 24px rgba(245,197,24,0.5);text-align:center;white-space:nowrap;}
+@keyframes prFlash{0%{transform:translateX(-50%) translateY(-10px) scale(0.9);opacity:0}60%{transform:translateX(-50%) translateY(0) scale(1.03);box-shadow:0 0 30px rgba(245,197,24,0.7)}100%{transform:translateX(-50%) scale(1);opacity:1}}
 </style>
 <!-- 테마 토글 버튼 (항상 표시) -->
 <button id="theme-toggle" onclick="toggleTheme()" title="다크/라이트 모드 전환">🌙</button>
 <!-- ==================== 로그인 화면 ==================== -->
+<!-- PR 토스트 -->
+<div id="pr-toast">🏆 신기록!</div>
 <div id="login-screen">
   <div class="login-screen-bg"><div class="login-grid-overlay"></div></div>
   <div class="login-logo">
@@ -885,13 +931,15 @@ body.app-ready #theme-toggle{display:flex;}
 
 <!-- 대분류 탭 -->
 <div class="cat-tabs">
-  <button class="cat-tab cat-tab-today on" onclick="setCat('today',this)">📋 오늘</button>
+  <button class="cat-tab cat-tab-home on" onclick="setCat('home',this)">🏠 홈</button>
+  <button class="cat-tab cat-tab-today" onclick="setCat('today',this)">📋 오늘</button>
   <button class="cat-tab cat-tab-train" onclick="setCat('train',this)">💪 운동</button>
   <button class="cat-tab cat-tab-stat" onclick="setCat('stat',this)">📊 분석</button>
 </div>
 
 <!-- 중분류 탭 -->
-<div class="sub-tabs" id="sub-today">
+<div class="sub-tabs" id="sub-home" style="display:none"></div>
+<div class="sub-tabs" id="sub-today" style="display:none">
   <button class="sub-tab on-today" onclick="setPage('l-hist',this,'today')">기록내역</button>
   <button class="sub-tab" onclick="setPage('l-daily',this,'today')">기록하기</button>
   <button class="sub-tab" onclick="setPage('e-wk',this,'today')">오늘루틴</button>
@@ -907,6 +955,7 @@ body.app-ready #theme-toggle{display:flex;}
   <button class="sub-tab" onclick="setPage('e-st',this,'stat')">현재상태</button>
   <button class="sub-tab" onclick="setPage('e-up',this,'stat')">중량현황</button>
   <button class="sub-tab" onclick="setPage('d-tl',this,'stat')">식단플랜</button>
+  <button class="sub-tab" onclick="setPage('d-sp',this,'stat')">💊 영양제</button>
   <button class="sub-tab" onclick="setPage('d-ai',this,'stat')" style="background:linear-gradient(135deg,#f5c518,#c9a000);color:#000;border-color:transparent;font-weight:700">🤖 AI</button>
   <button class="sub-tab" onclick="setPage('l-sync',this,'stat')">⚙️ 설정</button>
 </div>
@@ -1040,6 +1089,19 @@ body.app-ready #theme-toggle{display:flex;}
   <div id="e-st-extra"></div>
 </div>
 <div id="e-up" class="page">
+  <!-- 중량 그래프 -->
+  <div class="card" style="margin-bottom:10px">
+    <div class="ctitle">중량 추이 그래프</div>
+    <div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:10px" id="lift-graph-btns">
+      <button class="filter-btn on" onclick="renderLiftGraph('벤치프레스',this)">벤치프레스</button>
+      <button class="filter-btn" onclick="renderLiftGraph('렛풀다운',this)">렛풀다운</button>
+      <button class="filter-btn" onclick="renderLiftGraph('스쿼트',this)">스쿼트</button>
+      <button class="filter-btn" onclick="renderLiftGraph('',this)">전체</button>
+    </div>
+    <svg id="lift-graph-svg" width="100%" height="160" viewBox="0 0 320 160" preserveAspectRatio="none"
+      style="display:block;overflow:visible"></svg>
+    <div id="lift-graph-legend" style="font-size:10px;color:#888;margin-top:6px;text-align:center"></div>
+  </div>
   <div id="e-up-c"></div>
 </div>
 <div id="e-cl" class="page">
@@ -1213,7 +1275,68 @@ body.app-ready #theme-toggle{display:flex;}
 </div>
 
 <!-- 기록 내역 -->
-<div id="l-hist" class="page on">
+<!-- ==================== 홈 화면 ==================== -->
+<div id="h-home" class="page on">
+  <div class="home-wrap">
+    <!-- 인사말 -->
+    <div class="home-greeting" id="home-greeting">안녕하세요!</div>
+    <div class="home-date" id="home-date"></div>
+    <!-- AI 멘트 -->
+    <div class="home-ai">
+      <div class="home-ai-text" id="home-ai-text">오늘도 꾸준히 기록하는 하루 되세요 💪</div>
+    </div>
+    <!-- 이번 주 운동 -->
+    <div class="home-section">
+      <div class="home-section-title">이번 주 운동</div>
+      <div class="home-week-dots" id="home-week-dots"></div>
+      <div class="home-week-bar"><div class="home-week-bar-fill" id="home-week-bar" style="width:0%"></div></div>
+      <div style="font-size:10px;color:var(--text-secondary,#888);margin-top:4px" id="home-week-label"></div>
+    </div>
+    <!-- 원형 프로그레스 -->
+    <div class="home-rings">
+      <div class="home-ring-card">
+        <div class="home-ring-label">🍗 단백질</div>
+        <svg width="80" height="80" viewBox="0 0 100 100">
+          <circle cx="50" cy="50" r="40" fill="none" stroke="#f0f0f0" stroke-width="10"/>
+          <circle id="ring-prot" cx="50" cy="50" r="40" fill="none" stroke="#1d9e75" stroke-width="10"
+            stroke-dasharray="251.2" stroke-dashoffset="251.2" stroke-linecap="round"
+            transform="rotate(-90 50 50)" style="transition:stroke-dashoffset .8s ease,stroke .3s"/>
+          <text x="50" y="50" text-anchor="middle" dominant-baseline="middle"
+            style="font-size:14px;font-weight:800;fill:var(--text-primary,#333)" id="ring-prot-pct">0%</text>
+        </svg>
+        <div class="home-ring-val" id="ring-prot-val">-g / -g</div>
+      </div>
+      <div class="home-ring-card">
+        <div class="home-ring-label">🔥 칼로리</div>
+        <svg width="80" height="80" viewBox="0 0 100 100">
+          <circle cx="50" cy="50" r="40" fill="none" stroke="#f0f0f0" stroke-width="10"/>
+          <circle id="ring-kcal" cx="50" cy="50" r="40" fill="none" stroke="#ef9f27" stroke-width="10"
+            stroke-dasharray="251.2" stroke-dashoffset="251.2" stroke-linecap="round"
+            transform="rotate(-90 50 50)" style="transition:stroke-dashoffset .8s ease,stroke .3s"/>
+          <text x="50" y="50" text-anchor="middle" dominant-baseline="middle"
+            style="font-size:14px;font-weight:800;fill:var(--text-primary,#333)" id="ring-kcal-pct">0%</text>
+        </svg>
+        <div class="home-ring-val" id="ring-kcal-val">- / -</div>
+      </div>
+    </div>
+    <!-- 체중 스파크라인 -->
+    <div class="home-spark-card">
+      <div class="home-spark-head">
+        <div>
+          <div class="home-spark-title">📊 체중 추이</div>
+          <div style="font-size:10px;color:var(--text-secondary,#888)" id="home-spark-sub">최근 인바디 기록</div>
+        </div>
+        <div class="home-spark-diff" id="home-spark-diff"></div>
+      </div>
+      <svg width="100%" height="60" id="home-sparkline" viewBox="0 0 300 60" preserveAspectRatio="none"></svg>
+      <div style="font-size:10px;color:var(--text-secondary,#888);margin-top:4px" id="home-inbody-row"></div>
+    </div>
+    <!-- CTA -->
+    <button class="home-cta" onclick="startTodayWorkout()">▶ 오늘 기록 시작</button>
+  </div>
+</div>
+
+<div id="l-hist" class="page">
 <div class="card">
   <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
     <div class="ctitle" style="margin-bottom:0;border-bottom:none;padding-bottom:0">기록 내역</div>
@@ -1290,6 +1413,19 @@ body.app-ready #theme-toggle{display:flex;}
 
 <!-- 인바디 추적 -->
 <div id="l-inbody" class="page">
+  <!-- 체성분 그래프 -->
+  <div class="card" style="margin-bottom:10px">
+    <div class="ctitle">체성분 변화 그래프</div>
+    <div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:10px" id="inbody-graph-btns">
+      <button class="filter-btn on" onclick="renderInbodyGraph('weight',this)">체중</button>
+      <button class="filter-btn" onclick="renderInbodyGraph('muscle',this)">골격근량</button>
+      <button class="filter-btn" onclick="renderInbodyGraph('fat',this)">체지방률</button>
+      <button class="filter-btn" onclick="renderInbodyGraph('score',this)">인바디점수</button>
+    </div>
+    <svg id="inbody-graph-svg" width="100%" height="160" viewBox="0 0 320 160" preserveAspectRatio="none"
+      style="display:block;overflow:visible"></svg>
+    <div id="inbody-graph-legend" style="font-size:10px;color:#888;margin-top:6px;text-align:center"></div>
+  </div>
 <div class="card">
   <div class="ctitle">인바디 수치 기록</div>
   <!-- 사진 자동 입력 -->
@@ -1508,6 +1644,31 @@ body.app-ready #theme-toggle{display:flex;}
    ==================================================== */
 
 /* ─── 테마 관리 ─── */
+/* ─── PR 토스트 ─── */
+function showPrToast(items){
+  var el=document.getElementById('pr-toast');if(!el)return;
+  el.textContent='🏆 신기록! '+items.join(' · ');
+  el.style.display='block';
+  el.style.animation='none';
+  requestAnimationFrame(()=>{el.style.animation='prFlash .4s ease forwards';});
+  clearTimeout(el._timer);
+  el._timer=setTimeout(()=>{el.style.opacity='0';el.style.transition='opacity .5s';setTimeout(()=>{el.style.display='none';el.style.opacity='1';el.style.transition='';},500);},3000);
+}
+
+/* ─── Wake Lock (기록하기 화면 켜짐 유지) ─── */
+var _wakeLock=null;
+async function requestWakeLock(){
+  try{if('wakeLock' in navigator){_wakeLock=await navigator.wakeLock.request('screen');}}catch(e){}
+}
+function releaseWakeLock(){
+  try{if(_wakeLock){_wakeLock.release();_wakeLock=null;}}catch(e){}
+}
+
+/* ─── YouTube 링크 ─── */
+function openExVideo(name){
+  window.open('https://www.youtube.com/results?search_query='+encodeURIComponent(name+' 운동 자세 방법'),'_blank');
+}
+
 function toggleTheme(){
   var isLight=document.body.classList.toggle('light-mode');
   var btn=document.getElementById('theme-toggle');
@@ -1665,7 +1826,7 @@ function showScreen(n){
   document.getElementById('onboarding-screen').style.display=n==='onboarding'?'block':'none';
   document.getElementById('app-screen').style.display=n==='app'?'block':'none';
   /* 앱 화면 진입 시 theme-toggle 표시 */
-  if(n==='app')document.body.classList.add('app-ready', 'light-mode');
+  if(n==='app')document.body.classList.add('app-ready');
   else document.body.classList.remove('app-ready');
 }
 
@@ -2121,8 +2282,9 @@ function initApp(){
   loadDB().then(()=>{renderExDBList();renderFoodDBList();renderExerciseBlocks();});
   renderDiet();renderExercise();renderRehab();loadSyncConfig();
   showTodayBanner();
-  /* 기록 탭 초기화 — 기본 화면이 l-hist이므로 앱 진입 즉시 렌더 */
+  /* 기본 화면 = 홈 */
   initLogTab();
+  renderHome();
 
   /* ── 자동 pull (접속 시 1시간 이상 지났으면 백그라운드 sync) ── */
   var uid=APP.user?.id;
@@ -2896,6 +3058,34 @@ function render90DayPredict(plan,p){
   el.innerHTML=h;
 }
 
+function renderSuppPage(){
+  var el=document.getElementById('sp-c');if(!el)return;
+  var p=APP.profile||{};
+  var supps=p.supplements?.map(s=>typeof s==='string'?{name:s,time:'',note:''}:s)||[
+    {name:'비타민 D3+K2',time:'아침식사직후',note:'칼슘 흡수·골밀도·면역. 지용성이라 식사 후 복용'},
+    {name:'오메가3',time:'아침식사직후',note:'항염·혈행·회복. EPA+DHA 기준 1g/일'},
+    {name:'크레아틴 5g',time:'자유',note:'근력·회복·수분 보충. 물 +500ml 추가 필수'},
+    {name:'락토핏 코어맥스',time:'공복',note:'장 건강·면역. 유산균은 공복에 생존율 높음'},
+    {name:'마그네슘 글리시네이트',time:'취침전',note:'수면질·근육이완. 식사 후 복용 시 위장 자극 감소'},
+    {name:'루테인 지아잔틴 아스타잔틴',time:'식사직후',note:'눈 황반·블루라이트 차단·항산화. 지용성이라 식사 후 필수'},
+  ];
+  var timeGroups={'아침식사직후':[],'공복':[],'자유':[],'식사직후':[],'취침전':[],'기타':[]};
+  supps.forEach(s=>{var g=timeGroups[s.time]||timeGroups['기타'];g.push(s);});
+  var timeLabels={'아침식사직후':'🌅 아침 식사 직후','공복':'⏰ 공복 (기상 직후)','자유':'🕐 시간 자유','식사직후':'🍽 식사 직후','취침전':'🌙 취침 전','기타':'기타'};
+  var html='';
+  Object.entries(timeGroups).forEach(([time,items])=>{
+    if(!items.length)return;
+    html+=`<div style="margin-bottom:12px"><div style="font-size:10px;font-weight:700;color:#888;margin-bottom:6px">${timeLabels[time]}</div>`;
+    items.forEach(s=>{
+      html+=`<div style="padding:8px 10px;background:#f9f9f9;border-radius:10px;margin-bottom:5px">
+        <div style="font-size:12px;font-weight:700;color:#1a1a1a">${s.name}</div>
+        ${s.note?`<div style="font-size:10px;color:#888;margin-top:2px">${s.note}</div>`:''}
+      </div>`;
+    });
+    html+='</div>';
+  });
+  el.innerHTML=html||'<div style="color:#888;font-size:12px">등록된 영양제가 없습니다.</div>';
+}
 function renderTrend(p){
   var el=document.getElementById('e-tr-c');if(!el)return;
   var inbody=getStore('inbody');
@@ -2930,6 +3120,68 @@ function renderCurrentState(p){
   }
   if(p.sports&&p.sports.length)rows+=`<div class="row"><span class="rk">병행 스포츠</span><span class="rv">${p.sports.join(', ')}</span></div>`;
   el.innerHTML=rows||'<div style="text-align:center;color:#888;font-size:12px;padding:16px">온보딩에서 입력한 운동 현황이 표시됩니다.</div>';
+}
+function renderLiftGraph(exercise,btn){
+  if(btn){
+    document.querySelectorAll('#lift-graph-btns .filter-btn').forEach(b=>b.classList.remove('on'));
+    btn.classList.add('on');
+  }
+  var svg=document.getElementById('lift-graph-svg');
+  var legend=document.getElementById('lift-graph-legend');
+  if(!svg)return;
+  var all=getStore('lifts');
+  var data=exercise?all.filter(l=>l.exercise===exercise):all;
+  if(!data.length){
+    svg.innerHTML='<text x="160" y="80" text-anchor="middle" font-size="12" fill="#bbb">기록이 없습니다</text>';
+    if(legend)legend.textContent='';return;
+  }
+  /* 날짜순 정렬 */
+  data=data.slice().sort((a,b)=>a.date>b.date?1:-1).slice(-20);
+  var weights=data.map(d=>parseFloat(d.weight)||0);
+  var mn=Math.min(...weights),mx=Math.max(...weights);
+  var range=mx-mn||5;
+  var pad={l:30,r:10,t:15,b:25};
+  var W=320-pad.l-pad.r,H=160-pad.t-pad.b;
+  var n=data.length;
+  var pts=data.map((d,i)=>({
+    x:pad.l+Math.round((i/(Math.max(n-1,1)))*W),
+    y:pad.t+Math.round(H-((parseFloat(d.weight)-mn)/range)*H),
+    w:d.weight,date:d.date,isPR:i===weights.indexOf(Math.max(...weights))
+  }));
+  /* bezier 경로 */
+  var path=pts.reduce((acc,p2,i)=>{
+    if(i===0)return `M${p2.x},${p2.y}`;
+    var prev=pts[i-1];var cpx=(prev.x+p2.x)/2;
+    return acc+` C${cpx},${prev.y} ${cpx},${p2.y} ${p2.x},${p2.y}`;
+  },'');
+  /* Y축 라벨 */
+  var yLabels='';
+  [0,0.5,1].forEach(r=>{
+    var val=Math.round(mn+range*r);
+    var y=pad.t+Math.round(H-(r*H));
+    yLabels+=`<text x="${pad.l-4}" y="${y+4}" text-anchor="end" font-size="9" fill="#aaa">${val}</text>`;
+    yLabels+=`<line x1="${pad.l}" y1="${y}" x2="${pad.l+W}" y2="${y}" stroke="#f0f0f0" stroke-width="1"/>`;
+  });
+  /* X축 라벨 */
+  var xLabels='';
+  [0,Math.floor(n/2),n-1].forEach(i=>{
+    if(i>=n)return;
+    var p2=pts[i];
+    xLabels+=`<text x="${p2.x}" y="${160-8}" text-anchor="middle" font-size="8" fill="#aaa">${(data[i].date||'').slice(5)}</text>`;
+  });
+  /* PR 마커 */
+  var markers=pts.map(p2=>{
+    var dot=`<circle cx="${p2.x}" cy="${p2.y}" r="3.5" fill="#185fa5"/>`;
+    if(p2.isPR){
+      return dot+`<text x="${p2.x}" y="${p2.y-8}" text-anchor="middle" font-size="10">⭐</text>`+
+        `<text x="${p2.x}" y="${p2.y-18}" text-anchor="middle" font-size="8" fill="#c9a000" font-weight="700">${p2.w}kg</text>`;
+    }
+    return dot;
+  }).join('');
+  svg.innerHTML=yLabels+xLabels+
+    `<path d="${path}" fill="none" stroke="#185fa5" stroke-width="2" stroke-linecap="round"/>`+markers;
+  var prVal=Math.max(...weights);
+  if(legend)legend.textContent=(exercise||'전체')+' — 최고 '+prVal+'kg / '+n+'회 기록';
 }
 function renderUpperBody(p){
   var el=document.getElementById('e-up-c');if(!el)return;
@@ -3665,7 +3917,7 @@ function saveLog(){
       prUpdated.push(b.name+' '+maxKg+'kg');
     }
   });
-  if(prUpdated.length)setStore('lifts',lifts.slice(0,500));
+  if(prUpdated.length){setStore('lifts',lifts.slice(0,500));showPrToast(prUpdated);}
   var msg=document.getElementById('save-msg');
   if(msg){
     msg.style.display='block';
@@ -3998,6 +4250,73 @@ function saveInbody(){
   setStore('inbody',arr);
   var msg=document.getElementById('ib-save-msg');if(msg){msg.style.display='block';setTimeout(()=>msg.style.display='none',2000);}
   renderInbodyHistory();
+}
+function renderInbodyGraph(field,btn){
+  if(btn){
+    document.querySelectorAll('#inbody-graph-btns .filter-btn').forEach(b=>b.classList.remove('on'));
+    btn.classList.add('on');
+  }
+  var svg=document.getElementById('inbody-graph-svg');
+  var legend=document.getElementById('inbody-graph-legend');
+  if(!svg)return;
+  var all=getStore('inbody').slice().sort((a,b)=>a.date>b.date?1:-1);
+  var data=all.filter(r=>r[field]!=null&&r[field]!=='');
+  if(data.length<2){
+    svg.innerHTML='<text x="160" y="80" text-anchor="middle" font-size="12" fill="#bbb">기록 2개 이상 필요</text>';
+    if(legend)legend.textContent='';return;
+  }
+  var labels={weight:'체중(kg)',muscle:'골격근량(kg)',fat:'체지방률(%)',score:'인바디점수'};
+  var colors={weight:'#185fa5',muscle:'#1d9e75',fat:'#e57373',score:'#7b72e9'};
+  /* 목표값 */
+  var p=APP.profile||{};
+  var goals={weight:p.goal?.targetWeight,muscle:null,fat:p.goal?.targetFat,score:85};
+  var values=data.map(d=>parseFloat(d[field])||0);
+  var goalVal=goals[field];
+  var mn=Math.min(...values,goalVal||Infinity)-1;
+  var mx=Math.max(...values,goalVal||0)+1;
+  if(mn===mx){mn-=1;mx+=1;}
+  var range=mx-mn;
+  var pad={l:30,r:10,t:15,b:25};
+  var W=320-pad.l-pad.r,H=160-pad.t-pad.b;
+  var n=data.length;
+  var pts=data.map((d,i)=>({
+    x:pad.l+Math.round((i/(n-1))*W),
+    y:pad.t+Math.round(H-((parseFloat(d[field])-mn)/range)*H),
+    v:parseFloat(d[field])
+  }));
+  var path=pts.reduce((acc,p2,i)=>{
+    if(i===0)return `M${p2.x},${p2.y}`;
+    var prev=pts[i-1];var cpx=(prev.x+p2.x)/2;
+    return acc+` C${cpx},${prev.y} ${cpx},${p2.y} ${p2.x},${p2.y}`;
+  },'');
+  /* Y축 */
+  var yLabels='';
+  [0,0.5,1].forEach(r=>{
+    var val=Math.round((mn+range*r)*10)/10;
+    var y=pad.t+Math.round(H-r*H);
+    yLabels+=`<text x="${pad.l-4}" y="${y+4}" text-anchor="end" font-size="9" fill="#aaa">${val}</text>`;
+    yLabels+=`<line x1="${pad.l}" y1="${y}" x2="${pad.l+W}" y2="${y}" stroke="#f0f0f0" stroke-width="1"/>`;
+  });
+  /* X축 */
+  var xLabels='';
+  [0,Math.floor(n/2),n-1].forEach(i=>{
+    if(i>=n)return;
+    xLabels+=`<text x="${pts[i].x}" y="155" text-anchor="middle" font-size="8" fill="#aaa">${(data[i].date||'').slice(5)}</text>`;
+  });
+  /* 목표 점선 */
+  var goalLine='';
+  if(goalVal){
+    var gy=pad.t+Math.round(H-((goalVal-mn)/range)*H);
+    goalLine=`<line x1="${pad.l}" y1="${gy}" x2="${pad.l+W}" y2="${gy}" stroke="${colors[field]}" stroke-width="1" stroke-dasharray="4,3" opacity="0.5"/>`;
+    goalLine+=`<text x="${pad.l+W-2}" y="${gy-3}" font-size="8" fill="${colors[field]}" text-anchor="end">목표 ${goalVal}</text>`;
+  }
+  var dots=pts.map(p2=>`<circle cx="${p2.x}" cy="${p2.y}" r="3" fill="${colors[field]}"/>`).join('');
+  svg.innerHTML=yLabels+xLabels+goalLine+
+    `<path d="${path}" fill="none" stroke="${colors[field]}" stroke-width="2.5" stroke-linecap="round"/>`+dots;
+  var first=values[0],last=values[values.length-1];
+  var diff=Math.round((last-first)*10)/10;
+  var diffStr=(diff>0?'+':'')+diff+(field==='fat'?'%':field==='score'?'점':'kg');
+  if(legend)legend.textContent=`${labels[field]} — 최근 ${last}${field==='fat'?'%':field==='score'?'점':'kg'} (${diffStr})`;
 }
 function deleteInbody(date){
   if(!confirm(date+' 기록을 삭제할까요?'))return;
@@ -4557,22 +4876,153 @@ function setCat(cat,btn){
   document.querySelectorAll('.cat-tab').forEach(b=>b.classList.remove('on'));
   btn.classList.add('on');
   /* 중분류 탭 표시 전환 */
-  ['today','train','stat','diet','ex','rehab','log'].forEach(c=>{
+  ['home','today','train','stat','diet','ex','rehab','log'].forEach(c=>{
     var st=document.getElementById('sub-'+c);if(st)st.style.display=c===cat?'flex':'none';
   });
   /* 모든 페이지 숨기기 */
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('on'));
   /* 첫 페이지 보이기 */
-  var firstPages={today:'l-hist',train:'l-exdb',stat:'e-tr',diet:'d-tl',ex:'e-wk',rehab:'r-dx',log:'l-hist'};
+  var firstPages={home:'h-home',today:'l-hist',train:'l-exdb',stat:'e-tr',diet:'d-tl',ex:'e-wk',rehab:'r-dx',log:'l-hist'};
   var fp=document.getElementById(firstPages[cat]);if(fp)fp.classList.add('on');
   /* 첫 중분류 버튼 활성화 */
   var subBtns=document.querySelectorAll('#sub-'+cat+' .sub-tab');
-  subBtns.forEach(b=>b.classList.remove('on-today','on-train','on-stat','on-diet','on-ex','on-rehab','on-log'));
+  subBtns.forEach(b=>b.classList.remove('on-home','on-today','on-train','on-stat','on-diet','on-ex','on-rehab','on-log'));
   if(subBtns[0])subBtns[0].classList.add('on-'+cat);
   /* 탭별 초기화 */
+  if(cat==='home'){renderHome();}
   if(cat==='today'){initLogTab();renderWeeklyRoutineTodayFirst();}
   if(cat==='train'){renderExDBList();renderInbodyHistory();renderLiftHistory();}
   if(cat==='stat'){var p=APP.profile||{};renderTrend(p);renderCurrentState(p);}
+}
+/* ─── 홈화면 렌더 ─── */
+function renderHome(){
+  var p=APP.profile||{};
+  var uid=APP.user?.id;
+
+  /* 인사말 + 날짜 */
+  var days=['일','월','화','수','목','금','토'];
+  var now=new Date();
+  var todayStr=now.toISOString().slice(0,10);
+  var greetEl=document.getElementById('home-greeting');
+  var dateEl=document.getElementById('home-date');
+  var hour=now.getHours();
+  var greet=hour<12?'좋은 아침이에요':hour<18?'안녕하세요':'좋은 저녁이에요';
+  if(greetEl)greetEl.textContent=greet+', '+(p.name||'방수현')+'님 👋';
+  if(dateEl)dateEl.textContent=now.getFullYear()+'년 '+(now.getMonth()+1)+'월 '+now.getDate()+'일 ('+days[now.getDay()]+')';
+
+  /* AI 멘트 (캐시) */
+  var cacheKey='v5_'+(uid||'x')+'_home_msg_'+todayStr;
+  var cached=localStorage.getItem(cacheKey);
+  var aiEl=document.getElementById('home-ai-text');
+  if(cached&&aiEl){
+    aiEl.textContent=cached;
+  }else if(APP.apiKey&&aiEl){
+    var fallbacks=['오늘도 꾸준히 기록하는 하루 되세요 💪','작은 기록이 큰 변화를 만듭니다 📈','몸이 기억하는 건 꾸준함입니다 🔥'];
+    aiEl.textContent=fallbacks[now.getDate()%3];
+    /* 비동기 AI 멘트 */
+    (async()=>{
+      try{
+        var prompt=`${p.name||'방수현'}님(${p.age||30}세, 웨이트+클라이밍 병행)에게 오늘 하루 동기부여가 되는 짧은 한마디. 20자 이내, 이모지 1개, 존댓말, 실용적으로.`;
+        var msg=await callClaude(APP.apiKey,prompt);
+        if(msg&&aiEl){aiEl.textContent=msg.trim();localStorage.setItem(cacheKey,msg.trim());}
+      }catch(e){}
+    })();
+  }
+
+  /* 이번 주 요일 도트 */
+  var logs=getStore('logs');
+  var dotsEl=document.getElementById('home-week-dots');
+  var barEl=document.getElementById('home-week-bar');
+  var wlabelEl=document.getElementById('home-week-label');
+  if(dotsEl){
+    var weekStart=new Date(now);weekStart.setDate(now.getDate()-now.getDay());
+    var dayLabels=['일','월','화','수','목','금','토'];
+    var doneDays=0;var goalDays=p.plan?.freq||5;
+    var html='';
+    for(var d=0;d<7;d++){
+      var dd=new Date(weekStart);dd.setDate(weekStart.getDate()+d);
+      var ds=dd.toISOString().slice(0,10);
+      var log=logs.find(l=>l.date===ds);
+      var isToday=ds===todayStr;var isFuture=ds>todayStr;
+      var dotCls='home-week-dot'+(isToday?' today-ring':'');
+      var dotStyle='';var dotIcon='';
+      if(log&&!isFuture){
+        doneDays++;
+        if(log.exTypes?.includes('climbing')){dotCls+=' done-climbing';dotIcon='🧗';}
+        else if(log.exTypes?.includes('weight')){dotCls+=' done-weight';dotIcon='💪';}
+        else{dotCls+=' done-rest';dotIcon='✓';}
+      }
+      html+=`<div class="home-week-dot-wrap"><div class="${dotCls}" style="${dotStyle}">${dotIcon||dayLabels[d]}</div><div class="home-week-day">${dayLabels[d]}</div></div>`;
+    }
+    dotsEl.innerHTML=html;
+    var pct=Math.round(doneDays/goalDays*100);
+    if(barEl)barEl.style.width=Math.min(pct,100)+'%';
+    if(wlabelEl)wlabelEl.textContent=`${doneDays}/${goalDays}일 완료 (목표 ${goalDays}일)`;
+  }
+
+  /* 원형 프로그레스 — 오늘 기록 */
+  var todayLog=logs.find(l=>l.date===todayStr);
+  var plan=p.plan||{};
+  var goalProt=plan.macros?.prot||137;
+  var goalKcal=plan.kcal?.workout||2600;
+  var curProt=todayLog?.nutrition?.prot||0;
+  var curKcal=todayLog?.nutrition?.kcal||0;
+
+  function setRing(id,pctId,valId,cur,goal,unit){
+    var pct=goal?Math.min(Math.round(cur/goal*100),100):0;
+    var col=pct>=90?'#1d9e75':pct>=60?'#ef9f27':'#e57373';
+    if(!cur)col='#ddd';
+    var el=document.getElementById(id);
+    if(el){el.setAttribute('stroke-dashoffset',Math.round(251.2*(1-pct/100)));el.setAttribute('stroke',col);}
+    var pe=document.getElementById(pctId);if(pe)pe.textContent=cur?pct+'%':'없음';
+    var ve=document.getElementById(valId);if(ve)ve.textContent=cur?cur+unit+' / '+goal+unit:'-';
+  }
+  setRing('ring-prot','ring-prot-pct','ring-prot-val',curProt,goalProt,'g');
+  setRing('ring-kcal','ring-kcal-pct','ring-kcal-val',curKcal,goalKcal,'kcal');
+
+  /* 체중 스파크라인 */
+  var inbody=getStore('inbody').slice(0,8).reverse();
+  var sparkEl=document.getElementById('home-sparkline');
+  var sparkSub=document.getElementById('home-spark-sub');
+  var sparkDiff=document.getElementById('home-spark-diff');
+  var inbodyRow=document.getElementById('home-inbody-row');
+  if(sparkEl){
+    if(inbody.length>=2){
+      var weights=inbody.map(r=>parseFloat(r.weight||0)).filter(Boolean);
+      if(weights.length>=2){
+        var mn=Math.min(...weights)-1,mx=Math.max(...weights)+1;
+        var n=weights.length;
+        var pts=weights.map((w,i)=>{
+          var x=Math.round((i/(n-1))*300);
+          var y=Math.round(60-((w-mn)/(mx-mn))*50)-4;
+          return {x,y,w};
+        });
+        /* bezier 곡선 */
+        var path=pts.reduce((acc,p2,i)=>{
+          if(i===0)return `M${p2.x},${p2.y}`;
+          var prev=pts[i-1];var cpx=(prev.x+p2.x)/2;
+          return acc+` C${cpx},${prev.y} ${cpx},${p2.y} ${p2.x},${p2.y}`;
+        },'');
+        var last=weights[weights.length-1];var first=weights[0];
+        var diff=Math.round((last-first)*10)/10;
+        var diffColor=diff<=0?'#1d9e75':'#e57373';
+        sparkEl.innerHTML=`
+          <path d="${path}" fill="none" stroke="#185fa5" stroke-width="2.5" stroke-linecap="round"/>
+          ${pts.map(pt=>`<circle cx="${pt.x}" cy="${pt.y}" r="3" fill="#185fa5"/>`).join('')}
+          <text x="0" y="58" font-size="9" fill="#888">${inbody[0].date?.slice(5)||''}</text>
+          <text x="290" y="58" font-size="9" fill="#888" text-anchor="end">${inbody[inbody.length-1].date?.slice(5)||''}</text>`;
+        if(sparkSub)sparkSub.textContent=`${first}kg → ${last}kg`;
+        if(sparkDiff)sparkDiff.innerHTML=`<span style="color:${diffColor}">${diff>0?'+':''}${diff}kg</span>`;
+      }
+    }else{
+      sparkEl.innerHTML='<text x="150" y="35" text-anchor="middle" font-size="11" fill="#bbb">인바디 기록 2개 이상 필요</text>';
+    }
+    /* 인바디 점수 */
+    var latest=getStore('inbody')[0];
+    if(inbodyRow&&latest){
+      inbodyRow.textContent=`인바디 ${latest.score||'-'}점 · 근육 ${latest.muscle||'-'}kg · 체지방 ${latest.fat||'-'}%`;
+    }
+  }
 }
 function trackTab(tabId){
   var log=lGet('v5_tab_log')||[];
@@ -4609,16 +5059,18 @@ function setPage(pageId,btn,cat){
   });
   btn.classList.add('on-'+cat);
   /* 탭별 렌더 연결 */
+  if(pageId==='d-sp'){renderSuppPage();}
   if(pageId==='l-exdb')renderExDBList();
   if(pageId==='l-fooddb')renderFoodDBList();
   if(pageId==='e-wk')renderWeeklyRoutineTodayFirst();
   if(pageId==='e-tr'){var p=APP.profile||{};renderTrend(p);}
   if(pageId==='e-st'){var p=APP.profile||{};renderCurrentState(p);}
-  if(pageId==='e-up'){var p=APP.profile||{};renderUpperBody(p);}
-  if(pageId==='l-daily'){initLogTab();}
+  if(pageId==='e-up'){var p=APP.profile||{};renderUpperBody(p);renderLiftGraph('벤치프레스',document.querySelector('#lift-graph-btns .filter-btn.on'));}
+  if(pageId==='l-daily'){initLogTab();requestWakeLock();}
+  else{releaseWakeLock();}
   if(pageId==='l-inbody'){
     renderInbodyHistory();
-    /* 오늘 날짜 자동 세팅 */
+    renderInbodyGraph('weight',document.querySelector('#inbody-graph-btns .filter-btn.on'));
     var ibDate=document.getElementById('ib-date');
     if(ibDate&&!ibDate.value){var td=new Date();ibDate.value=td.getFullYear()+'-'+String(td.getMonth()+1).padStart(2,'0')+'-'+String(td.getDate()).padStart(2,'0');}
   }
@@ -4966,6 +5418,7 @@ function renderExDBList(){
     <div style="flex:1"><div style="font-size:12px;font-weight:700">${ex.name}<span style="font-size:10px;color:${cc[ex.category]||'#888'};margin-left:5px">${ex.category}</span>${ex.local?'<span style="font-size:9px;color:#7b72e9;margin-left:3px">로컬</span>':''}</div>
     <div style="font-size:10px;color:#888;margin-top:2px">${ex.defaultSets}세트×${ex.defaultReps} · MET ${ex.met}${ex.tips?' · '+ex.tips:''}</div></div>
     <div style="display:flex;gap:4px;flex-shrink:0">
+      <button onclick="openExVideo('${ex.name}')" style="font-size:10px;padding:3px 8px;border:1.5px solid #ddd;border-radius:6px;background:#f5f5f5;cursor:pointer;font-family:inherit" title="YouTube 영상 보기">📹</button>
       <button onclick="openAddExerciseModal('${ex.id}')" style="font-size:10px;padding:3px 8px;border:1.5px solid #ddd;border-radius:6px;background:#f5f5f5;cursor:pointer;font-family:inherit">수정</button>
       ${ex.local?`<button onclick="deleteExDBItem('${ex.id}')" style="font-size:10px;padding:3px 8px;border:1.5px solid #e57373;border-radius:6px;background:#fdecea;color:#c0392b;cursor:pointer;font-family:inherit">삭제</button>`:''}
     </div></div>`).join('');
@@ -5147,10 +5600,15 @@ function toggleAiType(btn){
   var target=document.getElementById(map[val]);if(target)target.style.display='block';
 }
 function startTodayWorkout(){
-  var btn=document.querySelector('.cat-tab-today');if(btn)setCat('today',btn);
-  var dt=document.querySelector('#sub-today .sub-tab');if(dt){setPage('l-hist',dt,'today');}
-  document.getElementById('l-daily')?.scrollIntoView({behavior:'smooth',block:'start'});
-  loadTodayRoutineToBlocks();
+  /* 오늘탭 → 기록하기로 이동 */
+  var catBtn=document.querySelector('.cat-tab-today');if(catBtn)setCat('today',catBtn);
+  var allSubs=document.querySelectorAll('#sub-today .sub-tab');
+  var dailyBtn=Array.from(allSubs).find(b=>b.getAttribute('onclick')?.includes('l-daily'));
+  if(dailyBtn)setPage('l-daily',dailyBtn,'today');
+  setTimeout(()=>{
+    loadTodayRoutineToBlocks();
+    document.getElementById('l-daily')?.scrollIntoView({behavior:'smooth',block:'start'});
+  },100);
 }
 function loadTodayRoutineToBlocks(){
   var p=APP.profile||{};var plan=p.plan||{};
@@ -5179,7 +5637,8 @@ function initSuppChecks(){
   var supps=p.supplements?.map(s=>typeof s==='string'?{name:s,time:''}:s)||[
     {name:'비타민 D3+K2',time:'아침식사직후'},{name:'오메가3',time:'아침식사직후'},
     {name:'크레아틴 5g',time:'자유'},{name:'락토핏 코어맥스',time:'공복'},
-    {name:'마그네슘 글리시네이트',time:'취침전'}
+    {name:'마그네슘 글리시네이트',time:'취침전'},
+    {name:'루테인 지아잔틴 아스타잔틴',time:'식사직후'},
   ];
   var prev={};el.querySelectorAll('input[type=checkbox]').forEach((cb,i)=>{prev[i]=cb.checked;});
   el.innerHTML=supps.map((s,i)=>`<div class="supp-check"><input type="checkbox" id="sc-${i}" ${prev[i]===false?'':'checked'}><label for="sc-${i}">${s.name}${s.time?` <span style="font-size:9px;color:#888">(${s.time})</span>`:''}</label></div>`).join('');
