@@ -1490,7 +1490,10 @@ body:not(.light-mode) .home-ai::before{background:#0e0e14;}
 <div class="card">
   <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
     <div class="ctitle" style="margin-bottom:0;border-bottom:none;padding-bottom:0">🏋️ 운동 종목 DB</div>
-    <button onclick="openAddExerciseModal()" style="font-family:inherit;font-size:11px;font-weight:700;padding:5px 12px;border:1.5px solid #185fa5;border-radius:8px;background:#dceefb;color:#185fa5;cursor:pointer">+ 종목 추가</button>
+    <div style="display:flex;gap:5px">
+      <button onclick="pushUserDB('exercises')" style="font-family:inherit;font-size:11px;font-weight:700;padding:5px 10px;border:1.5px solid #1d9e75;border-radius:8px;background:#e6fdf2;color:#0a5c46;cursor:pointer">☁️ 저장</button>
+      <button onclick="openAddExerciseModal()" style="font-family:inherit;font-size:11px;font-weight:700;padding:5px 12px;border:1.5px solid #185fa5;border-radius:8px;background:#dceefb;color:#185fa5;cursor:pointer">+ 종목 추가</button>
+    </div>
   </div>
   <div style="font-size:10px;color:#888;margin-bottom:10px">GitHub data/db/exercises.json 기반 · 로컬 추가 종목 포함</div>
   <!-- 중분류 탭 -->
@@ -1535,7 +1538,10 @@ body:not(.light-mode) .home-ai::before{background:#0e0e14;}
 <div class="card">
   <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
     <div class="ctitle" style="margin-bottom:0;border-bottom:none;padding-bottom:0">🥗 식품 DB</div>
-    <button onclick="openAddFoodModal()" style="font-family:inherit;font-size:11px;font-weight:700;padding:5px 12px;border:1.5px solid #1d9e75;border-radius:8px;background:#e6fdf2;color:#0a5c46;cursor:pointer">+ 식품 추가</button>
+    <div style="display:flex;gap:5px">
+      <button onclick="pushUserDB('foods')" style="font-family:inherit;font-size:11px;font-weight:700;padding:5px 10px;border:1.5px solid #1d9e75;border-radius:8px;background:#e6fdf2;color:#0a5c46;cursor:pointer">☁️ 저장</button>
+      <button onclick="openAddFoodModal()" style="font-family:inherit;font-size:11px;font-weight:700;padding:5px 12px;border:1.5px solid #1d9e75;border-radius:8px;background:#e6fdf2;color:#0a5c46;cursor:pointer">+ 식품 추가</button>
+    </div>
   </div>
   <div style="font-size:10px;color:#888;margin-bottom:10px">GitHub data/db/foods.json 기반 · 로컬 추가 식품 포함</div>
   <div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:12px" id="fooddb-cat-tabs">
@@ -4738,6 +4744,18 @@ async function pullFromGitHub(force){
       if(lf.lifts){lSet(uk('lifts'),lf.lifts);pulled.lifts=true;}
     }catch(e){}
 
+    /* ── exercises (로컬 추가 항목) ── */
+    try{
+      var exd=await ghGet('data/db/user_exercises_'+uid+'.json');
+      if(exd.exercises){lSet('v5_local_exercises',exd.exercises);pulled.exercises=true;}
+    }catch(e){}
+
+    /* ── foods (로컬 추가 항목) ── */
+    try{
+      var fdd=await ghGet('data/db/user_foods_'+uid+'.json');
+      if(fdd.foods){lSet('v5_local_foods',fdd.foods);pulled.foods=true;}
+    }catch(e){}
+
     /* ── profile (모바일에서 캐시 없을 때) ── */
     var cachedProfile=lGet('v5_profile_'+uid);
     if(!cachedProfile){
@@ -4755,14 +4773,24 @@ async function pullFromGitHub(force){
     var onHist=document.getElementById('l-hist')?.classList.contains('on');
     var onInbody=document.getElementById('l-inbody')?.classList.contains('on');
     var onLift=document.getElementById('l-lift')?.classList.contains('on');
+    var onExDB=document.getElementById('l-exdb')?.classList.contains('on');
+    var onFoodDB=document.getElementById('l-fooddb')?.classList.contains('on');
     if(onHist||!force)renderLogHistory();
-    if(onInbody)renderInbodyHistory();
+    if(onInbody){renderInbodyHistory();renderInbodyGraph&&renderInbodyGraph('weight',document.querySelector('#inbody-graph-btns .filter-btn.on'));}
     if(onLift)renderLiftHistory();
+    /* DB pull 후 메모리 DB 재병합 + 리스트 갱신 */
+    if(pulled.exercises||pulled.foods){
+      mergeLocalDB();
+      if(onExDB)renderExDBList();
+      if(onFoodDB)renderFoodDBList();
+    }
 
     if(force){
       var msg='✓ 불러오기 완료 — 기록 '+pulled.logs+'개'+
         (pulled.inbody?' · 인바디':'')+
-        (pulled.lifts?' · 중량':'');
+        (pulled.lifts?' · 중량':'')+
+        (pulled.exercises?' · 운동DB':'')+
+        (pulled.foods?' · 식단DB':'');
       showSyncBar(msg,'#1d9e75');
       var res=document.getElementById('sync-action-result');
       if(res)res.textContent=msg+' ('+new Date().toLocaleString('ko')+')';
@@ -4774,6 +4802,25 @@ async function pullFromGitHub(force){
   }
 }
 /* 인바디 + 중량 전용 GitHub 전송 */
+/* ─── 운동DB / 식단DB 개별 GitHub 전송 ─── */
+async function pushUserDB(type){
+  if(!GH.writeMode||!GH.token){
+    showSyncBar('쓰기 모드 필요 — ⚙️ 설정에서 토큰 입력','#e57373');return;
+  }
+  var uid=APP.user?.id;if(!uid)return;
+  showSyncBar((type==='exercises'?'운동DB':'식단DB')+' 전송 중...','#185fa5');
+  try{
+    if(type==='exercises'){
+      var data=lGet('v5_local_exercises')||[];
+      await ghPut('data/db/user_exercises_'+uid+'.json',{exercises:data,updatedAt:new Date().toISOString()});
+      showSyncBar('☁️ 운동DB 저장 완료 ('+data.length+'개 로컬 항목)','#1d9e75');
+    }else{
+      var data=lGet('v5_local_foods')||[];
+      await ghPut('data/db/user_foods_'+uid+'.json',{foods:data,updatedAt:new Date().toISOString()});
+      showSyncBar('☁️ 식단DB 저장 완료 ('+data.length+'개 로컬 항목)','#1d9e75');
+    }
+  }catch(e){showSyncBar('전송 실패: '+e.message,'#e57373');}
+}
 async function pushInbodyLifts(){
   if(!GH.writeMode||!GH.token){
     showSyncBar('쓰기 모드가 필요합니다 — ⚙️ 설정에서 토큰을 입력하세요','#e57373');
@@ -4834,6 +4881,24 @@ async function pushToGitHub(){
     await ghPut(uPath(uid,'lifts'),{lifts:getStore('lifts'),updatedAt:new Date().toISOString()});
     results.push('lifts ✓');
   }catch(e){results.push('lifts ✗('+e.message+')');}
+
+  /* ④ 운동DB 로컬 추가 항목 */
+  var localEx=lGet('v5_local_exercises')||[];
+  if(localEx.length){
+    try{
+      await ghPut('data/db/user_exercises_'+uid+'.json',{exercises:localEx,updatedAt:new Date().toISOString()});
+      results.push('운동DB ✓');
+    }catch(e){results.push('운동DB ✗('+e.message+')');}
+  }
+
+  /* ⑤ 식단DB 로컬 추가 항목 */
+  var localFood=lGet('v5_local_foods')||[];
+  if(localFood.length){
+    try{
+      await ghPut('data/db/user_foods_'+uid+'.json',{foods:localFood,updatedAt:new Date().toISOString()});
+      results.push('식단DB ✓');
+    }catch(e){results.push('식단DB ✗('+e.message+')');}
+  }
 
   var allOk=results.every(r=>r.includes('✓'));
   var ts=new Date().toLocaleString('ko');
