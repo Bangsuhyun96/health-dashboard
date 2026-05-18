@@ -978,8 +978,11 @@ body:not(.light-mode) .home-ai::before{background:#0e0e14;}
       </div>
     </div>
     <div style="display:flex;align-items:center;gap:6px">
+      <div class="profile-score-box" id="hdr-score-box" style="display:none">
+        <div class="profile-score-val" id="hdr-score">-</div>
+        <div class="profile-score-lbl">InBody</div>
+      </div>
       <button class="profile-toggle" id="profile-toggle-btn" onclick="toggleProfile()">▼ 펼치기</button>
-      <button class="logout-btn" onclick="doLogout()">로그아웃</button>
     </div>
   </div>
   <div class="profile-expand" id="profile-expand">
@@ -997,6 +1000,7 @@ body:not(.light-mode) .home-ai::before{background:#0e0e14;}
     <div class="stat-grid" id="hdr-stats"></div>
   </div>
 </div>
+<div class="logout-row"><button class="logout-btn" onclick="doLogout()">🚪 로그아웃</button></div>
 
 <!-- 대분류 탭 -->
 <div class="cat-tabs">
