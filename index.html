@@ -67,16 +67,17 @@ body.light-mode{
 
 /* ─── 테마 토글 버튼 ─── */
 #theme-toggle{
-  position:fixed;top:16px;right:16px;z-index:9999;
-  width:40px;height:40px;border-radius:50%;
-  border:1.5px solid var(--border-color);
-  background:var(--bg-card);
+  position:fixed;bottom:24px;right:16px;z-index:9999;
+  width:44px;height:44px;border-radius:50%;
+  border:1.5px solid rgba(128,128,128,0.3);
+  background:rgba(30,30,40,0.85);
   backdrop-filter:blur(10px);
   cursor:pointer;font-size:18px;
   display:none;align-items:center;justify-content:center;
-  transition:all 0.3s;box-shadow:var(--shadow-card);
+  transition:all 0.3s;box-shadow:0 4px 16px rgba(0,0,0,0.3);
 }
-#theme-toggle:hover{border-color:var(--accent);transform:scale(1.1);}
+#theme-toggle:hover{transform:scale(1.1);}
+body.light-mode #theme-toggle{background:rgba(240,240,245,0.9);border-color:rgba(0,0,0,0.15);box-shadow:0 4px 16px rgba(0,0,0,0.1);}
 /* 앱 화면 진입 후에만 표시 */
 body.app-ready #theme-toggle{display:flex;}
 
@@ -851,7 +852,7 @@ body:not(.light-mode) .home-ai::before{background:#0e0e14;}
 <div id="today-banner" style="display:none;background:linear-gradient(135deg,#185fa5,#7b72e9);border-radius:14px;padding:14px 16px;margin:12px 12px 0;box-shadow:0 4px 15px rgba(24,95,165,.3)"></div>
 
 <!-- 종목 선택 모달 -->
-<div id="ex-picker-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:999;overflow-y:auto;-webkit-overflow-scrolling:touch">
+<div id="ex-picker-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:999;overflow-y:auto;-webkit-overflow-scrolling:touch" onclick="if(event.target===this)closeExPickerModal()">
   <div style="background:#fff;border-radius:16px 16px 0 0;position:fixed;bottom:0;left:0;right:0;max-height:75vh;overflow-y:auto">
     <div style="padding:14px 16px;border-bottom:1.5px solid #f0f0f0;display:flex;justify-content:space-between;align-items:center">
       <span style="font-size:13px;font-weight:700">운동 종목 선택</span>
@@ -863,7 +864,8 @@ body:not(.light-mode) .home-ai::before{background:#0e0e14;}
       <button class="filter-btn" onclick="renderExPickerList('등');this.closest('#exp-cat-tabs').querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('on'));this.classList.add('on')">등</button>
       <button class="filter-btn" onclick="renderExPickerList('하체');this.closest('#exp-cat-tabs').querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('on'));this.classList.add('on')">하체</button>
       <button class="filter-btn" onclick="renderExPickerList('어깨');this.closest('#exp-cat-tabs').querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('on'));this.classList.add('on')">어깨</button>
-      <button class="filter-btn" onclick="renderExPickerList('팔');this.closest('#exp-cat-tabs').querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('on'));this.classList.add('on')">팔</button>
+      <button class="filter-btn" onclick="renderExPickerList('이두');this.closest('#exp-cat-tabs').querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('on'));this.classList.add('on')">이두</button>
+    <button class="filter-btn" onclick="renderExPickerList('삼두');this.closest('#exp-cat-tabs').querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('on'));this.classList.add('on')">삼두</button>
       <button class="filter-btn" onclick="renderExPickerList('코어');this.closest('#exp-cat-tabs').querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('on'));this.classList.add('on')">코어</button>
       <button class="filter-btn" onclick="renderExPickerList('클라이밍');this.closest('#exp-cat-tabs').querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('on'));this.classList.add('on')">클라이밍</button>
     </div>
@@ -872,7 +874,7 @@ body:not(.light-mode) .home-ai::before{background:#0e0e14;}
 </div>
 
 <!-- 식품 선택 모달 -->
-<div id="food-picker-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:999;overflow-y:auto;-webkit-overflow-scrolling:touch">
+<div id="food-picker-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:999;overflow-y:auto;-webkit-overflow-scrolling:touch" onclick="if(event.target===this)closeFoodPickerModal()">
   <div style="background:#fff;border-radius:16px 16px 0 0;position:fixed;bottom:0;left:0;right:0;max-height:75vh;overflow-y:auto">
     <div style="padding:14px 16px;border-bottom:1.5px solid #f0f0f0;display:flex;justify-content:space-between;align-items:center">
       <span style="font-size:13px;font-weight:700">식품 선택</span>
@@ -885,6 +887,7 @@ body:not(.light-mode) .home-ai::before{background:#0e0e14;}
       <button class="filter-btn" onclick="renderFoodPickerList('채소');this.closest('#foodp-cat-tabs').querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('on'));this.classList.add('on')">채소</button>
       <button class="filter-btn" onclick="renderFoodPickerList('유제품');this.closest('#foodp-cat-tabs').querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('on'));this.classList.add('on')">유제품</button>
       <button class="filter-btn" onclick="renderFoodPickerList('과일');this.closest('#foodp-cat-tabs').querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('on'));this.classList.add('on')">과일</button>
+      <button class="filter-btn" onclick="renderFoodPickerList('음료');this.closest('#foodp-cat-tabs').querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('on'));this.classList.add('on')">음료</button>
       <button class="filter-btn" onclick="renderFoodPickerList('간식');this.closest('#foodp-cat-tabs').querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('on'));this.classList.add('on')">간식</button>
       <button class="filter-btn" onclick="renderFoodPickerList('치팅');this.closest('#foodp-cat-tabs').querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('on'));this.classList.add('on')">치팅</button>
     </div>
@@ -1503,7 +1506,8 @@ body:not(.light-mode) .home-ai::before{background:#0e0e14;}
     <button class="filter-btn" onclick="filterExDB('등',this)">등</button>
     <button class="filter-btn" onclick="filterExDB('하체',this)">하체</button>
     <button class="filter-btn" onclick="filterExDB('어깨',this)">어깨</button>
-    <button class="filter-btn" onclick="filterExDB('팔',this)">팔</button>
+    <button class="filter-btn" onclick="filterExDB('이두',this)">이두</button>
+    <button class="filter-btn" onclick="filterExDB('삼두',this)">삼두</button>
     <button class="filter-btn" onclick="filterExDB('코어',this)">코어</button>
     <button class="filter-btn" onclick="filterExDB('클라이밍',this)">클라이밍</button>
     <button class="filter-btn" onclick="filterExDB('유산소',this)">유산소</button>
@@ -1513,12 +1517,12 @@ body:not(.light-mode) .home-ai::before{background:#0e0e14;}
   </div>
 </div>
 <!-- 운동 추가/수정 모달 -->
-<div id="exdb-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:999;overflow-y:auto;padding:20px">
+<div id="exdb-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:999;overflow-y:auto;padding:20px" onclick="if(event.target===this)closeExDBModal()">
   <div style="background:#fff;border-radius:16px;padding:20px;max-width:420px;margin:0 auto">
     <div style="font-size:14px;font-weight:700;margin-bottom:14px" id="exdb-modal-title">종목 추가</div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
       <div><div style="font-size:10px;color:#555;margin-bottom:3px">종목명</div><input id="exdb-m-name" style="font-family:inherit;font-size:12px;padding:7px 10px;border:1.5px solid #ddd;border-radius:8px;width:100%;outline:none" placeholder="예: 케이블 크로스오버"></div>
-      <div><div style="font-size:10px;color:#555;margin-bottom:3px">중분류</div><select id="exdb-m-cat" style="font-family:inherit;font-size:12px;padding:7px 8px;border:1.5px solid #ddd;border-radius:8px;width:100%;outline:none"><option>가슴</option><option>등</option><option>하체</option><option>어깨</option><option>팔</option><option>코어</option><option>클라이밍</option><option>유산소</option></select></div>
+      <div><div style="font-size:10px;color:#555;margin-bottom:3px">중분류</div><select id="exdb-m-cat" style="font-family:inherit;font-size:12px;padding:7px 8px;border:1.5px solid #ddd;border-radius:8px;width:100%;outline:none"><option>가슴</option><option>등</option><option>하체</option><option>어깨</option><option>이두</option><option>삼두</option><option>코어</option><option>클라이밍</option><option>유산소</option></select></div>
       <div><div style="font-size:10px;color:#555;margin-bottom:3px">기본 세트수</div><input type="number" id="exdb-m-sets" value="3" style="font-family:inherit;font-size:12px;padding:7px 10px;border:1.5px solid #ddd;border-radius:8px;width:100%;outline:none"></div>
       <div><div style="font-size:10px;color:#555;margin-bottom:3px">기본 횟수</div><input id="exdb-m-reps" value="10" style="font-family:inherit;font-size:12px;padding:7px 10px;border:1.5px solid #ddd;border-radius:8px;width:100%;outline:none" placeholder="10 or 30초"></div>
       <div><div style="font-size:10px;color:#555;margin-bottom:3px">MET (칼로리 계산)</div><input type="number" id="exdb-m-met" value="5.0" step="0.5" style="font-family:inherit;font-size:12px;padding:7px 10px;border:1.5px solid #ddd;border-radius:8px;width:100%;outline:none"></div>
@@ -1560,7 +1564,7 @@ body:not(.light-mode) .home-ai::before{background:#0e0e14;}
   </div>
 </div>
 <!-- 식품 추가 모달 -->
-<div id="fooddb-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:999;overflow-y:auto;padding:20px">
+<div id="fooddb-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:999;overflow-y:auto;padding:20px" onclick="if(event.target===this)closeFoodDBModal()">
   <div style="background:#fff;border-radius:16px;padding:20px;max-width:420px;margin:0 auto">
     <div style="font-size:14px;font-weight:700;margin-bottom:14px" id="fooddb-modal-title">식품 추가</div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
@@ -1704,8 +1708,12 @@ function toggleTheme(){
 }
 function initTheme(){
   var saved=localStorage.getItem('v5_theme');
-  /* 기본: 다크 모드 (LvUP 로고 배경이 검정) */
-  if(saved==='light'){
+  /* 기본: 라이트 모드 */
+  if(saved==='dark'){
+    document.body.classList.remove('light-mode');
+    var btn=document.getElementById('theme-toggle');
+    if(btn)btn.textContent='☀️';
+  }else{
     document.body.classList.add('light-mode');
     var btn=document.getElementById('theme-toggle');
     if(btn)btn.textContent='🌙';
@@ -3373,11 +3381,11 @@ var BUILTIN_EXERCISES={exercises:[
   {id:'cable_lateral',name:'케이블 레터럴 레이즈',category:'어깨',defaultSets:3,defaultReps:'15',met:4,tips:'낮은 풀리 이용'},
   {id:'rear_delt',name:'리어 델트 플라이',category:'어깨',defaultSets:3,defaultReps:'15',met:4,tips:'상체 90도 숙여서'},
   {id:'facepull',name:'페이스풀',category:'어깨',defaultSets:3,defaultReps:'15',met:4,tips:'로프 눈높이, 외회전 강조'},
-  {id:'barbell_curl',name:'바벨 컬',category:'팔',defaultSets:3,defaultReps:'10-12',met:4,tips:'팔꿈치 고정'},
-  {id:'incline_curl',name:'인클라인 덤벨 컬',category:'팔',defaultSets:3,defaultReps:'12',met:4,tips:'완전 신전에서 수축'},
-  {id:'hammer_curl',name:'해머 컬',category:'팔',defaultSets:3,defaultReps:'12',met:4,tips:'중립 그립 유지'},
-  {id:'cable_tricep',name:'케이블 트라이셉',category:'팔',defaultSets:3,defaultReps:'12-15',met:4,tips:'팔꿈치 고정 pushdown'},
-  {id:'overhead_tricep',name:'오버헤드 트라이셉',category:'팔',defaultSets:3,defaultReps:'12',met:4,tips:'팔꿈치 안쪽으로'},
+  {id:'barbell_curl',name:'바벨 컬',category:'이두',defaultSets:3,defaultReps:'10-12',met:4,tips:'팔꿈치 고정'},
+  {id:'incline_curl',name:'인클라인 덤벨 컬',category:'이두',defaultSets:3,defaultReps:'12',met:4,tips:'완전 신전에서 수축'},
+  {id:'hammer_curl',name:'해머 컬',category:'이두',defaultSets:3,defaultReps:'12',met:4,tips:'중립 그립 유지'},
+  {id:'cable_tricep',name:'케이블 트라이셉',category:'삼두',defaultSets:3,defaultReps:'12-15',met:4,tips:'팔꿈치 고정 pushdown'},
+  {id:'overhead_tricep',name:'오버헤드 트라이셉',category:'삼두',defaultSets:3,defaultReps:'12',met:4,tips:'팔꿈치 안쪽으로'},
   {id:'latpull',name:'렛풀다운',category:'등',defaultSets:4,defaultReps:'10-12',met:6,tips:'가슴으로 당기기, 견갑 내리기'},
   {id:'barbell_row',name:'바벨 로우',category:'등',defaultSets:4,defaultReps:'8-10',met:6,tips:'상체 45도, 배꼽쪽으로 당기기'},
   {id:'onearm_row',name:'원암 덤벨 로우',category:'등',defaultSets:3,defaultReps:'10-12',met:5.5,tips:'벤치에 무릎 올려서'},
@@ -3616,7 +3624,7 @@ function renderExerciseBlocks(){
     el.innerHTML='<div style="text-align:center;color:#aaa;font-size:12px;padding:16px 0">종목을 추가하세요</div>';
     updateBurnCalc();return;
   }
-  var catColor={가슴:'#185fa5',등:'#1d9e75',하체:'#7b72e9',어깨:'#ef9f27',팔:'#e57373',코어:'#888',클라이밍:'#275a0a',유산소:'#c47d0e'};
+  var catColor={가슴:'#185fa5',등:'#1d9e75',하체:'#7b72e9',어깨:'#ef9f27',팔:'#e57373',이두:'#e57373',삼두:'#c47d0e',코어:'#888',클라이밍:'#275a0a',유산소:'#c47d0e'};
   var h='';
   exerciseBlocks.forEach((b,bi)=>{
     var exInfo=b.exId?getExerciseById(b.exId):null;
@@ -5499,7 +5507,7 @@ function renderExDBList(){
   var el=document.getElementById('exdb-list');if(!el)return;
   var list=getExercises(exDBFilter==='전체'?null:exDBFilter);
   if(!list.length){el.innerHTML='<div style="text-align:center;color:#888;font-size:12px;padding:16px">종목이 없어요. DB 파일을 GitHub에 업로드하거나 직접 추가하세요.</div>';return;}
-  var cc={가슴:'#185fa5',등:'#1d9e75',하체:'#7b72e9',어깨:'#ef9f27',팔:'#e57373',코어:'#888',클라이밍:'#275a0a',유산소:'#c47d0e'};
+  var cc={가슴:'#185fa5',등:'#1d9e75',하체:'#7b72e9',어깨:'#ef9f27',팔:'#e57373',이두:'#e57373',삼두:'#c47d0e',코어:'#888',클라이밍:'#275a0a',유산소:'#c47d0e'};
   el.innerHTML=list.map(ex=>`<div style="display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1.5px solid #f0f0f0">
     <div style="flex:1"><div style="font-size:12px;font-weight:700">${ex.name}<span style="font-size:10px;color:${cc[ex.category]||'#888'};margin-left:5px">${ex.category}</span>${ex.local?'<span style="font-size:9px;color:#7b72e9;margin-left:3px">로컬</span>':''}</div>
     <div style="font-size:10px;color:#888;margin-top:2px">${ex.defaultSets}세트×${ex.defaultReps} · MET ${ex.met}${ex.tips?' · '+ex.tips:''}</div></div>
@@ -5604,7 +5612,7 @@ function openExercisePicker(blockId){
 function renderExPickerList(cat){
   var el=document.getElementById('ex-picker-list');if(!el)return;
   var list=getExercises(cat==='전체'?null:cat);
-  var cc={가슴:'#185fa5',등:'#1d9e75',하체:'#7b72e9',어깨:'#ef9f27',팔:'#e57373',코어:'#888',클라이밍:'#275a0a',유산소:'#c47d0e'};
+  var cc={가슴:'#185fa5',등:'#1d9e75',하체:'#7b72e9',어깨:'#ef9f27',팔:'#e57373',이두:'#e57373',삼두:'#c47d0e',코어:'#888',클라이밍:'#275a0a',유산소:'#c47d0e'};
   el.innerHTML=list.map(ex=>`<div onclick="selectExerciseFromPicker('${ex.id}')" style="padding:10px 12px;border-bottom:1.5px solid #f0f0f0;cursor:pointer" onmouseover="this.style.background='#f5f5f5'" onmouseout="this.style.background=''">
     <div style="font-size:12px;font-weight:700">${ex.name} <span style="font-size:10px;color:${cc[ex.category]||'#888'}">${ex.category}</span></div>
     <div style="font-size:10px;color:#888">${ex.defaultSets}×${ex.defaultReps}${ex.tips?' · '+ex.tips:''}</div></div>`).join('');
@@ -5623,7 +5631,7 @@ function selectExerciseFromPicker(exId){
   /* 세트가 1개이고 비어있으면 defaultSets/Reps 자동 채우기 */
   if(b.sets.length===1&&!b.sets[0].kg&&!b.sets[0].reps){
     b.sets=[];
-    for(var i=0;i<(ex.defaultSets||3);i++)b.sets.push({kg:'',reps:String(ex.defaultReps||'10')});
+    for(var i=0;i<(ex.defaultSets||3);i++)b.sets.push({kg:'',reps:''});
   }
   document.getElementById('ex-picker-modal').style.display='none';
   exPickCallback=null;
