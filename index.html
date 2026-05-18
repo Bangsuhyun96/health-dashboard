@@ -5489,7 +5489,7 @@ function renderExDBList(){
     <div style="display:flex;gap:4px;flex-shrink:0">
       <button onclick="openExVideo('${ex.name}')" style="font-size:10px;padding:3px 8px;border:1.5px solid #ddd;border-radius:6px;background:#f5f5f5;cursor:pointer;font-family:inherit" title="YouTube 영상 보기">📹</button>
       <button onclick="openAddExerciseModal('${ex.id}')" style="font-size:10px;padding:3px 8px;border:1.5px solid #ddd;border-radius:6px;background:#f5f5f5;cursor:pointer;font-family:inherit">수정</button>
-      `<button onclick="deleteExDBItem('${ex.id}')" style="font-size:10px;padding:3px 8px;border:1.5px solid #e57373;border-radius:6px;background:#fdecea;color:#c0392b;cursor:pointer;font-family:inherit">삭제</button>`
+      <button onclick="deleteExDBItem('${ex.id}')" style="font-size:10px;padding:3px 8px;border:1.5px solid #e57373;border-radius:6px;background:#fdecea;color:#c0392b;cursor:pointer;font-family:inherit">삭제</button>
     </div></div>`).join('');
 }
 function openAddExerciseModal(id){
@@ -5530,7 +5530,7 @@ function renderFoodDBList(){
     <div style="font-size:10px;color:#888;margin-top:2px">${f.kcal}kcal · 단백질 ${f.prot}g · 탄수 ${f.carb}g · 지방 ${f.fat}g${f.unit?' · '+f.unit:''}</div></div>
     <div style="display:flex;gap:4px;flex-shrink:0">
       <button onclick="openAddFoodModal('${f.id}')" style="font-size:10px;padding:3px 8px;border:1.5px solid #ddd;border-radius:6px;background:#f5f5f5;cursor:pointer;font-family:inherit">수정</button>
-      `<button onclick="deleteFoodDBItem('${f.id}')" style="font-size:10px;padding:3px 8px;border:1.5px solid #e57373;border-radius:6px;background:#fdecea;color:#c0392b;cursor:pointer;font-family:inherit">삭제</button>`
+      <button onclick="deleteFoodDBItem('${f.id}')" style="font-size:10px;padding:3px 8px;border:1.5px solid #e57373;border-radius:6px;background:#fdecea;color:#c0392b;cursor:pointer;font-family:inherit">삭제</button>
     </div></div>`).join('');
 }
 function openAddFoodModal(id){
