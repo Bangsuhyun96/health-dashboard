@@ -4752,17 +4752,8 @@ async function pullFromGitHub(force){
       if(lf.lifts){lSet(uk('lifts'),lf.lifts);pulled.lifts=true;}
     }catch(e){}
 
-    /* ── exercises (로컬 추가 항목) ── */
-    try{
-      var exd=await ghGet('data/db/user_exercises_'+uid+'.json');
-      if(exd.exercises){lSet('v5_local_exercises',exd.exercises);pulled.exercises=true;}
-    }catch(e){}
-
-    /* ── foods (로컬 추가 항목) ── */
-    try{
-      var fdd=await ghGet('data/db/user_foods_'+uid+'.json');
-      if(fdd.foods){lSet('v5_local_foods',fdd.foods);pulled.foods=true;}
-    }catch(e){}
+    /* ── DB 캐시 무효화 → 다음 loadDB 시 최신 exercises/foods 가져옴 ── */
+    lSet(DB_CACHE_KEY,null);
 
     /* ── profile (모바일에서 캐시 없을 때) ── */
     var cachedProfile=lGet('v5_profile_'+uid);
@@ -4810,24 +4801,19 @@ async function pullFromGitHub(force){
   }
 }
 /* 인바디 + 중량 전용 GitHub 전송 */
-/* ─── 운동DB / 식단DB 개별 GitHub 전송 ─── */
-async function pushUserDB(type){
-  if(!GH.writeMode||!GH.token){
-    showSyncBar('쓰기 모드 필요 — ⚙️ 설정에서 토큰 입력','#e57373');return;
-  }
-  var uid=APP.user?.id;if(!uid)return;
-  showSyncBar((type==='exercises'?'운동DB':'식단DB')+' 전송 중...','#185fa5');
+/* ─── DB 통합 GitHub 저장 ─── */
+async function pushAllDB(){
+  if(!GH.writeMode||!GH.token){showSyncBar('쓰기 모드 필요 — ⚙️ 설정에서 토큰 입력','#ef9f27');return;}
   try{
-    if(type==='exercises'){
-      var data=lGet('v5_local_exercises')||[];
-      await ghPut('data/db/user_exercises_'+uid+'.json',{exercises:data,updatedAt:new Date().toISOString()});
-      showSyncBar('☁️ 운동DB 저장 완료 ('+data.length+'개 로컬 항목)','#1d9e75');
-    }else{
-      var data=lGet('v5_local_foods')||[];
-      await ghPut('data/db/user_foods_'+uid+'.json',{foods:data,updatedAt:new Date().toISOString()});
-      showSyncBar('☁️ 식단DB 저장 완료 ('+data.length+'개 로컬 항목)','#1d9e75');
-    }
-  }catch(e){showSyncBar('전송 실패: '+e.message,'#e57373');}
+    if(DB.exercises)await ghPut('data/db/exercises.json',DB.exercises);
+    if(DB.foods)await ghPut('data/db/foods.json',DB.foods);
+    lSet(DB_CACHE_KEY,{ts:Date.now(),exercises:DB.exercises,foods:DB.foods});
+    showSyncBar('☁️ DB 저장 완료','#1d9e75');
+  }catch(e){showSyncBar('DB 저장 실패: '+e.message,'#e57373');}
+}
+/* ─── 운동DB / 식단DB GitHub 저장 (버튼용) ─── */
+async function pushUserDB(type){
+  pushAllDB();
 }
 async function pushInbodyLifts(){
   if(!GH.writeMode||!GH.token){
@@ -4890,22 +4876,14 @@ async function pushToGitHub(){
     results.push('lifts ✓');
   }catch(e){results.push('lifts ✗('+e.message+')');}
 
-  /* ④ 운동DB 로컬 추가 항목 */
-  var localEx=lGet('v5_local_exercises')||[];
-  if(localEx.length){
-    try{
-      await ghPut('data/db/user_exercises_'+uid+'.json',{exercises:localEx,updatedAt:new Date().toISOString()});
-      results.push('운동DB ✓');
-    }catch(e){results.push('운동DB ✗('+e.message+')');}
+  /* ④ 운동DB + 식단DB (통합) */
+  if(DB.exercises){
+    try{await ghPut('data/db/exercises.json',DB.exercises);results.push('운동DB ✓');}
+    catch(e){results.push('운동DB ✗('+e.message+')');}
   }
-
-  /* ⑤ 식단DB 로컬 추가 항목 */
-  var localFood=lGet('v5_local_foods')||[];
-  if(localFood.length){
-    try{
-      await ghPut('data/db/user_foods_'+uid+'.json',{foods:localFood,updatedAt:new Date().toISOString()});
-      results.push('식단DB ✓');
-    }catch(e){results.push('식단DB ✗('+e.message+')');}
+  if(DB.foods){
+    try{await ghPut('data/db/foods.json',DB.foods);results.push('식단DB ✓');}
+    catch(e){results.push('식단DB ✗('+e.message+')');}
   }
 
   var allOk=results.every(r=>r.includes('✓'));
@@ -5490,10 +5468,7 @@ async function loadDB(){
   mergeLocalDB();
 }
 function mergeLocalDB(){
-  var localEx=lGet('v5_local_exercises')||[];
-  var localFood=lGet('v5_local_foods')||[];
-  if(DB.exercises&&localEx.length)localEx.forEach(item=>{if(!DB.exercises.exercises.find(e=>e.id===item.id))DB.exercises.exercises.push({...item,local:true});});
-  if(DB.foods&&localFood.length)localFood.forEach(item=>{if(!DB.foods.foods.find(f=>f.id===item.id))DB.foods.foods.push({...item,local:true});});
+  /* 통합 DB — exercises.json / foods.json 단일 파일 사용 */
 }
 function getExercises(cat){var l=DB.exercises?.exercises||[];return(!cat||cat==='전체')?l:l.filter(e=>e.category===cat);}
 function getFoods(cat){var l=DB.foods?.foods||[];return(!cat||cat==='전체')?l:l.filter(f=>f.category===cat);}
@@ -5509,12 +5484,12 @@ function renderExDBList(){
   if(!list.length){el.innerHTML='<div style="text-align:center;color:#888;font-size:12px;padding:16px">종목이 없어요. DB 파일을 GitHub에 업로드하거나 직접 추가하세요.</div>';return;}
   var cc={가슴:'#185fa5',등:'#1d9e75',하체:'#7b72e9',어깨:'#ef9f27',팔:'#e57373',이두:'#e57373',삼두:'#c47d0e',코어:'#888',클라이밍:'#275a0a',유산소:'#c47d0e'};
   el.innerHTML=list.map(ex=>`<div style="display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1.5px solid #f0f0f0">
-    <div style="flex:1"><div style="font-size:12px;font-weight:700">${ex.name}<span style="font-size:10px;color:${cc[ex.category]||'#888'};margin-left:5px">${ex.category}</span>${ex.local?'<span style="font-size:9px;color:#7b72e9;margin-left:3px">로컬</span>':''}</div>
+    <div style="flex:1"><div style="font-size:12px;font-weight:700">${ex.name}<span style="font-size:10px;color:${cc[ex.category]||'#888'};margin-left:5px">${ex.category}</span></div>
     <div style="font-size:10px;color:#888;margin-top:2px">${ex.defaultSets}세트×${ex.defaultReps} · MET ${ex.met}${ex.tips?' · '+ex.tips:''}</div></div>
     <div style="display:flex;gap:4px;flex-shrink:0">
       <button onclick="openExVideo('${ex.name}')" style="font-size:10px;padding:3px 8px;border:1.5px solid #ddd;border-radius:6px;background:#f5f5f5;cursor:pointer;font-family:inherit" title="YouTube 영상 보기">📹</button>
       <button onclick="openAddExerciseModal('${ex.id}')" style="font-size:10px;padding:3px 8px;border:1.5px solid #ddd;border-radius:6px;background:#f5f5f5;cursor:pointer;font-family:inherit">수정</button>
-      ${ex.local?`<button onclick="deleteExDBItem('${ex.id}')" style="font-size:10px;padding:3px 8px;border:1.5px solid #e57373;border-radius:6px;background:#fdecea;color:#c0392b;cursor:pointer;font-family:inherit">삭제</button>`:''}
+      `<button onclick="deleteExDBItem('${ex.id}')" style="font-size:10px;padding:3px 8px;border:1.5px solid #e57373;border-radius:6px;background:#fdecea;color:#c0392b;cursor:pointer;font-family:inherit">삭제</button>`
     </div></div>`).join('');
 }
 function openAddExerciseModal(id){
@@ -5527,18 +5502,20 @@ function openAddExerciseModal(id){
 function closeExDBModal(){document.getElementById('exdb-modal').style.display='none';}
 function saveExDBItem(){
   var name=document.getElementById('exdb-m-name').value.trim();if(!name)return alert('종목명을 입력해주세요');
-  var id=document.getElementById('exdb-m-id').value||'local_ex_'+Date.now();
-  var item={id,name,category:document.getElementById('exdb-m-cat').value,defaultSets:parseInt(document.getElementById('exdb-m-sets').value)||3,defaultReps:document.getElementById('exdb-m-reps').value||'10',met:parseFloat(document.getElementById('exdb-m-met').value)||5.0,tips:document.getElementById('exdb-m-tips').value,local:true};
-  var local=lGet('v5_local_exercises')||[];var idx=local.findIndex(e=>e.id===id);
-  if(idx>=0)local[idx]=item;else local.push(item);lSet('v5_local_exercises',local);
-  if(DB.exercises){var mi=DB.exercises.exercises.findIndex(e=>e.id===id);if(mi>=0)DB.exercises.exercises[mi]=item;else DB.exercises.exercises.push(item);}
-  closeExDBModal();renderExDBList();
+  var id=document.getElementById('exdb-m-id').value||'ex_'+Date.now();
+  var item={id,name,category:document.getElementById('exdb-m-cat').value,defaultSets:parseInt(document.getElementById('exdb-m-sets').value)||3,defaultReps:document.getElementById('exdb-m-reps').value||'10',met:parseFloat(document.getElementById('exdb-m-met').value)||5.0,tips:document.getElementById('exdb-m-tips').value};
+  if(!DB.exercises)DB.exercises={exercises:[]};
+  var mi=DB.exercises.exercises.findIndex(e=>e.id===id);
+  if(mi>=0)DB.exercises.exercises[mi]=item;else DB.exercises.exercises.push(item);
+  lSet(DB_CACHE_KEY,null);closeExDBModal();renderExDBList();pushAllDB();
 }
 function deleteExDBItem(id){
   if(!confirm('삭제할까요?'))return;
-  lSet('v5_local_exercises',(lGet('v5_local_exercises')||[]).filter(e=>e.id!==id));
-  if(DB.exercises)DB.exercises.exercises=DB.exercises.exercises.filter(e=>e.id!==id);renderExDBList();
+  if(DB.exercises)DB.exercises.exercises=DB.exercises.exercises.filter(e=>e.id!==id);
+  lSet(DB_CACHE_KEY,null);renderExDBList();pushAllDB();
 }
+
+
 
 /* ─ 식단DB 탭 ─ */
 var foodDBFilter='전체';
@@ -5549,11 +5526,11 @@ function renderFoodDBList(){
   if(!list.length){el.innerHTML='<div style="text-align:center;color:#888;font-size:12px;padding:16px">식품이 없어요.</div>';return;}
   var cc={단백질:'#185fa5',탄수:'#c47d0e',채소:'#1d9e75',유제품:'#7b72e9',과일:'#e57373',음료:'#378add',간식:'#888',치팅:'#e57373'};
   el.innerHTML=list.map(f=>`<div style="display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1.5px solid #f0f0f0">
-    <div style="flex:1"><div style="font-size:12px;font-weight:700">${f.name}<span style="font-size:10px;color:${cc[f.category]||'#888'};margin-left:5px">${f.category}</span>${f.local?'<span style="font-size:9px;color:#7b72e9;margin-left:3px">로컬</span>':''}</div>
+    <div style="flex:1"><div style="font-size:12px;font-weight:700">${f.name}<span style="font-size:10px;color:${cc[f.category]||'#888'};margin-left:5px">${f.category}</span></div>
     <div style="font-size:10px;color:#888;margin-top:2px">${f.kcal}kcal · 단백질 ${f.prot}g · 탄수 ${f.carb}g · 지방 ${f.fat}g${f.unit?' · '+f.unit:''}</div></div>
     <div style="display:flex;gap:4px;flex-shrink:0">
       <button onclick="openAddFoodModal('${f.id}')" style="font-size:10px;padding:3px 8px;border:1.5px solid #ddd;border-radius:6px;background:#f5f5f5;cursor:pointer;font-family:inherit">수정</button>
-      ${f.local?`<button onclick="deleteFoodDBItem('${f.id}')" style="font-size:10px;padding:3px 8px;border:1.5px solid #e57373;border-radius:6px;background:#fdecea;color:#c0392b;cursor:pointer;font-family:inherit">삭제</button>`:''}
+      `<button onclick="deleteFoodDBItem('${f.id}')" style="font-size:10px;padding:3px 8px;border:1.5px solid #e57373;border-radius:6px;background:#fdecea;color:#c0392b;cursor:pointer;font-family:inherit">삭제</button>`
     </div></div>`).join('');
 }
 function openAddFoodModal(id){
@@ -5566,17 +5543,20 @@ function openAddFoodModal(id){
 function closeFoodDBModal(){document.getElementById('fooddb-modal').style.display='none';}
 function saveFoodDBItem(){
   var name=document.getElementById('fdb-m-name').value.trim();if(!name)return alert('식품명을 입력해주세요');
-  var id=document.getElementById('fdb-m-id').value||'local_food_'+Date.now();
-  var item={id,name,category:document.getElementById('fdb-m-cat').value,unit:document.getElementById('fdb-m-unit').value,kcal:parseFloat(document.getElementById('fdb-m-kcal').value)||0,prot:parseFloat(document.getElementById('fdb-m-prot').value)||0,carb:parseFloat(document.getElementById('fdb-m-carb').value)||0,fat:parseFloat(document.getElementById('fdb-m-fat').value)||0,local:true,verified:true};
-  var local=lGet('v5_local_foods')||[];var idx=local.findIndex(f=>f.id===id);
-  if(idx>=0)local[idx]=item;else local.push(item);lSet('v5_local_foods',local);
-  if(DB.foods){var mi=DB.foods.foods.findIndex(f=>f.id===id);if(mi>=0)DB.foods.foods[mi]=item;else DB.foods.foods.push(item);}
-  closeFoodDBModal();renderFoodDBList();
+  var id=document.getElementById('fdb-m-id').value||'food_'+Date.now();
+  var item={id,name,category:document.getElementById('fdb-m-cat').value,unit:document.getElementById('fdb-m-unit').value,kcal:parseFloat(document.getElementById('fdb-m-kcal').value)||0,prot:parseFloat(document.getElementById('fdb-m-prot').value)||0,carb:parseFloat(document.getElementById('fdb-m-carb').value)||0,fat:parseFloat(document.getElementById('fdb-m-fat').value)||0,verified:true};
+  if(!DB.foods)DB.foods={foods:[]};
+  var mi=DB.foods.foods.findIndex(f=>f.id===id);
+  if(mi>=0)DB.foods.foods[mi]=item;else DB.foods.foods.push(item);
+  lSet(DB_CACHE_KEY,null);closeFoodDBModal();renderFoodDBList();pushAllDB();
 }
+
 function deleteFoodDBItem(id){
   if(!confirm('삭제할까요?'))return;
-  lSet('v5_local_foods',(lGet('v5_local_foods')||[]).filter(f=>f.id!==id));
-  if(DB.foods)DB.foods.foods=DB.foods.foods.filter(f=>f.id!==id);renderFoodDBList();
+  if(DB.foods)DB.foods.foods=DB.foods.foods.filter(f=>f.id!==id);
+  lSet(DB_CACHE_KEY,null);
+  renderFoodDBList();
+  pushAllDB();
 }
 
 /* ─ 종목 선택 피커 ─ */
