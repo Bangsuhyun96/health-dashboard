@@ -1,6 +1,76 @@
 {
   "logs": [
     {
+      "date": "2026-05-18",
+      "exTypes": [
+        "weight"
+      ],
+      "exercises": [
+        {
+          "name": "벤치프레스",
+          "sets": [
+            {
+              "kg": "",
+              "reps": "6~8"
+            }
+          ]
+        },
+        {
+          "name": "인클라인 덤벨프레스",
+          "sets": [
+            {
+              "kg": "",
+              "reps": "8~10"
+            }
+          ]
+        },
+        {
+          "name": "케이블플라이",
+          "sets": []
+        },
+        {
+          "name": "오버헤드 트라이셉",
+          "sets": [
+            {
+              "kg": "",
+              "reps": "12"
+            },
+            {
+              "kg": "",
+              "reps": "12"
+            }
+          ]
+        },
+        {
+          "name": "",
+          "sets": []
+        },
+        {
+          "name": "",
+          "sets": []
+        }
+      ],
+      "foods": [
+        "소금빵",
+        "돌체라떼"
+      ],
+      "nutrition": {
+        "kcal": 422,
+        "prot": 16,
+        "carb": 61,
+        "fat": 13
+      },
+      "sleep": 7,
+      "ankle": 0,
+      "water": 800,
+      "cond": 3,
+      "supps": [],
+      "memo": "",
+      "climbingMin": null,
+      "bikeMin": 60,
+      "savedAt": "2026-05-18T03:24:35.291Z"
+    },
+    {
       "date": "2026-05-14",
       "exTypes": [
         "climbing"
@@ -172,5 +242,5 @@
     }
   ],
   "month": "2026-05",
-  "updatedAt": "2026-05-15T06:18:48.463Z"
+  "updatedAt": "2026-05-18T03:24:42.731Z"
 }
