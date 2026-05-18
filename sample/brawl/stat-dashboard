@@ -1,0 +1,933 @@
+<!DOCTYPE html>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<title>stat-dashboard</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --bg:#f5f5f7;
+  --bg2:#ffffff;
+  --bg3:#ffffff;
+  --border:#e0e0e6;
+  --text:#1a1a2e;
+  --sub:#6b7280;
+  --muted:#9ca3af;
+  --accent:#f5c518;
+  --accent2:#a07800;
+  --win:#16a34a;
+  --lose:#dc2626;
+  --pick:#1d6fb8;
+  --ban:#c0392b;
+  --r:12px;
+  --r2:8px;
+}
+body{font-family:-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;font-size:14px;background:var(--bg);color:var(--text);min-height:100vh; max-width: 656px; margin: 0 auto;}
+a{color:inherit;text-decoration:none;}
+
+/* ── 헤더 ── */
+.header{background:var(--bg3);border-bottom:1px solid var(--border);padding:16px 20px;display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:100;}
+.header-badge{background:var(--accent);color:#000;font-size:10px;font-weight:700;padding:3px 8px;border-radius:4px;letter-spacing:.5px;}
+.header-title{font-size:17px;font-weight:700;color:var(--text);}
+.header-sub{font-size:11px;color:var(--sub);margin-left:auto;}
+
+/* ── 탭 네비 ── */
+.nav{display:flex;gap:4px;padding:12px 16px;background:var(--bg3);border:1px solid var(--border);overflow-x:auto;-webkit-overflow-scrolling:touch;border-radius:var(--r);}
+.nav::-webkit-scrollbar{display:none;}
+.nav-btn{font-family:inherit;font-size:12px;font-weight:600;padding:7px 14px;border:1.5px solid var(--border);border-radius:20px;background:transparent;color:var(--sub);cursor:pointer;white-space:nowrap;transition:all .2s;}
+.nav-btn.on{background:var(--accent);color:#000;border-color:var(--accent);}
+.nav-btn:hover:not(.on){border-color:var(--accent);color:var(--accent);}
+
+/* ── 섹션 ── */
+.section{display:none;padding:8px 16px 16px 16px;}
+.section.on{display:block;}
+
+/* ── 카드 ── */
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:16px;margin-bottom:12px;}
+.card-title{font-size:13px;font-weight:700;color:var(--sub);letter-spacing:.5px;text-transform:uppercase;margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid var(--border);}
+
+/* ── 요약 카드 그리드 ── */
+.summary-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:12px;}
+.summary-grid.four{grid-template-columns:repeat(4,1fr);}
+@media(max-width:500px){.summary-grid.four{grid-template-columns:repeat(2,1fr);}}
+.stat-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r2);padding:14px 12px;text-align:center;}
+.stat-val{font-size:22px;font-weight:700;color:var(--accent);margin-bottom:2px;}
+.stat-label{font-size:11px;color:var(--sub);}
+.stat-sub{font-size:10px;color:var(--muted);margin-top:2px;}
+
+/* ── 테이블 ── */
+.tbl-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;}
+table{width:100%;border-collapse:collapse;font-size:12px;}
+th{padding:8px 10px;text-align:left;color:var(--sub);font-weight:600;font-size:11px;border-bottom:1px solid var(--border);white-space:nowrap;}
+td{padding:8px 10px;border-bottom:1px solid var(--border);vertical-align:middle;white-space:nowrap;}
+tr:last-child td{border-bottom:none;}
+tr:hover td{background:rgba(0,0,0,.02);}
+.tc{text-align:center;}
+
+/* ── 배지 ── */
+.badge{display:inline-block;font-size:10px;font-weight:700;padding:2px 7px;border-radius:4px;}
+.badge-win{background:rgba(22,163,74,.12);color:var(--win);}
+.badge-lose{background:rgba(220,38,38,.12);color:var(--lose);}
+.badge-gold{background:rgba(201,160,0,.12);color:var(--accent);}
+.badge-pick{background:rgba(29,111,184,.12);color:var(--pick);}
+.badge-ban{background:rgba(192,57,43,.12);color:var(--ban);}
+.badge-global{background:rgba(220,38,38,.15);color:var(--lose);}
+.badge-mvp{background:rgba(201,160,0,.15);color:var(--accent);}
+
+/* ── 차트 래퍼 ── */
+.chart-wrap{position:relative;width:100%;}
+
+/* ── 매치 카드 ── */
+.match-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);margin-bottom:10px;overflow:hidden;}
+.match-header{display:flex;align-items:center;padding:10px 14px;border-bottom:1px solid var(--border);gap:8px;}
+.match-round{font-size:10px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:.5px;}
+.match-time{font-size:10px;color:var(--muted);margin-left:auto;}
+.match-score-row{display:flex;align-items:center;padding:12px 14px;gap:10px;}
+.team-name{flex:1;font-size:13px;font-weight:700;}
+.team-name.win{color:var(--win);}
+.team-name.right{text-align:right;}
+.match-score{font-size:20px;font-weight:700;text-align:center;min-width:60px;}
+.game-rows{padding:0 14px 10px;}
+.game-row{display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid rgba(0,0,0,.06);font-size:11px;}
+.game-row:last-child{border-bottom:none;}
+.game-num{color:var(--muted);width:18px;flex-shrink:0;}
+.game-mode{color:var(--sub);flex:1;font-size:10px;}
+.game-map{color:var(--text);flex:2;}
+.game-picks{display:flex;gap:4px;flex:3;}
+.pick-box{display:flex;gap:3px;align-items:center;}
+.pick-tag{font-size:10px;padding:1px 6px;border-radius:3px;font-weight:600;}
+.pick-tag.blue{background:rgba(55,138,221,.2);color:#1d6fb8;}
+.pick-tag.red{background:rgba(226,75,74,.2);color:#dc2626;}
+.game-result{text-align:right;flex-shrink:0;width:30px;}
+.ban-row{padding:6px 14px;background:rgba(192,57,43,.04);border-top:1px solid var(--border);font-size:11px;color:var(--sub);}
+.ban-tag{display:inline-block;font-size:10px;background:rgba(192,57,43,.12);color:var(--ban);padding:1px 6px;border-radius:3px;margin:2px 2px 0 0;}
+.global-ban-tag{display:inline-block;font-size:10px;background:rgba(220,38,38,.12);color:var(--lose);padding:1px 6px;border-radius:3px;margin:2px 2px 0 0;font-weight:700;}
+.mvp-row{padding:6px 14px;font-size:11px;color:var(--accent);border-top:1px solid var(--border);}
+
+/* ── 바 차트 (CSS only) ── */
+.bar-list{display:flex;flex-direction:column;gap:7px;}
+.bar-item{display:flex;align-items:center;gap:8px;}
+.bar-name{font-size:11px;color:var(--text);width:80px;flex-shrink:0;text-align:right;}
+.bar-track{flex:1;background:rgba(0,0,0,.06);border-radius:3px;height:18px;overflow:hidden;}
+.bar-fill{height:100%;border-radius:3px;display:flex;align-items:center;padding-left:6px;font-size:10px;font-weight:700;transition:width .5s ease;}
+.bar-fill.pick{background:rgba(29,111,184,.7);}
+.bar-fill.ban{background:rgba(192,57,43,.7);}
+.bar-count{font-size:11px;color:var(--sub);width:20px;flex-shrink:0;}
+
+/* ── 팀 색상 ── */
+.team-hmble{color:#c9a000;}
+.team-fut{color:#b91c1c;}
+.team-tribe{color:#16a34a;}
+.team-zeta{color:#1d6fb8;}
+.team-cr{color:#6d28d9;}
+.team-realm{color:#92400e;}
+.team-rev{color:#b45309;}
+.team-bh{color:#0f766e;}
+
+/* ── 픽률/승률 비교 ── */
+.brawler-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px;}
+.brawler-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r2);padding:10px;}
+.brawler-name{font-size:12px;font-weight:700;margin-bottom:6px;}
+.brawler-stat{font-size:10px;color:var(--sub);display:flex;justify-content:space-between;margin-bottom:2px;}
+.brawler-stat span:last-child{color:var(--text);}
+.mini-bar{height:4px;background:rgba(0,0,0,.07);border-radius:2px;margin-top:4px;}
+.mini-bar-fill{height:100%;border-radius:2px;}
+
+/* ── 스크롤바 ── */
+::-webkit-scrollbar{width:4px;height:4px;}
+::-webkit-scrollbar-track{background:#f0f0f2;}
+::-webkit-scrollbar-thumb{background:#c0c0c8;border-radius:2px;}
+</style>
+
+<script>
+function tab(id,btn){
+  document.querySelectorAll('.section').forEach(function(s){s.classList.remove('on');});
+  document.querySelectorAll('.nav-btn').forEach(function(b){b.classList.remove('on');});
+  var el=document.getElementById('s-'+id);
+  if(el)el.classList.add('on');
+  btn.classList.add('on');
+  if(id==='picks')renderPickBars();
+  if(id==='bans')renderBanBars();
+  if(id==='maps')renderModeBars();
+}
+var PICKS={체스터:7,'재용':5,레온:5,오티스:5,찰리:4,미플:4,니타:3,시리우스:3,엠즈:3,셰이드:3,거스:3,나지아:3,미나:3,피어스:3,스튜:3,안젤로:2,나니:2,키트:2,샌디:2,루미:2,에드거:2,진:2,'R-T':2};
+var BANS={콜레트:9,모티스:5,크로우:6,레온:3,루미:3,나지아:1,알리:4,미플:4,진:4,키트:2,러프스:2,미나:1,셰이드:2,샌디:1,스튜:2,모:2,올리:2,바이런:2,벨:1,그리프:1,니타:1,엠즈:1,핑크스:1,피어스:2};
+var MODES={'Brawl Ball':7,'보unty':5,'Knockout':5,'Gem Grab':4,'Hot Zone':3,'Heist':1};
+function makeBar(name,val,max,cls,container){
+  var pct=Math.round(val/max*100);
+  var d=document.createElement('div');d.className='bar-item';
+  d.innerHTML='<div class="bar-name">'+name+'</div><div class="bar-track"><div class="bar-fill '+cls+'" style="width:'+pct+'%">'+val+'</div></div><div class="bar-count">'+val+'</div>';
+  container.appendChild(d);
+}
+function renderPickBars(){
+  var el=document.getElementById('pick-bars');if(!el||el.children.length>0)return;
+  var sorted=Object.entries(PICKS).sort(function(a,b){return b[1]-a[1];}).slice(0,18);
+  var max=sorted[0][1];
+  sorted.forEach(function(pair){makeBar(pair[0],pair[1],max,'pick',el);});
+}
+function renderBanBars(){
+  var el=document.getElementById('ban-bars');if(!el||el.children.length>0)return;
+  var sorted=Object.entries(BANS).sort(function(a,b){return b[1]-a[1];}).slice(0,16);
+  var max=sorted[0][1];
+  sorted.forEach(function(pair){makeBar(pair[0],pair[1],max,'ban',el);});
+}
+function renderModeBars(){
+  var el=document.getElementById('mode-bars');if(!el||el.children.length>0)return;
+  var sorted=Object.entries(MODES).sort(function(a,b){return b[1]-a[1];});
+  var max=sorted[0][1];
+  sorted.forEach(function(pair){makeBar(pair[0],pair[1],max,'pick',el);});
+}
+</script>
+<!-- 
+<div class="header">
+  <div class="header-badge">LIVE</div>
+  <div class="header-title">2026 </div>
+  <div class="header-sub">May 17–18, 2026</div>
+</div> -->
+
+<div style="padding:16px 16px 0 16px;">
+  <div class="nav">
+    <button class="nav-btn on" onclick="tab('overview',this)">개요</button>
+    <button class="nav-btn" onclick="tab('matches',this)">경기별</button>
+    <button class="nav-btn" onclick="tab('picks',this)">픽 통계</button>
+    <button class="nav-btn" onclick="tab('bans',this)">밴 통계</button>
+    <button class="nav-btn" onclick="tab('teams',this)">팀별</button>
+    <button class="nav-btn" onclick="tab('brawlers',this)">브롤러별</button>
+    <button class="nav-btn" onclick="tab('maps',this)">맵/모드</button>
+    <button class="nav-btn" onclick="tab('link',this)">링크</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     개요
+══════════════════════════════════════════ -->
+<div id="s-overview" class="section on">
+
+  <!-- <div class="summary-grid four">
+    <div class="stat-card"><div class="stat-val">6</div><div class="stat-label">총 매치</div><div class="stat-sub">QF 4 + SF 1 + GF 1</div></div>
+    <div class="stat-card"><div class="stat-val">20</div><div class="stat-label">총 게임</div><div class="stat-sub">전 매치 합산</div></div>
+    <div class="stat-card"><div class="stat-val" style="color:var(--win)">HMBLE</div><div class="stat-label">브롤 컵 우승</div><div class="stat-sub">전승 (9게임 득점)</div></div>
+    <div class="stat-card"><div class="stat-val">Symantec</div><div class="stat-label">그랜드 파이널 MVP</div><div class="stat-sub">HMBLE</div></div>
+  </div> -->
+
+  <div class="card">
+    <div class="card-title">대진 결과</div>
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>라운드</th><th>시간 (KST)</th><th>승팀</th><th>스코어</th><th>패팀</th><th>MVP</th></tr>
+        <tr><td>8강</td><td>20:00</td><td class="team-hmble">HMBLE</td><td class="tc"><b>3:0</b></td><td class="team-realm">Only Realm</td><td><span class="badge badge-mvp">Lukii</span></td></tr>
+        <tr><td>8강</td><td>21:00</td><td class="team-tribe">Tribe Gaming</td><td class="tc"><b>3:1</b></td><td class="team-rev">Revenant XSpark</td><td><span class="badge badge-mvp">Lxffy</span></td></tr>
+        <tr><td>8강</td><td>22:00</td><td class="team-zeta">ZETA DIVISION</td><td class="tc"><b>3:0</b></td><td class="team-bh">보unty Hunters</td><td><span class="badge badge-mvp">Sitetampo</span></td></tr>
+        <tr><td>8강</td><td>22:30</td><td class="team-fut">FUT Esports</td><td class="tc"><b>3:1</b></td><td class="team-cr">Crazy Raccoon</td><td><span class="badge badge-mvp">Angelboy</span></td></tr>
+        <tr><td>4강</td><td>23:00</td><td class="team-hmble">HMBLE</td><td class="tc"><b>3:0</b></td><td class="team-tribe">Tribe Gaming</td><td><span class="badge badge-mvp">Lukii</span></td></tr>
+        <tr><td>4강</td><td>00:00</td><td class="team-fut">FUT Esports</td><td class="tc"><b>3:0</b></td><td class="team-zeta">ZETA DIVISION</td><td><span class="badge badge-mvp">Angelboy</span></td></tr>
+        <tr style="background:rgba(201,160,0,.04)"><td>결승</td><td>00:30</td><td class="team-hmble">HMBLE 🏆</td><td class="tc"><b>3:1</b></td><td class="team-fut">FUT Esports</td><td><span class="badge badge-mvp">Symantec</span></td></tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">팀 최종 순위</div>
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>#</th><th>팀</th><th class="tc">매치W</th><th class="tc">매치L</th><th class="tc">게임W</th><th class="tc">게임L</th><th class="tc">게임승률</th><th>MVP</th></tr>
+        <tr><td>🥇</td><td class="team-hmble"><b>HMBLE</b></td><td class="tc"><span class="badge badge-win">3W</span></td><td class="tc">0L</td><td class="tc">9</td><td class="tc">1</td><td class="tc" style="color:var(--win)">90%</td><td>Lukii×2, Symantec</td></tr>
+        <tr><td>🥈</td><td class="team-fut">FUT Esports</td><td class="tc"><span class="badge badge-win">2W</span></td><td class="tc">1L</td><td class="tc">7</td><td class="tc">5</td><td class="tc">58%</td><td>Angelboy×2</td></tr>
+        <tr><td>🥉</td><td class="team-tribe">Tribe Gaming</td><td class="tc"><span class="badge badge-win">1W</span></td><td class="tc">1L</td><td class="tc">4</td><td class="tc">4</td><td class="tc">50%</td><td>Lxffy</td></tr>
+        <tr><td>🥉</td><td class="team-zeta">ZETA DIVISION</td><td class="tc"><span class="badge badge-win">1W</span></td><td class="tc">1L</td><td class="tc">3</td><td class="tc">3</td><td class="tc">50%</td><td>Sitetampo</td></tr>
+        <tr><td>5</td><td class="team-rev">Revenant XSpark</td><td class="tc">0W</td><td class="tc"><span class="badge badge-lose">1L</span></td><td class="tc">1</td><td class="tc">3</td><td class="tc">25%</td><td>—</td></tr>
+        <tr><td>5</td><td class="team-cr">Crazy Raccoon</td><td class="tc">0W</td><td class="tc"><span class="badge badge-lose">1L</span></td><td class="tc">1</td><td class="tc">3</td><td class="tc">25%</td><td>—</td></tr>
+        <tr><td>7</td><td class="team-realm">Only Realm</td><td class="tc">0W</td><td class="tc"><span class="badge badge-lose">1L</span></td><td class="tc">0</td><td class="tc">3</td><td class="tc">0%</td><td>—</td></tr>
+        <tr><td>7</td><td class="team-bh">보unty Hunters</td><td class="tc">0W</td><td class="tc"><span class="badge badge-lose">1L</span></td><td class="tc">0</td><td class="tc">3</td><td class="tc">0%</td><td>—</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">글로벌 밴 (전 경기 적용)</div>
+    <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px;">
+      <span class="global-ban-tag">미나</span>
+      <span class="global-ban-tag">모티스</span>
+      <span class="global-ban-tag">피어스</span>
+      <span class="global-ban-tag">레온</span>
+      <span class="global-ban-tag">에드거</span>
+      <span class="global-ban-tag">콜레트</span>
+      <span class="global-ban-tag">러프스</span>
+      <span class="global-ban-tag">크로우</span>
+      <span class="global-ban-tag">루미</span>
+      <span class="global-ban-tag">시리우스</span>
+      <span class="global-ban-tag">키트</span>
+      <span class="global-ban-tag">나지아</span>
+    </div>
+    <div style="font-size:10px;color:var(--muted)">※ 경기마다 글로벌 밴 구성이 다를 수 있음. 위는 3일차 전체 경기 중 글로벌 밴으로 등장한 브롤러 목록.</div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     경기별
+══════════════════════════════════════════ -->
+<div id="s-matches" class="section">
+
+  <!-- QF1 HMBLE vs Only Realm -->
+  <div class="match-card">
+    <div class="match-header">
+      <span class="match-round">8강</span>
+      <span>HMBLE vs Only Realm</span>
+      <span class="match-time">May 17 · 20:00 KST</span>
+    </div>
+    <div class="match-score-row">
+      <span class="team-name win team-hmble">HMBLE</span>
+      <span class="match-score">3 : 0</span>
+      <span class="team-name right team-realm">Only Realm</span>
+    </div>
+    <div class="game-rows">
+      <div style="display:grid;grid-template-columns:20px 1fr 2fr 2fr 2fr;gap:6px;font-size:10px;color:var(--muted);padding:4px 0;border-bottom:1px solid rgba(0,0,0,.06);">
+        <span>#</span><span>모드</span><span>맵</span><span style="color:#1d6fb8">HMBLE (승)</span><span style="color:#dc2626">Only Realm (패)</span>
+      </div>
+      <div style="display:grid;grid-template-columns:20px 1fr 2fr 2fr 2fr;gap:6px;align-items:center;padding:6px 0;border-bottom:1px solid rgba(0,0,0,.04);font-size:11px;">
+        <span style="color:var(--muted)">1</span><span style="color:var(--sub)">Brawl Ball</span><span>Sneaky Fields</span>
+        <span><span class="pick-tag blue">체스터</span> <span class="pick-tag blue">나지아</span> <span class="pick-tag blue">니타</span></span>
+        <span><span class="pick-tag red">오티스</span> <span class="pick-tag red">모</span> <span class="pick-tag red">트렁크</span></span>
+      </div>
+      <div style="display:grid;grid-template-columns:20px 1fr 2fr 2fr 2fr;gap:6px;align-items:center;padding:6px 0;border-bottom:1px solid rgba(0,0,0,.04);font-size:11px;">
+        <span style="color:var(--muted)">2</span><span style="color:var(--sub)">보unty</span><span>Layer Cake</span>
+        <span><span class="pick-tag blue">루미</span> <span class="pick-tag blue">체스터</span> <span class="pick-tag blue">셰이드</span></span>
+        <span><span class="pick-tag red">미플</span> <span class="pick-tag red">카제</span> <span class="pick-tag red">오티스</span></span>
+      </div>
+      <div style="display:grid;grid-template-columns:20px 1fr 2fr 2fr 2fr;gap:6px;align-items:center;padding:6px 0;font-size:11px;">
+        <span style="color:var(--muted)">3</span><span style="color:var(--sub)">Knockout</span><span>벨's Rock</span>
+        <span><span class="pick-tag blue">재용</span> <span class="pick-tag blue">올리</span> <span class="pick-tag blue">코델리우스</span></span>
+        <span><span class="pick-tag red">키트</span> <span class="pick-tag red">바이런</span> <span class="pick-tag red">대릴</span></span>
+      </div>
+    </div>
+    <div class="ban-row">
+      <div style="margin-bottom:4px;"><span style="color:var(--muted);font-size:10px;">HMBLE 밴: </span><span class="ban-tag">셰이드</span><span class="ban-tag">샌디</span><span class="ban-tag">러프스</span> / <span class="ban-tag">알리</span><span class="ban-tag">키트</span><span class="ban-tag">러프스</span> / <span class="ban-tag">진</span><span class="ban-tag">콜레트</span><span class="ban-tag">나지아</span></div>
+      <div><span style="color:var(--muted);font-size:10px;">Only Realm 밴: </span><span class="ban-tag">콜레트</span><span class="ban-tag">루미</span><span class="ban-tag">크로우</span> / <span class="ban-tag">콜레트</span><span class="ban-tag">나지아</span><span class="ban-tag">페니</span> / <span class="ban-tag">리코</span><span class="ban-tag">진</span><span class="ban-tag">미플</span></div>
+      <div style="margin-top:4px;"><span style="color:var(--muted);font-size:10px;">글로벌 밴: </span><span class="global-ban-tag">미나</span><span class="global-ban-tag">모티스</span><span class="global-ban-tag">피어스</span><span class="global-ban-tag">레온</span></div>
+    </div>
+    <div class="mvp-row">★ MVP: Lukii (HMBLE)</div>
+  </div>
+
+  <!-- QF2 Tribe Gaming vs Revenant XSpark -->
+  <div class="match-card">
+    <div class="match-header">
+      <span class="match-round">8강</span>
+      <span>Tribe Gaming vs Revenant XSpark</span>
+      <span class="match-time">May 17 · 21:00 KST</span>
+    </div>
+    <div class="match-score-row">
+      <span class="team-name win team-tribe">Tribe Gaming</span>
+      <span class="match-score">3 : 1</span>
+      <span class="team-name right team-rev">Revenant XSpark</span>
+    </div>
+    <div class="game-rows">
+      <div style="display:grid;grid-template-columns:20px 1fr 2fr 2fr 2fr;gap:6px;font-size:10px;color:var(--muted);padding:4px 0;border-bottom:1px solid rgba(0,0,0,.06);">
+        <span>#</span><span>모드</span><span>맵</span><span style="color:#16a34a">Tribe (승)</span><span style="color:#dc2626">Revenant (패)</span>
+      </div>
+      <div style="display:grid;grid-template-columns:20px 1fr 2fr 2fr 2fr;gap:6px;align-items:center;padding:6px 0;border-bottom:1px solid rgba(0,0,0,.04);font-size:11px;">
+        <span style="color:var(--muted)">1</span><span style="color:var(--sub)">Gem Grab</span><span>Deathcap Trap</span>
+        <span><span class="pick-tag blue">오티스</span> <span class="pick-tag blue">셰이드</span> <span class="pick-tag blue">니타</span></span>
+        <span><span class="pick-tag red">체스터</span> <span class="pick-tag red">찰리</span> <span class="pick-tag red">그리프</span></span>
+      </div>
+      <div style="display:grid;grid-template-columns:20px 1fr 2fr 2fr 2fr;gap:6px;align-items:center;padding:6px 0;border-bottom:1px solid rgba(0,0,0,.04);font-size:11px;">
+        <span style="color:var(--muted)">2</span><span style="color:var(--sub)">Hot Zone</span><span>Dueling Beetles</span>
+        <span style="color:var(--muted);font-size:10px;">⬅ Revenant 승</span>
+        <span><span class="pick-tag red">미나</span> <span class="pick-tag red">핑크스</span> <span class="pick-tag red">베리</span></span>
+      </div>
+      <div style="display:grid;grid-template-columns:20px 1fr 2fr 2fr 2fr;gap:6px;align-items:center;padding:6px 0;border-bottom:1px solid rgba(0,0,0,.04);font-size:11px;">
+        <span style="color:var(--muted)">2</span><span style="color:var(--sub)">Hot Zone</span><span></span>
+        <span><span class="pick-tag blue">레온</span> <span class="pick-tag blue">체스터</span> <span class="pick-tag blue">시리우스</span></span>
+        <span style="color:var(--muted);font-size:10px;">← 패</span>
+      </div>
+      <div style="display:grid;grid-template-columns:20px 1fr 2fr 2fr 2fr;gap:6px;align-items:center;padding:6px 0;border-bottom:1px solid rgba(0,0,0,.04);font-size:11px;">
+        <span style="color:var(--muted)">3</span><span style="color:var(--sub)">Brawl Ball</span><span>Sneaky Fields</span>
+        <span><span class="pick-tag blue">오티스</span> <span class="pick-tag blue">서지</span> <span class="pick-tag blue">시리우스</span></span>
+        <span><span class="pick-tag red">샌디</span> <span class="pick-tag red">쉘리</span> <span class="pick-tag red">포코</span></span>
+      </div>
+      <div style="display:grid;grid-template-columns:20px 1fr 2fr 2fr 2fr;gap:6px;align-items:center;padding:6px 0;font-size:11px;">
+        <span style="color:var(--muted)">4</span><span style="color:var(--sub)">Knockout</span><span>벨's Rock</span>
+        <span><span class="pick-tag blue">레온</span> <span class="pick-tag blue">브록</span> <span class="pick-tag blue">R-T</span></span>
+        <span><span class="pick-tag red">거스</span> <span class="pick-tag red">재용</span> <span class="pick-tag red">안젤로</span></span>
+      </div>
+    </div>
+    <div class="ban-row">
+      <div style="margin-bottom:4px;"><span style="color:var(--muted);font-size:10px;">Tribe 밴: </span><span class="ban-tag">스튜</span><span class="ban-tag">모티스</span><span class="ban-tag">모</span> / <span class="ban-tag">피어스</span><span class="ban-tag">오티스</span><span class="ban-tag">루</span> / <span class="ban-tag">알리</span><span class="ban-tag">모</span><span class="ban-tag">체스터</span> / <span class="ban-tag">올리</span><span class="ban-tag">미나</span><span class="ban-tag">키트</span></div>
+      <div><span style="color:var(--muted);font-size:10px;">Revenant 밴: </span><span class="ban-tag">핑크스</span><span class="ban-tag">루미</span><span class="ban-tag">스튜</span> / <span class="ban-tag">엠즈</span><span class="ban-tag">루미</span><span class="ban-tag">포코</span> / <span class="ban-tag">루미</span><span class="ban-tag">엠즈</span><span class="ban-tag">니타</span> / <span class="ban-tag">나지아</span><span class="ban-tag">진</span><span class="ban-tag">피어스</span></div>
+      <div style="margin-top:4px;"><span style="color:var(--muted);font-size:10px;">글로벌 밴: </span><span class="global-ban-tag">크로우</span><span class="global-ban-tag">콜레트</span><span class="global-ban-tag">에드거</span><span class="global-ban-tag">러프스</span></div>
+    </div>
+    <div class="mvp-row">★ MVP: Lxffy (Tribe Gaming)</div>
+  </div>
+
+  <!-- QF3 ZETA DIVISION vs 보unty Hunters -->
+  <div class="match-card">
+    <div class="match-header">
+      <span class="match-round">8강</span>
+      <span>ZETA DIVISION vs 보unty Hunters</span>
+      <span class="match-time">May 17 · 22:00 KST</span>
+    </div>
+    <div class="match-score-row">
+      <span class="team-name win team-zeta">ZETA DIVISION</span>
+      <span class="match-score">3 : 0</span>
+      <span class="team-name right team-bh">보unty Hunters</span>
+    </div>
+    <div class="game-rows">
+      <div style="display:grid;grid-template-columns:20px 1fr 2fr 2fr 2fr;gap:6px;font-size:10px;color:var(--muted);padding:4px 0;border-bottom:1px solid rgba(0,0,0,.06);">
+        <span>#</span><span>모드</span><span>맵</span><span style="color:#1d6fb8">ZETA (승)</span><span style="color:#dc2626">보unty (패)</span>
+      </div>
+      <div style="display:grid;grid-template-columns:20px 1fr 2fr 2fr 2fr;gap:6px;align-items:center;padding:6px 0;border-bottom:1px solid rgba(0,0,0,.04);font-size:11px;">
+        <span style="color:var(--muted)">1</span><span style="color:var(--sub)">Gem Grab</span><span>Hard Rock Mine</span>
+        <span><span class="pick-tag blue">콜레트</span> <span class="pick-tag blue">시리우스</span> <span class="pick-tag blue">거스</span></span>
+        <span><span class="pick-tag red">크로우</span> <span class="pick-tag red">체스터</span> <span class="pick-tag red">리코</span></span>
+      </div>
+      <div style="display:grid;grid-template-columns:20px 1fr 2fr 2fr 2fr;gap:6px;align-items:center;padding:6px 0;border-bottom:1px solid rgba(0,0,0,.04);font-size:11px;">
+        <span style="color:var(--muted)">2</span><span style="color:var(--sub)">Knockout</span><span>Out in the Open</span>
+        <span><span class="pick-tag blue">안젤로</span> <span class="pick-tag blue">나니</span> <span class="pick-tag blue">파이퍼</span></span>
+        <span><span class="pick-tag red">피어스</span> <span class="pick-tag red">브록</span> <span class="pick-tag red">펄</span></span>
+      </div>
+      <div style="display:grid;grid-template-columns:20px 1fr 2fr 2fr 2fr;gap:6px;align-items:center;padding:6px 0;font-size:11px;">
+        <span style="color:var(--muted)">3</span><span style="color:var(--sub)">보unty</span><span>Layer Cake</span>
+        <span><span class="pick-tag blue">카제</span> <span class="pick-tag blue">피어스</span> <span class="pick-tag blue">주주</span></span>
+        <span><span class="pick-tag red">켄지</span> <span class="pick-tag red">페니</span> <span class="pick-tag red">그레이</span></span>
+      </div>
+    </div>
+    <div class="ban-row">
+      <div style="margin-bottom:4px;"><span style="color:var(--muted);font-size:10px;">ZETA 밴: </span><span class="ban-tag">루미</span><span class="ban-tag">셰이드</span><span class="ban-tag">러프스</span> / <span class="ban-tag">진</span><span class="ban-tag">레온</span><span class="ban-tag">콜레트</span> / <span class="ban-tag">크로우</span><span class="ban-tag">러프스</span><span class="ban-tag">셰이드</span></div>
+      <div><span style="color:var(--muted);font-size:10px;">보unty Hunters 밴: </span><span class="ban-tag">릴리</span><span class="ban-tag">레온</span><span class="ban-tag">니타</span> / <span class="ban-tag">미플</span><span class="ban-tag">미나</span><span class="ban-tag">재용</span> / <span class="ban-tag">스퀴크</span><span class="ban-tag">루미</span><span class="ban-tag">콜레트</span></div>
+      <div style="margin-top:4px;"><span style="color:var(--muted);font-size:10px;">글로벌 밴: </span><span class="global-ban-tag">에드거</span><span class="global-ban-tag">나지아</span><span class="global-ban-tag">모티스</span><span class="global-ban-tag">키트</span></div>
+    </div>
+    <div class="mvp-row">★ MVP: Sitetampo (ZETA DIVISION)</div>
+  </div>
+
+  <!-- QF4 Crazy Raccoon vs FUT Esports -->
+  <div class="match-card">
+    <div class="match-header">
+      <span class="match-round">8강</span>
+      <span>Crazy Raccoon vs FUT Esports</span>
+      <span class="match-time">May 17 · 22:30 KST</span>
+    </div>
+    <div class="match-score-row">
+      <span class="team-name team-cr">Crazy Raccoon</span>
+      <span class="match-score">1 : 3</span>
+      <span class="team-name right win team-fut">FUT Esports</span>
+    </div>
+    <div class="game-rows">
+      <div style="display:grid;grid-template-columns:20px 1fr 2fr 2fr 2fr;gap:6px;font-size:10px;color:var(--muted);padding:4px 0;border-bottom:1px solid rgba(0,0,0,.06);">
+        <span>#</span><span>모드</span><span>맵</span><span style="color:#6d28d9">Crazy Raccoon</span><span style="color:#b91c1c">FUT Esports (승)</span>
+      </div>
+      <div style="display:grid;grid-template-columns:20px 1fr 2fr 2fr 2fr;gap:6px;align-items:center;padding:6px 0;border-bottom:1px solid rgba(0,0,0,.04);font-size:11px;">
+        <span style="color:var(--muted)">1</span><span style="color:var(--sub)">Hot Zone</span><span>Open Business</span>
+        <span style="color:var(--muted);font-size:10px;">← CR 승</span>
+        <span><span class="pick-tag red">그리프</span> <span class="pick-tag red">피어스</span> <span class="pick-tag red">글로이</span></span>
+      </div>
+      <div style="display:grid;grid-template-columns:20px 1fr 2fr 2fr 2fr;gap:6px;align-items:center;padding:6px 0;border-bottom:1px solid rgba(0,0,0,.04);font-size:11px;">
+        <span style="color:var(--muted)">1</span><span style="color:var(--sub)">Hot Zone</span><span></span>
+        <span><span class="pick-tag blue">체스터</span> <span class="pick-tag blue">스튜</span> <span class="pick-tag blue">찰리</span></span>
+        <span style="color:var(--muted);font-size:10px;">← 패</span>
+      </div>
+      <div style="display:grid;grid-template-columns:20px 1fr 2fr 2fr 2fr;gap:6px;align-items:center;padding:6px 0;border-bottom:1px solid rgba(0,0,0,.04);font-size:11px;">
+        <span style="color:var(--muted)">2</span><span style="color:var(--sub)">Brawl Ball</span><span>Pinhole Punt</span>
+        <span><span class="pick-tag blue">스튜</span> <span class="pick-tag blue">찰리</span> <span class="pick-tag blue">미플</span></span>
+        <span><span class="pick-tag red">체스터</span> <span class="pick-tag red">재용</span> <span class="pick-tag red">미나</span></span>
+      </div>
+      <div style="display:grid;grid-template-columns:20px 1fr 2fr 2fr 2fr;gap:6px;align-items:center;padding:6px 0;border-bottom:1px solid rgba(0,0,0,.04);font-size:11px;">
+        <span style="color:var(--muted)">3</span><span style="color:var(--sub)">Gem Grab</span><span>Hard Rock Mine</span>
+        <span><span class="pick-tag blue">체스터</span> <span class="pick-tag blue">레온</span> <span class="pick-tag blue">셰이드</span></span>
+        <span><span class="pick-tag red">키트</span> <span class="pick-tag red">오티스</span> <span class="pick-tag red">미나</span></span>
+      </div>
+      <div style="display:grid;grid-template-columns:20px 1fr 2fr 2fr 2fr;gap:6px;align-items:center;padding:6px 0;font-size:11px;">
+        <span style="color:var(--muted)">4</span><span style="color:var(--sub)">보unty</span><span>Hideout</span>
+        <span><span class="pick-tag blue">R-T</span> <span class="pick-tag blue">올리</span> <span class="pick-tag blue">거스</span></span>
+        <span><span class="pick-tag red">모티스</span> <span class="pick-tag red">피어스</span> <span class="pick-tag red">레온</span></span>
+      </div>
+    </div>
+    <div class="ban-row">
+      <div style="margin-bottom:4px;"><span style="color:var(--muted);font-size:10px;">CR 밴: </span><span class="ban-tag">페니</span><span class="ban-tag">미나</span><span class="ban-tag">레온</span> / <span class="ban-tag">콜레트</span><span class="ban-tag">레온</span><span class="ban-tag">크로우</span> / <span class="ban-tag">니타</span><span class="ban-tag">크로우</span><span class="ban-tag">콜레트</span> / <span class="ban-tag">바이런</span><span class="ban-tag">진</span><span class="ban-tag">콜레트</span></div>
+      <div><span style="color:var(--muted);font-size:10px;">FUT 밴: </span><span class="ban-tag">콜레트</span><span class="ban-tag">크로우</span><span class="ban-tag">나지아</span> / <span class="ban-tag">모</span><span class="ban-tag">레온</span><span class="ban-tag">오티스</span> / <span class="ban-tag">릴리</span><span class="ban-tag">샌디</span><span class="ban-tag">모티스</span> / <span class="ban-tag">진</span><span class="ban-tag">재용</span><span class="ban-tag">카제</span></div>
+      <div style="margin-top:4px;"><span style="color:var(--muted);font-size:10px;">글로벌 밴: </span><span class="global-ban-tag">나지아</span><span class="global-ban-tag">루미</span><span class="global-ban-tag">러프스</span><span class="global-ban-tag">시리우스</span></div>
+    </div>
+    <div class="mvp-row">★ MVP: Angelboy (FUT Esports)</div>
+  </div>
+
+  <!-- SF1 HMBLE vs Tribe Gaming -->
+  <div class="match-card">
+    <div class="match-header">
+      <span class="match-round" style="color:#6d28d9">4강</span>
+      <span>HMBLE vs Tribe Gaming</span>
+      <span class="match-time">May 17 · 23:00 KST</span>
+    </div>
+    <div class="match-score-row">
+      <span class="team-name win team-hmble">HMBLE</span>
+      <span class="match-score">3 : 0</span>
+      <span class="team-name right team-tribe">Tribe Gaming</span>
+    </div>
+    <div class="game-rows">
+      <div style="display:grid;grid-template-columns:20px 1fr 2fr 2fr 2fr;gap:6px;font-size:10px;color:var(--muted);padding:4px 0;border-bottom:1px solid rgba(0,0,0,.06);">
+        <span>#</span><span>모드</span><span>맵</span><span style="color:#c9a000">HMBLE (승)</span><span style="color:#16a34a">Tribe Gaming (패)</span>
+      </div>
+      <div style="display:grid;grid-template-columns:20px 1fr 2fr 2fr 2fr;gap:6px;align-items:center;padding:6px 0;border-bottom:1px solid rgba(0,0,0,.04);font-size:11px;">
+        <span style="color:var(--muted)">1</span><span style="color:var(--sub)">보unty</span><span>Hideout</span>
+        <span><span class="pick-tag blue">재용</span> <span class="pick-tag blue">거스</span> <span class="pick-tag blue">찰리</span></span>
+        <span><span class="pick-tag red">진</span> <span class="pick-tag red">카제</span> <span class="pick-tag red">펄</span></span>
+      </div>
+      <div style="display:grid;grid-template-columns:20px 1fr 2fr 2fr 2fr;gap:6px;align-items:center;padding:6px 0;border-bottom:1px solid rgba(0,0,0,.04);font-size:11px;">
+        <span style="color:var(--muted)">2</span><span style="color:var(--sub)">Brawl Ball</span><span>Pinhole Punt</span>
+        <span><span class="pick-tag blue">나지아</span> <span class="pick-tag blue">엠즈</span> <span class="pick-tag blue">오티스</span></span>
+        <span><span class="pick-tag red">시리우스</span> <span class="pick-tag red">핑크스</span> <span class="pick-tag red">멜로디</span></span>
+      </div>
+      <div style="display:grid;grid-template-columns:20px 1fr 2fr 2fr 2fr;gap:6px;align-items:center;padding:6px 0;font-size:11px;">
+        <span style="color:var(--muted)">3</span><span style="color:var(--sub)">Knockout</span><span>Out in the Open</span>
+        <span><span class="pick-tag blue">재용</span> <span class="pick-tag blue">미플</span> <span class="pick-tag blue">나니</span></span>
+        <span><span class="pick-tag red">미나</span> <span class="pick-tag red">피어스</span> <span class="pick-tag red">펄</span></span>
+      </div>
+    </div>
+    <div class="ban-row">
+      <div style="margin-bottom:4px;"><span style="color:var(--muted);font-size:10px;">HMBLE 밴: </span><span class="ban-tag">모티스</span><span class="ban-tag">나지아</span><span class="ban-tag">피어스</span> / <span class="ban-tag">모티스</span><span class="ban-tag">알리</span><span class="ban-tag">미플</span> / <span class="ban-tag">팽</span><span class="ban-tag">크로우</span><span class="ban-tag">바이런</span></div>
+      <div><span style="color:var(--muted);font-size:10px;">Tribe 밴: </span><span class="ban-tag">벨</span><span class="ban-tag">바이런</span><span class="ban-tag">모티스</span> / <span class="ban-tag">체스터</span><span class="ban-tag">루미</span><span class="ban-tag">스튜</span> / <span class="ban-tag">진</span><span class="ban-tag">나지아</span><span class="ban-tag">안젤로</span></div>
+      <div style="margin-top:4px;"><span style="color:var(--muted);font-size:10px;">글로벌 밴: </span><span class="global-ban-tag">레온</span><span class="global-ban-tag">에드거</span><span class="global-ban-tag">콜레트</span><span class="global-ban-tag">러프스</span></div>
+    </div>
+    <div class="mvp-row">★ MVP: Lukii (HMBLE)</div>
+  </div>
+
+  <!-- SF2 ZETA DIVISION vs FUT Esports -->
+  <div class="match-card">
+    <div class="match-header">
+      <span class="match-round" style="color:#6d28d9">4강</span>
+      <span>ZETA DIVISION vs FUT Esports</span>
+      <span class="match-time">May 18 · 00:00 KST</span>
+    </div>
+    <div class="match-score-row">
+      <span class="team-name team-zeta">ZETA DIVISION</span>
+      <span class="match-score">0 : 3</span>
+      <span class="team-name right win team-fut">FUT Esports</span>
+    </div>
+    <div class="game-rows">
+      <div style="display:grid;grid-template-columns:20px 1fr 2fr 2fr 2fr;gap:6px;font-size:10px;color:var(--muted);padding:4px 0;border-bottom:1px solid rgba(0,0,0,.06);">
+        <span>#</span><span>모드</span><span>맵</span><span style="color:#1d6fb8">ZETA (패)</span><span style="color:#b91c1c">FUT (승)</span>
+      </div>
+      <div style="display:grid;grid-template-columns:20px 1fr 2fr 2fr 2fr;gap:6px;align-items:center;padding:6px 0;border-bottom:1px solid rgba(0,0,0,.04);font-size:11px;">
+        <span style="color:var(--muted)">1</span><span style="color:var(--sub)">Knockout</span><span>벨's Rock</span>
+        <span><span class="pick-tag blue">재용</span> <span class="pick-tag blue">피어스</span> <span class="pick-tag blue">미플</span></span>
+        <span><span class="pick-tag red">미나</span> <span class="pick-tag red">안젤로</span> <span class="pick-tag red">바이런</span></span>
+      </div>
+      <div style="display:grid;grid-template-columns:20px 1fr 2fr 2fr 2fr;gap:6px;align-items:center;padding:6px 0;border-bottom:1px solid rgba(0,0,0,.04);font-size:11px;">
+        <span style="color:var(--muted)">2</span><span style="color:var(--sub)">보unty</span><span>Shooting Star</span>
+        <span><span class="pick-tag blue">재용</span> <span class="pick-tag blue">레온</span> <span class="pick-tag blue">R-T</span></span>
+        <span><span class="pick-tag red">진</span> <span class="pick-tag red">미나</span> <span class="pick-tag red">거스</span></span>
+      </div>
+      <div style="display:grid;grid-template-columns:20px 1fr 2fr 2fr 2fr;gap:6px;align-items:center;padding:6px 0;font-size:11px;">
+        <span style="color:var(--muted)">3</span><span style="color:var(--sub)">Brawl Ball</span><span>Sneaky Fields</span>
+        <span><span class="pick-tag blue">샌디</span> <span class="pick-tag blue">맥스</span> <span class="pick-tag blue">로사</span></span>
+        <span><span class="pick-tag red">오티스</span> <span class="pick-tag red">모</span> <span class="pick-tag red">프랭크</span></span>
+      </div>
+    </div>
+    <div class="ban-row">
+      <div style="margin-bottom:4px;"><span style="color:var(--muted);font-size:10px;">ZETA 밴: </span><span class="ban-tag">진</span><span class="ban-tag">키트</span><span class="ban-tag">콜레트</span> / <span class="ban-tag">바이런</span><span class="ban-tag">벨</span><span class="ban-tag">콜레트</span> / <span class="ban-tag">그리프</span><span class="ban-tag">니타</span><span class="ban-tag">엠즈</span></div>
+      <div><span style="color:var(--muted);font-size:10px;">FUT 밴: </span><span class="ban-tag">키트</span><span class="ban-tag">올리</span><span class="ban-tag">레온</span> / <span class="ban-tag">피어스</span><span class="ban-tag">안젤로</span><span class="ban-tag">바이런</span> / <span class="ban-tag">크로우</span><span class="ban-tag">콜레트</span><span class="ban-tag">셰이드</span></div>
+      <div style="margin-top:4px;"><span style="color:var(--muted);font-size:10px;">글로벌 밴: </span><span class="global-ban-tag">에드거</span><span class="global-ban-tag">나지아</span><span class="global-ban-tag">루미</span><span class="global-ban-tag">모티스</span></div>
+    </div>
+    <div class="mvp-row">★ MVP: Angelboy (FUT Esports)</div>
+  </div>
+
+  <!-- GF HMBLE vs FUT Esports -->
+  <div class="match-card" style="border-color:var(--accent);">
+    <div class="match-header" style="background:rgba(201,160,0,.06);">
+      <span class="match-round">🏆 그랜드 파이널</span>
+      <span>HMBLE vs FUT Esports</span>
+      <span class="match-time">May 18 · 00:30 KST</span>
+    </div>
+    <div class="match-score-row">
+      <span class="team-name win team-hmble">HMBLE 🏆</span>
+      <span class="match-score">3 : 1</span>
+      <span class="team-name right team-fut">FUT Esports</span>
+    </div>
+    <div class="game-rows">
+      <div style="display:grid;grid-template-columns:20px 1fr 2fr 2fr 2fr;gap:6px;font-size:10px;color:var(--muted);padding:4px 0;border-bottom:1px solid rgba(0,0,0,.06);">
+        <span>#</span><span>모드</span><span>맵</span><span style="color:#c9a000">HMBLE (승)</span><span style="color:#b91c1c">FUT Esports (패)</span>
+      </div>
+      <div style="display:grid;grid-template-columns:20px 1fr 2fr 2fr 2fr;gap:6px;align-items:center;padding:6px 0;border-bottom:1px solid rgba(0,0,0,.04);font-size:11px;">
+        <span style="color:var(--muted)">1</span><span style="color:var(--sub)">Hot Zone</span><span>Ring of Fire</span>
+        <span><span class="pick-tag blue">체스터</span> <span class="pick-tag blue">레온</span> <span class="pick-tag blue">드라코</span></span>
+        <span><span class="pick-tag red">핑크스</span> <span class="pick-tag red">러프스</span> <span class="pick-tag red">켄지</span></span>
+      </div>
+      <div style="display:grid;grid-template-columns:20px 1fr 2fr 2fr 2fr;gap:6px;align-items:center;padding:6px 0;border-bottom:1px solid rgba(0,0,0,.04);font-size:11px;">
+        <span style="color:var(--muted)">2</span><span style="color:var(--sub)">Heist</span><span>Bridge Too Far</span>
+        <span style="color:var(--muted);font-size:10px;">← FUT 승</span>
+        <span><span class="pick-tag red">나니</span> <span class="pick-tag red">에드거</span> <span class="pick-tag red">벨</span></span>
+      </div>
+      <div style="display:grid;grid-template-columns:20px 1fr 2fr 2fr 2fr;gap:6px;align-items:center;padding:6px 0;border-bottom:1px solid rgba(0,0,0,.04);font-size:11px;">
+        <span style="color:var(--muted)">2</span><span style="color:var(--sub)">Heist</span><span></span>
+        <span><span class="pick-tag blue">8비트</span> <span class="pick-tag blue">체스터</span> <span class="pick-tag blue">멜로디</span></span>
+        <span style="color:var(--muted);font-size:10px;">← 패</span>
+      </div>
+      <div style="display:grid;grid-template-columns:20px 1fr 2fr 2fr 2fr;gap:6px;align-items:center;padding:6px 0;border-bottom:1px solid rgba(0,0,0,.04);font-size:11px;">
+        <span style="color:var(--muted)">3</span><span style="color:var(--sub)">Brawl Ball</span><span>Super Beach</span>
+        <span><span class="pick-tag blue">오티스</span> <span class="pick-tag blue">체스터</span> <span class="pick-tag blue">에드거</span></span>
+        <span><span class="pick-tag red">윌로우</span> <span class="pick-tag red">찰리</span> <span class="pick-tag red">비비</span></span>
+      </div>
+      <div style="display:grid;grid-template-columns:20px 1fr 2fr 2fr 2fr;gap:6px;align-items:center;padding:6px 0;font-size:11px;">
+        <span style="color:var(--muted)">4</span><span style="color:var(--sub)">Gem Grab</span><span>Double Swoosh</span>
+        <span><span class="pick-tag blue">엠즈</span> <span class="pick-tag blue">키트</span> <span class="pick-tag blue">니타</span></span>
+        <span><span class="pick-tag red">모</span> <span class="pick-tag red">릴리</span> <span class="pick-tag red">자넷</span></span>
+      </div>
+    </div>
+    <div class="ban-row">
+      <div style="margin-bottom:4px;"><span style="color:var(--muted);font-size:10px;">HMBLE 밴: </span><span class="ban-tag">나지아</span><span class="ban-tag">크로우</span><span class="ban-tag">콜레트</span> / <span class="ban-tag">오티스</span><span class="ban-tag">안젤로</span><span class="ban-tag">알리</span> / <span class="ban-tag">크로우</span><span class="ban-tag">나지아</span><span class="ban-tag">콜레트</span> / <span class="ban-tag">오티스</span><span class="ban-tag">스튜</span><span class="ban-tag">샌디</span></div>
+      <div><span style="color:var(--muted);font-size:10px;">FUT 밴: </span><span class="ban-tag">에드거</span><span class="ban-tag">포코</span><span class="ban-tag">글로이</span> / <span class="ban-tag">카제</span><span class="ban-tag">콜트</span><span class="ban-tag">콜레트</span> / <span class="ban-tag">스튜</span><span class="ban-tag">그리프</span><span class="ban-tag">셰이드</span> / <span class="ban-tag">콜레트</span><span class="ban-tag">크로우</span><span class="ban-tag">체스터</span></div>
+      <div style="margin-top:4px;"><span style="color:var(--muted);font-size:10px;">글로벌 밴: </span><span class="global-ban-tag">미나</span><span class="global-ban-tag">모티스</span><span class="global-ban-tag">루미</span><span class="global-ban-tag">피어스</span></div>
+    </div>
+    <div class="mvp-row">★ MVP: Symantec (HMBLE)</div>
+  </div>
+
+</div>
+
+<!-- ══════════════════════════════════════════
+     픽 통계
+══════════════════════════════════════════ -->
+<div id="s-picks" class="section">
+
+  <div class="card">
+    <div class="card-title">전체 픽 순위 (3일차 전 경기)</div>
+    <div id="pick-bars" class="bar-list"></div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">브롤러별 픽 상세</div>
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>브롤러</th><th class="tc">픽수</th><th class="tc">승리</th><th class="tc">패배</th><th class="tc">승률</th><th>픽 팀</th></tr>
+        <tr><td><b>체스터</b></td><td class="tc">7</td><td class="tc" style="color:var(--win)">5</td><td class="tc" style="color:var(--lose)">2</td><td class="tc"><span class="badge badge-win">71%</span></td><td>HMBLE, Tribe, CR, FUT, HMBLE</td></tr>
+        <tr><td><b>재용</b></td><td class="tc">5</td><td class="tc" style="color:var(--win)">4</td><td class="tc" style="color:var(--lose)">1</td><td class="tc"><span class="badge badge-win">80%</span></td><td>HMBLE, Tribe, ZETA, HMBLE</td></tr>
+        <tr><td><b>레온</b></td><td class="tc">5</td><td class="tc" style="color:var(--win)">2</td><td class="tc" style="color:var(--lose)">3</td><td class="tc">40%</td><td>Tribe, CR, FUT, HMBLE, ZETA</td></tr>
+        <tr><td><b>오티스</b></td><td class="tc">5</td><td class="tc" style="color:var(--win)">3</td><td class="tc" style="color:var(--lose)">2</td><td class="tc">60%</td><td>Tribe×2, HMBLE×2, FUT</td></tr>
+        <tr><td><b>찰리</b></td><td class="tc">4</td><td class="tc" style="color:var(--win)">2</td><td class="tc" style="color:var(--lose)">2</td><td class="tc">50%</td><td>Tribe, CR×2, FUT</td></tr>
+        <tr><td><b>미플</b></td><td class="tc">4</td><td class="tc" style="color:var(--win)">2</td><td class="tc" style="color:var(--lose)">2</td><td class="tc">50%</td><td>Realm, CR, HMBLE, ZETA</td></tr>
+        <tr><td><b>니타</b></td><td class="tc">3</td><td class="tc" style="color:var(--win)">2</td><td class="tc" style="color:var(--lose)">1</td><td class="tc">67%</td><td>HMBLE, Tribe, HMBLE</td></tr>
+        <tr><td><b>시리우스</b></td><td class="tc">3</td><td class="tc" style="color:var(--win)">2</td><td class="tc" style="color:var(--lose)">1</td><td class="tc">67%</td><td>Tribe×2, ZETA</td></tr>
+        <tr><td><b>엠즈</b></td><td class="tc">3</td><td class="tc" style="color:var(--win)">2</td><td class="tc" style="color:var(--lose)">1</td><td class="tc">67%</td><td>HMBLE×2, Tribe</td></tr>
+        <tr><td>셰이드</td><td class="tc">3</td><td class="tc" style="color:var(--win)">1</td><td class="tc" style="color:var(--lose)">2</td><td class="tc">33%</td><td>HMBLE, Tribe, CR</td></tr>
+        <tr><td>거스</td><td class="tc">3</td><td class="tc" style="color:var(--win)">2</td><td class="tc" style="color:var(--lose)">1</td><td class="tc">67%</td><td>ZETA, HMBLE, FUT</td></tr>
+        <tr><td>나지아</td><td class="tc">3</td><td class="tc" style="color:var(--win)">2</td><td class="tc" style="color:var(--lose)">1</td><td class="tc">67%</td><td>HMBLE×2, HMBLE</td></tr>
+        <tr><td>미나</td><td class="tc">3</td><td class="tc" style="color:var(--win)">2</td><td class="tc" style="color:var(--lose)">1</td><td class="tc">67%</td><td>FUT×2, ZETA</td></tr>
+        <tr><td>피어스</td><td class="tc">3</td><td class="tc" style="color:var(--win)">1</td><td class="tc" style="color:var(--lose)">2</td><td class="tc">33%</td><td>보unty, FUT, ZETA</td></tr>
+        <tr><td>스튜</td><td class="tc">3</td><td class="tc" style="color:var(--win)">1</td><td class="tc" style="color:var(--lose)">2</td><td class="tc">33%</td><td>CR×2, Tribe</td></tr>
+        <tr><td>진</td><td class="tc">2</td><td class="tc" style="color:var(--win)">2</td><td class="tc" style="color:var(--lose)">0</td><td class="tc"><span class="badge badge-win">100%</span></td><td>Tribe, FUT</td></tr>
+        <tr><td>루미</td><td class="tc">2</td><td class="tc" style="color:var(--win)">2</td><td class="tc" style="color:var(--lose)">0</td><td class="tc"><span class="badge badge-win">100%</span></td><td>HMBLE×2</td></tr>
+        <tr><td>재용</td><td class="tc">2</td><td class="tc" style="color:var(--win)">2</td><td class="tc" style="color:var(--lose)">0</td><td class="tc"><span class="badge badge-win">100%</span></td><td>ZETA×2</td></tr>
+        <tr><td>코델리우스</td><td class="tc">1</td><td class="tc" style="color:var(--win)">1</td><td class="tc">0</td><td class="tc"><span class="badge badge-win">100%</span></td><td>HMBLE</td></tr>
+        <tr><td>드라코</td><td class="tc">1</td><td class="tc" style="color:var(--win)">1</td><td class="tc">0</td><td class="tc"><span class="badge badge-win">100%</span></td><td>HMBLE</td></tr>
+        <tr><td>8비트</td><td class="tc">1</td><td class="tc">0</td><td class="tc" style="color:var(--lose)">1</td><td class="tc" style="color:var(--lose)">0%</td><td>HMBLE</td></tr>
+        <tr><td>에드거</td><td class="tc">2</td><td class="tc" style="color:var(--win)">1</td><td class="tc" style="color:var(--lose)">1</td><td class="tc">50%</td><td>HMBLE, FUT</td></tr>
+        <tr><td>안젤로</td><td class="tc">2</td><td class="tc" style="color:var(--win)">1</td><td class="tc" style="color:var(--lose)">1</td><td class="tc">50%</td><td>ZETA, FUT</td></tr>
+        <tr><td>나니</td><td class="tc">2</td><td class="tc" style="color:var(--win)">1</td><td class="tc" style="color:var(--lose)">1</td><td class="tc">50%</td><td>ZETA, FUT</td></tr>
+        <tr><td>키트</td><td class="tc">2</td><td class="tc" style="color:var(--win)">1</td><td class="tc" style="color:var(--lose)">1</td><td class="tc">50%</td><td>FUT×2</td></tr>
+        <tr><td>샌디</td><td class="tc">2</td><td class="tc">0</td><td class="tc" style="color:var(--lose)">2</td><td class="tc" style="color:var(--lose)">0%</td><td>Revenant, ZETA</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">모드별 자주 픽된 브롤러</div>
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>모드</th><th>주요 픽 브롤러</th></tr>
+        <tr><td><b>Brawl Ball</b></td><td>체스터, 오티스, 니타, 셰이드, 시리우스, 서지, 엠즈, 나지아, 레온, 멜로디, 샌디, 맥스, 로사</td></tr>
+        <tr><td><b>보unty</b></td><td>루미, 체스터, 재용, 올리, 나니, 파이퍼, 카제, 피어스, 주주, 거스, 찰리</td></tr>
+        <tr><td><b>Knockout</b></td><td>재용, 올리, 코델리우스, 미플, 나니, 안젤로, 파이퍼, 레온, 브록, R-T</td></tr>
+        <tr><td><b>Gem Grab</b></td><td>오티스, 셰이드, 니타, 콜레트, 시리우스, 거스, 체스터, 레온, 엠즈, 키트, 니타</td></tr>
+        <tr><td><b>Hot Zone</b></td><td>체스터, 스튜, 찰리, 미플, 오티스, 시리우스, 재용, 피어스, 레온, 드라코</td></tr>
+        <tr><td><b>Heist</b></td><td>8비트, 체스터, 멜로디, 나니, 에드거, 벨</td></tr>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     밴 통계
+══════════════════════════════════════════ -->
+<div id="s-bans" class="section">
+
+  <div class="card">
+    <div class="card-title">팀 밴 순위 (전 경기)</div>
+    <div id="ban-bars" class="bar-list"></div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">경기별 글로벌 밴</div>
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>경기</th><th>글로벌 밴</th></tr>
+        <tr><td>QF1 HMBLE vs Realm</td><td><span class="global-ban-tag">미나</span><span class="global-ban-tag">모티스</span><span class="global-ban-tag">피어스</span><span class="global-ban-tag">레온</span></td></tr>
+        <tr><td>QF2 Tribe vs Revenant</td><td><span class="global-ban-tag">크로우</span><span class="global-ban-tag">콜레트</span><span class="global-ban-tag">에드거</span><span class="global-ban-tag">러프스</span></td></tr>
+        <tr><td>QF3 ZETA vs 보unty</td><td><span class="global-ban-tag">에드거</span><span class="global-ban-tag">나지아</span><span class="global-ban-tag">모티스</span><span class="global-ban-tag">키트</span></td></tr>
+        <tr><td>QF4 CR vs FUT</td><td><span class="global-ban-tag">나지아</span><span class="global-ban-tag">루미</span><span class="global-ban-tag">러프스</span><span class="global-ban-tag">시리우스</span></td></tr>
+        <tr><td>SF1 HMBLE vs Tribe</td><td><span class="global-ban-tag">레온</span><span class="global-ban-tag">에드거</span><span class="global-ban-tag">콜레트</span><span class="global-ban-tag">러프스</span></td></tr>
+        <tr><td>SF2 ZETA vs FUT</td><td><span class="global-ban-tag">에드거</span><span class="global-ban-tag">나지아</span><span class="global-ban-tag">루미</span><span class="global-ban-tag">모티스</span></td></tr>
+        <tr><td>GF HMBLE vs FUT</td><td><span class="global-ban-tag">미나</span><span class="global-ban-tag">모티스</span><span class="global-ban-tag">루미</span><span class="global-ban-tag">피어스</span></td></tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">글로벌 밴 집계</div>
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>브롤러</th><th class="tc">글로벌 밴 횟수</th><th>등장 경기</th></tr>
+        <tr><td><b>모티스</b></td><td class="tc"><span class="badge badge-ban">4</span></td><td>QF1, QF3, SF2, GF</td></tr>
+        <tr><td><b>에드거</b></td><td class="tc"><span class="badge badge-ban">4</span></td><td>QF2, QF3, SF1, SF2</td></tr>
+        <tr><td><b>러프스</b></td><td class="tc"><span class="badge badge-ban">3</span></td><td>QF2, QF4, SF1</td></tr>
+        <tr><td><b>나지아</b></td><td class="tc"><span class="badge badge-ban">3</span></td><td>QF3, QF4, SF2</td></tr>
+        <tr><td><b>루미</b></td><td class="tc"><span class="badge badge-ban">3</span></td><td>QF4, SF2, GF</td></tr>
+        <tr><td><b>레온</b></td><td class="tc"><span class="badge badge-ban">2</span></td><td>QF1, SF1</td></tr>
+        <tr><td><b>콜레트</b></td><td class="tc"><span class="badge badge-ban">2</span></td><td>QF2, SF1</td></tr>
+        <tr><td><b>미나</b></td><td class="tc"><span class="badge badge-ban">2</span></td><td>QF1, GF</td></tr>
+        <tr><td><b>피어스</b></td><td class="tc"><span class="badge badge-ban">2</span></td><td>QF1, GF</td></tr>
+        <tr><td>크로우</td><td class="tc">1</td><td>QF2</td></tr>
+        <tr><td>키트</td><td class="tc">1</td><td>QF3</td></tr>
+        <tr><td>시리우스</td><td class="tc">1</td><td>QF4</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">팀별 밴 패턴</div>
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>팀</th><th>주요 밴 브롤러</th></tr>
+        <tr><td class="team-hmble"><b>HMBLE</b></td><td>콜레트(多), 나지아, 크로우, 진, 모티스, 나지아, 셰이드, 샌디, 알리, 팽, 바이런, 오티스, 스튜</td></tr>
+        <tr><td class="team-fut">FUT Esports</td><td>콜레트(多), 크로우(多), 레온, 키트, 올리, 피어스, 안젤로, 바이런, 스튜, 그리프, 체스터</td></tr>
+        <tr><td class="team-tribe">Tribe Gaming</td><td>스튜, 모티스, 모, 피어스, 오티스, 루, 알리, 체스터, 올리, 미나, 키트, 루미, 모티스</td></tr>
+        <tr><td class="team-zeta">ZETA DIVISION</td><td>루미, 셰이드, 러프스, 진, 레온, 콜레트, 크로우, 진, 키트, 바이런, 벨, 그리프, 니타, 엠즈</td></tr>
+        <tr><td class="team-cr">Crazy Raccoon</td><td>페니, 미나, 레온, 콜레트(多), 크로우(多), 니타, 바이런, 진</td></tr>
+        <tr><td class="team-realm">Only Realm</td><td>콜레트, 루미, 크로우, 나지아, 페니, 리코, 진, 미플</td></tr>
+        <tr><td class="team-rev">Revenant XSpark</td><td>핑크스, 루미(多), 스튜, 엠즈, 포코, 나지아, 진, 피어스</td></tr>
+        <tr><td class="team-bh">보unty Hunters</td><td>릴리, 레온, 니타, 미플, 미나, 재용, 스퀴크, 루미, 콜레트</td></tr>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     팀별
+══════════════════════════════════════════ -->
+<div id="s-teams" class="section">
+
+  <!-- HMBLE -->
+  <div class="card" style="border-color:rgba(245,197,24,.4)">
+    <div class="card-title" style="color:var(--accent)">🏆 HMBLE — 브롤 컵 우승</div>
+    <div class="summary-grid">
+      <div class="stat-card"><div class="stat-val" style="color:var(--win)">3W</div><div class="stat-label">매치</div></div>
+      <div class="stat-card"><div class="stat-val">9W-1L</div><div class="stat-label">게임 전적</div></div>
+    </div>
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>경기</th><th class="tc">결과</th><th>주요 픽</th><th>MVP</th></tr>
+        <tr><td>QF vs Only Realm</td><td class="tc"><span class="badge badge-win">3:0</span></td><td>체스터, 나지아, 니타, 루미, 셰이드, 재용, 올리, 코델리우스</td><td><span class="badge badge-mvp">Lukii</span></td></tr>
+        <tr><td>SF vs Tribe Gaming</td><td class="tc"><span class="badge badge-win">3:0</span></td><td>재용, 거스, 찰리, 나지아, 엠즈, 오티스, 미플, 나니</td><td><span class="badge badge-mvp">Lukii</span></td></tr>
+        <tr><td>GF vs FUT Esports</td><td class="tc"><span class="badge badge-win">3:1</span></td><td>체스터, 레온, 드라코, 8비트, 멜로디, 오티스, 에드거, 엠즈, 키트, 니타</td><td><span class="badge badge-mvp">Symantec</span></td></tr>
+      </table>
+    </div>
+    <div style="margin-top:10px;font-size:11px;color:var(--sub)">선호 밴: <span class="ban-tag">콜레트</span><span class="ban-tag">나지아</span><span class="ban-tag">크로우</span><span class="ban-tag">진</span><span class="ban-tag">모티스</span><span class="ban-tag">오티스</span></div>
+  </div>
+
+  <!-- FUT Esports -->
+  <div class="card">
+    <div class="card-title" style="color:#b91c1c">FUT Esports — 준우승</div>
+    <div class="summary-grid">
+      <div class="stat-card"><div class="stat-val" style="color:var(--win)">2W 1L</div><div class="stat-label">매치</div></div>
+      <div class="stat-card"><div class="stat-val">7W-5L</div><div class="stat-label">게임 전적</div></div>
+    </div>
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>경기</th><th class="tc">결과</th><th>주요 픽</th><th>MVP</th></tr>
+        <tr><td>QF vs Crazy Raccoon</td><td class="tc"><span class="badge badge-win">3:1</span></td><td>그리프, 피어스, 글로이, 체스터, 재용, 미나, 키트, 오티스, 모티스, 피어스, 레온</td><td><span class="badge badge-mvp">Angelboy</span></td></tr>
+        <tr><td>SF vs ZETA DIVISION</td><td class="tc"><span class="badge badge-win">3:0</span></td><td>미나, 안젤로, 바이런, 진, 거스, 오티스, 모, 프랭크</td><td><span class="badge badge-mvp">Angelboy</span></td></tr>
+        <tr><td>GF vs HMBLE</td><td class="tc"><span class="badge badge-lose">1:3</span></td><td>핑크스, 러프스, 켄지, 나니, 에드거, 벨, 윌로우, 찰리, 비비, 모, 릴리, 자넷</td><td>—</td></tr>
+      </table>
+    </div>
+    <div style="margin-top:10px;font-size:11px;color:var(--sub)">선호 밴: <span class="ban-tag">콜레트</span><span class="ban-tag">크로우</span><span class="ban-tag">레온</span><span class="ban-tag">키트</span><span class="ban-tag">올리</span><span class="ban-tag">피어스</span></div>
+  </div>
+
+  <!-- Tribe Gaming -->
+  <div class="card">
+    <div class="card-title" style="color:var(--win)">Tribe Gaming — 3위</div>
+    <div class="summary-grid">
+      <div class="stat-card"><div class="stat-val">1W 1L</div><div class="stat-label">매치</div></div>
+      <div class="stat-card"><div class="stat-val">4W-4L</div><div class="stat-label">게임 전적</div></div>
+    </div>
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>경기</th><th class="tc">결과</th><th>주요 픽</th><th>MVP</th></tr>
+        <tr><td>QF vs Revenant XSpark</td><td class="tc"><span class="badge badge-win">3:1</span></td><td>오티스, 셰이드, 니타, 레온, 체스터, 시리우스, 서지, 레온, 브록, R-T</td><td><span class="badge badge-mvp">Lxffy</span></td></tr>
+        <tr><td>SF vs HMBLE</td><td class="tc"><span class="badge badge-lose">0:3</span></td><td>진, 카제, 펄, 시리우스, 핑크스, 멜로디, 미나, 피어스, 펄</td><td>—</td></tr>
+      </table>
+    </div>
+    <div style="margin-top:10px;font-size:11px;color:var(--sub)">선호 밴: <span class="ban-tag">스튜</span><span class="ban-tag">모티스</span><span class="ban-tag">모</span><span class="ban-tag">루미</span><span class="ban-tag">알리</span><span class="ban-tag">체스터</span></div>
+  </div>
+
+  <!-- ZETA DIVISION -->
+  <div class="card">
+    <div class="card-title" style="color:#1d6fb8">ZETA DIVISION — 3위</div>
+    <div class="summary-grid">
+      <div class="stat-card"><div class="stat-val">1W 1L</div><div class="stat-label">매치</div></div>
+      <div class="stat-card"><div class="stat-val">3W-3L</div><div class="stat-label">게임 전적</div></div>
+    </div>
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>경기</th><th class="tc">결과</th><th>주요 픽</th><th>MVP</th></tr>
+        <tr><td>QF vs 보unty Hunters</td><td class="tc"><span class="badge badge-win">3:0</span></td><td>콜레트, 시리우스, 거스, 안젤로, 나니, 파이퍼, 카제, 피어스, 주주</td><td><span class="badge badge-mvp">Sitetampo</span></td></tr>
+        <tr><td>SF vs FUT Esports</td><td class="tc"><span class="badge badge-lose">0:3</span></td><td>재용, 피어스, 미플, 레온, R-T, 샌디, 맥스, 로사</td><td>—</td></tr>
+      </table>
+    </div>
+    <div style="margin-top:10px;font-size:11px;color:var(--sub)">선호 밴: <span class="ban-tag">루미</span><span class="ban-tag">셰이드</span><span class="ban-tag">러프스</span><span class="ban-tag">진</span><span class="ban-tag">레온</span><span class="ban-tag">콜레트</span></div>
+  </div>
+
+  <!-- 8강 탈락팀 -->
+  <div class="card">
+    <div class="card-title">8강 탈락팀</div>
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>팀</th><th>상대</th><th class="tc">스코어</th><th>주요 픽</th></tr>
+        <tr><td class="team-cr">Crazy Raccoon</td><td class="team-fut">FUT Esports</td><td class="tc"><span class="badge badge-lose">1:3</span></td><td>체스터×3, 스튜×2, 찰리×2, R-T, 올리, 거스, 레온, 셰이드</td></tr>
+        <tr><td class="team-rev">Revenant XSpark</td><td class="team-tribe">Tribe Gaming</td><td class="tc"><span class="badge badge-lose">1:3</span></td><td>미나×2, 핑크스×2, 베리, 거스, 재용, 안젤로, 샌디, 쉘리, 포코</td></tr>
+        <tr><td class="team-realm">Only Realm</td><td class="team-hmble">HMBLE</td><td class="tc"><span class="badge badge-lose">0:3</span></td><td>오티스×2, 모, 트렁크, 미플, 카제, 키트, 바이런, 대릴</td></tr>
+        <tr><td class="team-bh">보unty Hunters</td><td class="team-zeta">ZETA DIVISION</td><td class="tc"><span class="badge badge-lose">0:3</span></td><td>크로우, 체스터, 리코, 피어스, 브록, 펄, 켄지, 페니, 그레이</td></tr>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     브롤러별
+══════════════════════════════════════════ -->
+<div id="s-brawlers" class="section">
+
+  <div class="card">
+    <div class="card-title">픽+밴 합산 존재감 순위 (Presence)</div>
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>브롤러</th><th class="tc">픽</th><th class="tc">밴(팀)</th><th class="tc">글로벌밴</th><th class="tc">총 존재감</th><th class="tc">픽 승률</th></tr>
+        <tr><td><b>콜레트</b></td><td class="tc"><span class="badge badge-pick">1</span></td><td class="tc"><span class="badge badge-ban">9</span></td><td class="tc">2</td><td class="tc" style="color:var(--accent)"><b>12</b></td><td class="tc">100%</td></tr>
+        <tr><td><b>체스터</b></td><td class="tc"><span class="badge badge-pick">7</span></td><td class="tc"><span class="badge badge-ban">2</span></td><td class="tc">0</td><td class="tc" style="color:var(--accent)"><b>9</b></td><td class="tc" style="color:var(--win)">71%</td></tr>
+        <tr><td><b>모티스</b></td><td class="tc">0</td><td class="tc"><span class="badge badge-ban">5</span></td><td class="tc">4</td><td class="tc" style="color:var(--accent)"><b>9</b></td><td class="tc">—</td></tr>
+        <tr><td><b>레온</b></td><td class="tc"><span class="badge badge-pick">5</span></td><td class="tc"><span class="badge badge-ban">2</span></td><td class="tc">2</td><td class="tc" style="color:var(--accent)"><b>9</b></td><td class="tc">40%</td></tr>
+        <tr><td><b>크로우</b></td><td class="tc">0</td><td class="tc"><span class="badge badge-ban">6</span></td><td class="tc">1</td><td class="tc" style="color:var(--accent)"><b>7</b></td><td class="tc">—</td></tr>
+        <tr><td><b>에드거</b></td><td class="tc"><span class="badge badge-pick">2</span></td><td class="tc">0</td><td class="tc">4</td><td class="tc" style="color:var(--accent)"><b>6</b></td><td class="tc">50%</td></tr>
+        <tr><td><b>나지아</b></td><td class="tc"><span class="badge badge-pick">3</span></td><td class="tc"><span class="badge badge-ban">1</span></td><td class="tc">3</td><td class="tc" style="color:var(--accent)"><b>7</b></td><td class="tc">67%</td></tr>
+        <tr><td><b>러프스</b></td><td class="tc">0</td><td class="tc"><span class="badge badge-ban">2</span></td><td class="tc">3</td><td class="tc" style="color:var(--accent)"><b>5</b></td><td class="tc">—</td></tr>
+        <tr><td><b>루미</b></td><td class="tc"><span class="badge badge-pick">2</span></td><td class="tc"><span class="badge badge-ban">3</span></td><td class="tc">3</td><td class="tc" style="color:var(--accent)"><b>8</b></td><td class="tc">100%</td></tr>
+        <tr><td><b>재용</b></td><td class="tc"><span class="badge badge-pick">5</span></td><td class="tc">0</td><td class="tc">0</td><td class="tc" style="color:var(--accent)"><b>5</b></td><td class="tc" style="color:var(--win)">80%</td></tr>
+        <tr><td><b>오티스</b></td><td class="tc"><span class="badge badge-pick">5</span></td><td class="tc"><span class="badge badge-ban">1</span></td><td class="tc">0</td><td class="tc" style="color:var(--accent)"><b>6</b></td><td class="tc">60%</td></tr>
+        <tr><td>미플</td><td class="tc">4</td><td class="tc">4</td><td class="tc">0</td><td class="tc"><b>8</b></td><td class="tc">50%</td></tr>
+        <tr><td>피어스</td><td class="tc">3</td><td class="tc">2</td><td class="tc">2</td><td class="tc"><b>7</b></td><td class="tc">33%</td></tr>
+        <tr><td>미나</td><td class="tc">3</td><td class="tc">1</td><td class="tc">2</td><td class="tc"><b>6</b></td><td class="tc">67%</td></tr>
+        <tr><td>진</td><td class="tc">2</td><td class="tc">4</td><td class="tc">0</td><td class="tc"><b>6</b></td><td class="tc">100%</td></tr>
+        <tr><td>시리우스</td><td class="tc">3</td><td class="tc">0</td><td class="tc">1</td><td class="tc"><b>4</b></td><td class="tc">67%</td></tr>
+        <tr><td>알리</td><td class="tc">0</td><td class="tc">4</td><td class="tc">0</td><td class="tc"><b>4</b></td><td class="tc">—</td></tr>
+        <tr><td>키트</td><td class="tc">2</td><td class="tc">2</td><td class="tc">1</td><td class="tc"><b>5</b></td><td class="tc">50%</td></tr>
+        <tr><td>찰리</td><td class="tc">4</td><td class="tc">0</td><td class="tc">0</td><td class="tc"><b>4</b></td><td class="tc">50%</td></tr>
+        <tr><td>니타</td><td class="tc">3</td><td class="tc">1</td><td class="tc">0</td><td class="tc"><b>4</b></td><td class="tc">67%</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">승률 Top 브롤러 (픽 2회 이상)</div>
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>브롤러</th><th class="tc">픽</th><th class="tc">승</th><th class="tc">패</th><th class="tc">승률</th></tr>
+        <tr><td><b>진</b></td><td class="tc">2</td><td class="tc" style="color:var(--win)">2</td><td class="tc">0</td><td class="tc"><span class="badge badge-win">100%</span></td></tr>
+        <tr><td><b>루미</b></td><td class="tc">2</td><td class="tc" style="color:var(--win)">2</td><td class="tc">0</td><td class="tc"><span class="badge badge-win">100%</span></td></tr>
+        <tr><td><b>콜레트</b></td><td class="tc">1</td><td class="tc" style="color:var(--win)">1</td><td class="tc">0</td><td class="tc"><span class="badge badge-win">100%</span></td></tr>
+        <tr><td><b>재용</b></td><td class="tc">5</td><td class="tc" style="color:var(--win)">4</td><td class="tc">1</td><td class="tc"><span class="badge badge-win">80%</span></td></tr>
+        <tr><td><b>체스터</b></td><td class="tc">7</td><td class="tc" style="color:var(--win)">5</td><td class="tc">2</td><td class="tc"><span class="badge badge-win">71%</span></td></tr>
+        <tr><td><b>엠즈</b></td><td class="tc">3</td><td class="tc" style="color:var(--win)">2</td><td class="tc">1</td><td class="tc">67%</td></tr>
+        <tr><td><b>니타</b></td><td class="tc">3</td><td class="tc" style="color:var(--win)">2</td><td class="tc">1</td><td class="tc">67%</td></tr>
+        <tr><td><b>미나</b></td><td class="tc">3</td><td class="tc" style="color:var(--win)">2</td><td class="tc">1</td><td class="tc">67%</td></tr>
+        <tr><td><b>시리우스</b></td><td class="tc">3</td><td class="tc" style="color:var(--win)">2</td><td class="tc">1</td><td class="tc">67%</td></tr>
+        <tr><td><b>거스</b></td><td class="tc">3</td><td class="tc" style="color:var(--win)">2</td><td class="tc">1</td><td class="tc">67%</td></tr>
+        <tr><td><b>나지아</b></td><td class="tc">3</td><td class="tc" style="color:var(--win)">2</td><td class="tc">1</td><td class="tc">67%</td></tr>
+        <tr><td>오티스</td><td class="tc">5</td><td class="tc" style="color:var(--win)">3</td><td class="tc">2</td><td class="tc">60%</td></tr>
+        <tr><td>찰리</td><td class="tc">4</td><td class="tc" style="color:var(--win)">2</td><td class="tc">2</td><td class="tc">50%</td></tr>
+        <tr><td>미플</td><td class="tc">4</td><td class="tc" style="color:var(--win)">2</td><td class="tc">2</td><td class="tc">50%</td></tr>
+        <tr><td>키트</td><td class="tc">2</td><td class="tc" style="color:var(--win)">1</td><td class="tc">1</td><td class="tc">50%</td></tr>
+        <tr><td>안젤로</td><td class="tc">2</td><td class="tc" style="color:var(--win)">1</td><td class="tc">1</td><td class="tc">50%</td></tr>
+        <tr><td>나니</td><td class="tc">2</td><td class="tc" style="color:var(--win)">1</td><td class="tc">1</td><td class="tc">50%</td></tr>
+        <tr><td>레온</td><td class="tc">5</td><td class="tc" style="color:var(--win)">2</td><td class="tc" style="color:var(--lose)">3</td><td class="tc" style="color:var(--lose)">40%</td></tr>
+        <tr><td>피어스</td><td class="tc">3</td><td class="tc" style="color:var(--win)">1</td><td class="tc" style="color:var(--lose)">2</td><td class="tc" style="color:var(--lose)">33%</td></tr>
+        <tr><td>셰이드</td><td class="tc">3</td><td class="tc" style="color:var(--win)">1</td><td class="tc" style="color:var(--lose)">2</td><td class="tc" style="color:var(--lose)">33%</td></tr>
+        <tr><td>스튜</td><td class="tc">3</td><td class="tc">1</td><td class="tc" style="color:var(--lose)">2</td><td class="tc" style="color:var(--lose)">33%</td></tr>
+        <tr><td>샌디</td><td class="tc">2</td><td class="tc">0</td><td class="tc" style="color:var(--lose)">2</td><td class="tc" style="color:var(--lose)">0%</td></tr>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     맵/모드
+══════════════════════════════════════════ -->
+<div id="s-maps" class="section">
+
+  <div class="card">
+    <div class="card-title">모드별 게임 수</div>
+    <div class="bar-list" id="mode-bars"></div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">전체 맵 사용 목록</div>
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>맵</th><th>모드</th><th class="tc">사용 횟수</th><th>사용 경기</th></tr>
+        <tr><td><b>Sneaky Fields</b></td><td>Brawl Ball</td><td class="tc">3</td><td>QF1, QF2, SF2</td></tr>
+        <tr><td><b>벨's Rock</b></td><td>Knockout</td><td class="tc">2</td><td>QF1, SF2</td></tr>
+        <tr><td><b>Hard Rock Mine</b></td><td>Gem Grab</td><td class="tc">2</td><td>QF3, QF4</td></tr>
+        <tr><td><b>Layer Cake</b></td><td>보unty</td><td class="tc">2</td><td>QF1, QF3</td></tr>
+        <tr><td><b>Pinhole Punt</b></td><td>Brawl Ball</td><td class="tc">2</td><td>QF4, SF1</td></tr>
+        <tr><td><b>Out in the Open</b></td><td>Knockout</td><td class="tc">2</td><td>QF3, SF1</td></tr>
+        <tr><td>Dueling Beetles</td><td>Hot Zone</td><td class="tc">1</td><td>QF2</td></tr>
+        <tr><td>Open Business</td><td>Hot Zone</td><td class="tc">1</td><td>QF4</td></tr>
+        <tr><td>Hideout</td><td>보unty</td><td class="tc">2</td><td>QF4, SF1</td></tr>
+        <tr><td>Shooting Star</td><td>보unty</td><td class="tc">1</td><td>SF2</td></tr>
+        <tr><td>Ring of Fire</td><td>Hot Zone</td><td class="tc">1</td><td>GF</td></tr>
+        <tr><td>Bridge Too Far</td><td>Heist</td><td class="tc">1</td><td>GF</td></tr>
+        <tr><td>Super Beach</td><td>Brawl Ball</td><td class="tc">1</td><td>GF</td></tr>
+        <tr><td>Double Swoosh</td><td>Gem Grab</td><td class="tc">1</td><td>GF</td></tr>
+        <tr><td>Goldarm Gulch</td><td>Knockout</td><td class="tc">0</td><td>GF (밴됨)</td></tr>
+        <tr><td>Deathcap Trap</td><td>Gem Grab</td><td class="tc">0</td><td>QF2 (밴됨)</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">모드별 승팀 편향 분석</div>
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>모드</th><th class="tc">게임 수</th><th>주요 특징</th></tr>
+        <tr><td>Brawl Ball</td><td class="tc">7</td><td>체스터, 오티스, 니타 조합이 강세. 이동기 브롤러 선호.</td></tr>
+        <tr><td>보unty</td><td class="tc">5</td><td>재용, 루미, 나니 등 장거리 브롤러 중심. 지형 활용 중요.</td></tr>
+        <tr><td>Knockout</td><td class="tc">5</td><td>재용, 코델리우스, 안젤로. 1:1 능력치 브롤러 우선.</td></tr>
+        <tr><td>Gem Grab</td><td class="tc">4</td><td>오티스, 시리우스, 거스. 보석 컨트롤 + 실명 조합.</td></tr>
+        <tr><td>Hot Zone</td><td class="tc">3</td><td>체스터, 스튜, 찰리, 오티스. 구역 점령형 브롤러.</td></tr>
+        <tr><td>Heist</td><td class="tc">1</td><td>GF에서만 등장. 8비트 vs 벨 조합 대결.</td></tr>
+      </table>
+    </div>
+  </div>
+
+</div>
+
+<!-- ══════════════════════════════════════════
+     경기별
+══════════════════════════════════════════ -->
+<div id="s-link" class="section">
+
+  <div class="card">
+    <div class="card-title">관련 링크</div>
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>타이틀</th><th>이동 링크</th></tr>
+        <tr><td>몬헌 TU4.5</td><td><a href="https://docs.google.com/spreadsheets/d/16ek7bFxO44iQuc9spl8BC8iqtctB4Sy9AwAaAwj3LPc/edit?ouid=117825129676522391493&usp=sheets_home&ths=true">MHWS:TU4 equip guide</a></td></tr>
+        <tr><td>식단 관리</td><td><a href="https://bangsuhyun96.github.io/health-dashboard">health-dashboard</a></td></tr>
+     </table>
+    </div>
+  </div>
+
+</div>
