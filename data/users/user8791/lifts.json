@@ -1,4 +1,53 @@
 {
-  "lifts": [],
-  "updatedAt": "2026-05-18T06:07:49.792Z"
+  "lifts": [
+    {
+      "date": "2026-05-18",
+      "exercise": "레그 익스텐션",
+      "weight": 24,
+      "sets": "12",
+      "feel": "",
+      "memo": "PR 자동기록"
+    },
+    {
+      "date": "2026-05-18",
+      "exercise": "레그컬",
+      "weight": 24,
+      "sets": "12",
+      "feel": "",
+      "memo": "PR 자동기록"
+    },
+    {
+      "date": "2026-05-18",
+      "exercise": "오버헤드 트라이셉",
+      "weight": 8,
+      "sets": "12",
+      "feel": "",
+      "memo": "PR 자동기록"
+    },
+    {
+      "date": "2026-05-18",
+      "exercise": "펙덱 플라이 머신",
+      "weight": 24,
+      "sets": "15",
+      "feel": "",
+      "memo": "PR 자동기록"
+    },
+    {
+      "date": "2026-05-18",
+      "exercise": "인클라인 덤벨프레스",
+      "weight": 12,
+      "sets": "10",
+      "feel": "",
+      "memo": "PR 자동기록"
+    },
+    {
+      "date": "2026-05-18",
+      "exercise": "벤치프레스",
+      "weight": 50,
+      "sets": "10",
+      "feel": "",
+      "memo": "PR 자동기록"
+    }
+  ],
+  "updatedAt": "2026-05-18T07:34:11.337Z"
 }
