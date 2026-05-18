@@ -1,0 +1,17 @@
+{
+  "foods": [
+    {
+      "id": "local_food_1779073988323",
+      "name": "소금빵",
+      "category": "간식",
+      "unit": "65g",
+      "kcal": 232,
+      "prot": 5.5,
+      "carb": 31,
+      "fat": 9.5,
+      "local": true,
+      "verified": true
+    }
+  ],
+  "updatedAt": "2026-05-18T03:13:28.544Z"
+}
