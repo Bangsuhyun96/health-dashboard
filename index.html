@@ -3,6 +3,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <title>Health Dashboard v5</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💪</text></svg>">
 <style>
 *{box-sizing:border-box;margin:0;padding:0;}
 body{font-family:-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;font-size:14px;background:#f2f2f7;color:#1a1a1a;-webkit-text-size-adjust:100%;transition:background 0.3s,color 0.3s;overflow-y:scroll;}
@@ -1963,8 +1964,19 @@ function pickAva(el,v){
 /* ─── users.json 가져오기 ─── */
 async function fetchUsers(){
   if(!GH.owner||!GH.repo)return{users:[],sha:null};
-  try{var d=await ghGet('data/user.json');return{users:d.users||[],sha:GH.sha['data/user.json']};}
-  catch(e){if(e.message.includes('404'))return{users:[],sha:null};throw e;}
+  /* 토큰 있으면 API, 없으면 raw (public repo용) */
+  if(GH.token){
+    try{var d=await ghGet('data/user.json');return{users:d.users||[],sha:GH.sha['data/user.json']};}
+    catch(e){if(e.message.includes('404'))return{users:[],sha:null};throw e;}
+  }else{
+    try{
+      var url='https://raw.githubusercontent.com/'+GH.owner+'/'+GH.repo+'/'+(GH.branch||'main')+'/data/user.json?t='+Date.now();
+      var r=await fetch(url);
+      if(!r.ok){if(r.status===404)return{users:[],sha:null};throw new Error('HTTP '+r.status);}
+      var d=await r.json();
+      return{users:d.users||[],sha:null};
+    }catch(e){if(e.message.includes('404'))return{users:[],sha:null};throw e;}
+  }
 }
 
 /* ─── 사용자 칩 렌더 ─── */
@@ -2047,9 +2059,16 @@ async function loadUserProfile(u){
   if(cached){APP.profile=cached;}
   else{
     try{
-      var profile=await ghGet(uPath(u.id,'profile'));
-      APP.profile=profile;
-      lSet('v5_profile_'+u.id,profile);/* 캐시 저장 */
+      var profile;
+      if(GH.token){
+        profile=await ghGet(uPath(u.id,'profile'));
+      }else{
+        /* 토큰 없을 때 raw로 시도 */
+        var rawUrl='https://raw.githubusercontent.com/'+GH.owner+'/'+GH.repo+'/'+(GH.branch||'main')+'/'+uPath(u.id,'profile')+'?t='+Date.now();
+        var r=await fetch(rawUrl);
+        if(r.ok)profile=await r.json();
+      }
+      if(profile){APP.profile=profile;lSet('v5_profile_'+u.id,profile);}
     }catch(e){APP.profile=null;}
   }
 
