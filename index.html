@@ -1372,7 +1372,7 @@ body:not(.light-mode) .home-ai::before{background:#0e0e14;}
         </div>
         <div class="home-spark-diff" id="home-spark-diff"></div>
       </div>
-      <svg width="100%" height="60" id="home-sparkline" viewBox="0 0 300 60" preserveAspectRatio="none"></svg>
+      <svg width="100%" height="80" id="home-sparkline" viewBox="0 0 300 80" preserveAspectRatio="xMidYMid meet"></svg>
       <div style="font-size:10px;color:var(--text-secondary,#888);margin-top:4px" id="home-inbody-row"></div>
     </div>
     <!-- CTA -->
@@ -1461,12 +1461,12 @@ body:not(.light-mode) .home-ai::before{background:#0e0e14;}
   <div class="card" style="margin-bottom:10px">
     <div class="ctitle">체성분 변화 그래프</div>
     <div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:10px" id="inbody-graph-btns">
-      <button class="filter-btn on" onclick="renderInbodyGraph('weight',this)">체중</button>
-      <button class="filter-btn" onclick="renderInbodyGraph('muscle',this)">골격근량</button>
-      <button class="filter-btn" onclick="renderInbodyGraph('fat',this)">체지방률</button>
-      <button class="filter-btn" onclick="renderInbodyGraph('score',this)">인바디점수</button>
+      <button class="filter-btn on" onclick="renderInbodyGraph('weight',this)" data-field="weight">체중</button>
+      <button class="filter-btn" onclick="renderInbodyGraph('muscle',this)" data-field="muscle">골격근량</button>
+      <button class="filter-btn" onclick="renderInbodyGraph('fat',this)" data-field="fat">체지방률</button>
+      <button class="filter-btn" onclick="renderInbodyGraph('score',this)" data-field="score">인바디점수</button>
     </div>
-    <svg id="inbody-graph-svg" width="100%" height="160" viewBox="0 0 320 160" preserveAspectRatio="none"
+    <svg id="inbody-graph-svg" width="100%" height="160" viewBox="0 0 320 160" preserveAspectRatio="xMidYMid meet"
       style="display:block;overflow:visible"></svg>
     <div id="inbody-graph-legend" style="font-size:10px;color:#888;margin-top:6px;text-align:center"></div>
   </div>
@@ -1481,7 +1481,13 @@ body:not(.light-mode) .home-ai::before{background:#0e0e14;}
     <div id="ib-photo-msg" style="font-size:11px;margin-top:6px;color:#888"></div>
   </div>
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px">
-    <div><div style="font-size:10px;color:#555;margin-bottom:4px">측정일</div><input type="date" id="ib-date" style="font-family:inherit;font-size:11px;padding:6px 8px;border:1.5px solid #ddd;border-radius:8px;width:100%;background:#fff;color:#1a1a1a;outline:none"></div>
+    <div style="position:relative">
+  <div style="font-size:10px;color:#555;margin-bottom:4px">측정일</div>
+  <input type="date" id="ib-date" style="font-family:inherit;font-size:12px;padding:8px 10px;border:1.5px solid #ddd;border-radius:8px;width:100%;background:#fff;color:#1a1a1a;outline:none;box-sizing:border-box;cursor:pointer" onclick="this.showPicker&&this.showPicker()" onchange="updateIbDateDisplay()">
+  <div id="ib-date-display" style="position:absolute;inset:22px 0 0 0;font-size:12px;padding:8px 10px;border-radius:8px;pointer-events:none;color:#1a1a1a;display:flex;align-items:center">
+    <span id="ib-date-text" style="color:#aaa">날짜 선택</span>
+  </div>
+</div>
     <div><div style="font-size:10px;color:#555;margin-bottom:4px">체중 (kg)</div><input type="number" id="ib-weight" step="0.1" placeholder="65.2" style="font-family:inherit;font-size:11px;padding:6px 8px;border:1.5px solid #ddd;border-radius:8px;width:100%;background:#fff;color:#1a1a1a;outline:none"></div>
     <div><div style="font-size:10px;color:#555;margin-bottom:4px">골격근량 (kg)</div><input type="number" id="ib-muscle" step="0.1" placeholder="30.7" style="font-family:inherit;font-size:11px;padding:6px 8px;border:1.5px solid #ddd;border-radius:8px;width:100%;background:#fff;color:#1a1a1a;outline:none"></div>
     <div><div style="font-size:10px;color:#555;margin-bottom:4px">체지방률 (%)</div><input type="number" id="ib-fat" step="0.1" placeholder="17.3" style="font-family:inherit;font-size:11px;padding:6px 8px;border:1.5px solid #ddd;border-radius:8px;width:100%;background:#fff;color:#1a1a1a;outline:none"></div>
@@ -2374,6 +2380,32 @@ function initApp(){
 }
 
 /* ─── 프로필 헤더 ─── */
+function updateProfileFromInbody(){
+  /* 인바디 저장 시 헤더 stats 즉시 갱신 */
+  var arr=getStore('inbody').slice().sort((a,b)=>a.date>b.date?1:-1);
+  var latest=arr[arr.length-1];
+  if(!latest)return;
+  var p=APP.profile||{};
+  /* 헤더 score */
+  var sb=document.getElementById('hdr-score-box');
+  var sc=document.getElementById('hdr-score');
+  var sc2=document.getElementById('hdr-score2');
+  if(latest.score){
+    if(sb)sb.style.display='';
+    if(sc)sc.textContent=latest.score;
+    if(sc2)sc2.textContent=latest.score;
+  }
+  /* 헤더 stats (체중/근육/체지방/기초대사) */
+  var stats='';
+  var w=latest.weight||p.weight;var m=latest.muscle||p.muscle;
+  var f=latest.fat||p.fatPct;var b=latest.bmr||p.bmr;
+  if(w)stats+=`<div class="stat-box"><div class="stat-val" style="color:#185fa5">${w}kg</div><div class="stat-lbl">체중</div></div>`;
+  if(m)stats+=`<div class="stat-box"><div class="stat-val" style="color:#1d9e75">${m}kg</div><div class="stat-lbl">골격근량</div></div>`;
+  if(f)stats+=`<div class="stat-box"><div class="stat-val" style="color:#ef9f27">${f}%</div><div class="stat-lbl">체지방률</div></div>`;
+  if(b)stats+=`<div class="stat-box"><div class="stat-val" style="color:#7b72e9">${b.toLocaleString()}</div><div class="stat-lbl">기초대사량</div></div>`;
+  if(p.performance?.exp)stats+=`<div class="stat-box"><div class="stat-val" style="color:#888">${p.performance.exp}개월</div><div class="stat-lbl">훈련 경력</div></div>`;
+  var sh=document.getElementById('hdr-stats');if(sh&&stats)sh.innerHTML=stats;
+}
 function renderProfileHeader(){
   var u=APP.user||{},p=APP.profile||{};
   /* 축소 상태 */
@@ -3498,7 +3530,7 @@ var lastNutResult=null;
 /* ─ 날짜 / 초기화 ─ */
 function setToday(){
   var s=new Date().toISOString().slice(0,10);
-  ['log-date','lift-date','ib-date'].forEach(id=>{var el=document.getElementById(id);if(el)el.value=s;});
+  ['log-date','lift-date'].forEach(id=>{var el=document.getElementById(id);if(el)el.value=s;});
 }
 function confirmResetLog(){
   if(!confirm('오늘 기록 입력 내용을 모두 초기화할까요?'))return;
@@ -4321,7 +4353,12 @@ function saveInbody(){
   arr=arr.filter(x=>x.date!==date);arr.unshift(entry);arr=arr.slice(0,36);
   setStore('inbody',arr);
   var msg=document.getElementById('ib-save-msg');if(msg){msg.style.display='block';setTimeout(()=>msg.style.display='none',2000);}
+  /* 저장 후 즉시 갱신 */
   renderInbodyHistory();
+  renderInbodyGraph(document.querySelector('#inbody-graph-btns .filter-btn.on')?.getAttribute('data-field')||'weight',
+    document.querySelector('#inbody-graph-btns .filter-btn.on'));
+  updateProfileFromInbody();
+  if(document.getElementById('h-home')?.classList.contains('on'))renderHome();
 }
 function renderInbodyGraph(field,btn){
   if(btn){
@@ -4400,6 +4437,7 @@ function loadInbodyToForm(date){
   var set=function(id,v){var el=document.getElementById(id);if(el&&v!=null)el.value=v;};
   set('ib-date',r.date);set('ib-weight',r.weight);set('ib-muscle',r.muscle);
   set('ib-fat',r.fat);set('ib-score',r.score);set('ib-bmr',r.bmr);
+  updateIbDateDisplay();
   document.getElementById('l-inbody')?.scrollIntoView({behavior:'smooth',block:'start'});
 }
 function renderInbodyHistory(){
@@ -5090,7 +5128,7 @@ function renderHome(){
   setRing('ring-kcal','ring-kcal-pct','ring-kcal-val',curKcal,goalKcal,'kcal');
 
   /* 체중 스파크라인 */
-  var inbody=getStore('inbody').slice(0,8).reverse();
+  var inbody=getStore('inbody').slice().sort((a,b)=>a.date>b.date?1:-1).slice(-8);
   var sparkEl=document.getElementById('home-sparkline');
   var sparkSub=document.getElementById('home-spark-sub');
   var sparkDiff=document.getElementById('home-spark-diff');
@@ -5103,7 +5141,7 @@ function renderHome(){
         var n=weights.length;
         var pts=weights.map((w,i)=>{
           var x=Math.round((i/(n-1))*300);
-          var y=Math.round(60-((w-mn)/(mx-mn))*50)-4;
+          var y=Math.round(70-((w-mn)/(mx-mn))*55)-5;
           return {x,y,w};
         });
         /* bezier 곡선 */
@@ -5118,8 +5156,8 @@ function renderHome(){
         sparkEl.innerHTML=`
           <path d="${path}" fill="none" stroke="#185fa5" stroke-width="2.5" stroke-linecap="round"/>
           ${pts.map(pt=>`<circle cx="${pt.x}" cy="${pt.y}" r="3" fill="#185fa5"/>`).join('')}
-          <text x="0" y="58" font-size="9" fill="#888">${inbody[0].date?.slice(5)||''}</text>
-          <text x="290" y="58" font-size="9" fill="#888" text-anchor="end">${inbody[inbody.length-1].date?.slice(5)||''}</text>`;
+          <text x="0" y="78" font-size="9" fill="#888">${inbody[0].date?.slice(5)||''}</text>
+          <text x="290" y="78" font-size="9" fill="#888" text-anchor="end">${inbody[inbody.length-1].date?.slice(5)||''}</text>`;
         if(sparkSub)sparkSub.textContent=`${first}kg → ${last}kg`;
         if(sparkDiff)sparkDiff.innerHTML=`<span style="color:${diffColor}">${diff>0?'+':''}${diff}kg</span>`;
       }
@@ -5131,6 +5169,21 @@ function renderHome(){
     if(inbodyRow&&latest){
       inbodyRow.textContent=`인바디 ${latest.score||'-'}점 · 근육 ${latest.muscle||'-'}kg · 체지방 ${latest.fat||'-'}%`;
     }
+  }
+}
+/* ─── 인바디 날짜 표시 업데이트 ─── */
+function updateIbDateDisplay(){
+  var el=document.getElementById('ib-date');
+  var disp=document.getElementById('ib-date-text');
+  if(!el||!disp)return;
+  if(el.value){
+    var d=new Date(el.value);
+    var m=d.getMonth()+1,day=d.getDate();
+    disp.textContent=d.getFullYear()+'년 '+m+'월 '+day+'일';
+    disp.style.color='#1a1a1a';
+  }else{
+    disp.textContent='날짜 선택';
+    disp.style.color='#aaa';
   }
 }
 function trackTab(tabId){
