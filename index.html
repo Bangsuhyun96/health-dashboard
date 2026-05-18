@@ -277,7 +277,7 @@ body.app-ready #theme-toggle{display:flex;}
 .cat-tabs{display:flex;gap:6px;margin-bottom:10px;}
 .cat-tab{flex:1;font-family:inherit;font-size:12px;font-weight:700;padding:9px 4px;border-radius:10px;border:1.5px solid #ccc;background:#fff;color:#555;cursor:pointer;-webkit-tap-highlight-color:transparent;-webkit-appearance:none;text-align:center;outline:none;}
 .cat-tab.on{color:#fff;border-color:transparent;}
-.cat-tab-home.on{background:linear-gradient(135deg,#f5c518,#c9a000);color:#000 !important;}.cat-tab-today.on{background:#7b72e9;}.cat-tab-train.on{background:#185fa5;}.cat-tab-stat.on{background:#1d9e75;}
+.cat-tab-home.on{background:#4A5568;}.cat-tab-today.on{background:#7b72e9;}.cat-tab-train.on{background:#185fa5;}.cat-tab-stat.on{background:#1d9e75;}
 /* 구형 호환 */
 .cat-tab-diet.on{background:#1d9e75;}.cat-tab-ex.on{background:#185fa5;}.cat-tab-rehab.on{background:#ef9f27;}.cat-tab-log.on{background:#7b72e9;}
 .sub-tabs{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:12px;}
@@ -402,7 +402,7 @@ body.app-ready #theme-toggle{display:flex;}
 .home-wrap{padding:4px 0 20px;}
 .home-greeting{font-size:18px;font-weight:800;color:var(--text-primary,#1a1a1a);margin-bottom:2px;}
 .home-date{font-size:11px;color:var(--text-secondary,#888);margin-bottom:14px;}
-.home-ai{background:linear-gradient(135deg,rgba(245,197,24,0.12),rgba(245,197,24,0.04));border:1.5px solid rgba(245,197,24,0.35);border-radius:14px;padding:12px 14px;margin-bottom:14px;font-size:12px;color:var(--text-primary,#333);line-height:1.6;position:relative;}
+.home-ai{background:linear-gradient(135deg,rgba(123,114,233,0.1),rgba(24,95,165,0.06));border:1.5px solid rgba(123,114,233,0.3);border-radius:14px;padding:12px 14px;margin-bottom:14px;font-size:12px;color:var(--text-primary,#333);line-height:1.6;position:relative;}
 .home-ai::before{content:'🤖';position:absolute;top:-10px;left:12px;font-size:16px;background:#fff;border-radius:50%;padding:2px;}
 body:not(.light-mode) .home-ai::before{background:#0e0e14;}
 .home-ai-text{font-style:italic;}
@@ -417,7 +417,7 @@ body:not(.light-mode) .home-ai::before{background:#0e0e14;}
 .home-week-dot.today-ring{box-shadow:0 0 0 3px rgba(245,197,24,0.5);}
 .home-week-day{font-size:9px;color:var(--text-secondary,#888);font-weight:600;}
 .home-week-bar{height:6px;border-radius:4px;background:#f0f0f0;margin-top:6px;overflow:hidden;}
-.home-week-bar-fill{height:100%;border-radius:4px;background:linear-gradient(90deg,#185fa5,#7b72e9);transition:width .6s ease;}
+.home-week-bar-fill{height:100%;border-radius:4px;background:linear-gradient(90deg,#7b72e9,#185fa5);transition:width .6s ease;}
 .home-rings{display:flex;gap:10px;margin-bottom:14px;}
 .home-ring-card{flex:1;background:var(--surface,#fff);border:1.5px solid var(--border,#e8e8e8);border-radius:14px;padding:12px 8px;display:flex;flex-direction:column;align-items:center;gap:6px;}
 .home-ring-label{font-size:10px;font-weight:700;color:var(--text-secondary,#888);}
@@ -426,8 +426,8 @@ body:not(.light-mode) .home-ai::before{background:#0e0e14;}
 .home-spark-head{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;}
 .home-spark-title{font-size:12px;font-weight:700;color:var(--text-primary,#333);}
 .home-spark-diff{font-size:11px;font-weight:700;}
-.home-cta{width:100%;font-family:inherit;font-size:15px;font-weight:800;padding:16px;border:none;border-radius:16px;background:linear-gradient(135deg,#f5c518,#c9a000);color:#000;cursor:pointer;box-shadow:0 6px 20px rgba(245,197,24,0.4);letter-spacing:-.3px;transition:transform .1s,box-shadow .1s;}
-.home-cta:active{transform:scale(0.98);box-shadow:0 3px 10px rgba(245,197,24,0.3);}
+.home-cta{width:100%;font-family:inherit;font-size:15px;font-weight:800;padding:16px;border:none;border-radius:16px;background:linear-gradient(135deg,#7b72e9,#185fa5);color:#fff;cursor:pointer;box-shadow:0 6px 20px rgba(123,114,233,0.4);letter-spacing:-.3px;transition:transform .1s,box-shadow .1s;}
+.home-cta:active{transform:scale(0.98);box-shadow:0 3px 10px rgba(123,114,233,0.3);}
 /* ─── PR 토스트 ─── */
 #pr-toast{position:fixed;top:70px;left:50%;transform:translateX(-50%);z-index:9998;display:none;background:linear-gradient(135deg,#f5c518,#c9a000);color:#000;font-weight:800;font-size:13px;padding:12px 20px;border-radius:16px;box-shadow:0 6px 24px rgba(245,197,24,0.5);text-align:center;white-space:nowrap;}
 @keyframes prFlash{0%{transform:translateX(-50%) translateY(-10px) scale(0.9);opacity:0}60%{transform:translateX(-50%) translateY(0) scale(1.03);box-shadow:0 0 30px rgba(245,197,24,0.7)}100%{transform:translateX(-50%) scale(1);opacity:1}}
@@ -955,9 +955,13 @@ body:not(.light-mode) .home-ai::before{background:#0e0e14;}
   <button class="sub-tab" onclick="setPage('e-st',this,'stat')">현재상태</button>
   <button class="sub-tab" onclick="setPage('e-up',this,'stat')">중량현황</button>
   <button class="sub-tab" onclick="setPage('d-tl',this,'stat')">식단플랜</button>
+  <button class="sub-tab" onclick="setPage('d-pr',this,'stat')">🛒 식재료</button>
+  <button class="sub-tab" onclick="setPage('d-gp',this,'stat')">결핍해결</button>
+  <button class="sub-tab" onclick="setPage('d-rs',this,'stat')">휴식일</button>
   <button class="sub-tab" onclick="setPage('d-sp',this,'stat')">💊 영양제</button>
-  <button class="sub-tab" onclick="setPage('d-ai',this,'stat')" style="background:linear-gradient(135deg,#f5c518,#c9a000);color:#000;border-color:transparent;font-weight:700">🤖 AI</button>
+  <button class="sub-tab" onclick="setPage('d-ai',this,'stat')" style="background:linear-gradient(135deg,#7b72e9,#a78bfa);color:#fff;border-color:transparent;font-weight:700">🤖 AI</button>
   <button class="sub-tab" onclick="setPage('l-sync',this,'stat')">⚙️ 설정</button>
+  <button class="sub-tab" onclick="setPage('l-link',this,'stat')">링크</button>
 </div>
 
 <!-- ======== 식단 탭들 ======== -->
@@ -1635,6 +1639,23 @@ body:not(.light-mode) .home-ai::before{background:#0e0e14;}
 </div>
 <div class="card"><div class="ctitle">초기 설정 가이드</div><div id="setup-guide"></div></div>
 </div>
+
+<!-- 링크 -->
+ <div id="l-link" class="page">
+  <div class="card">
+    <div class="ctitle">관련 링크</div>
+    <div id="e-tr-c">
+      <div class="row">
+        <span class="rk">몬헌 TU4.5</span>
+        <span class="rv"><a href="https://docs.google.com/spreadsheets/d/16ek7bFxO44iQuc9spl8BC8iqtctB4Sy9AwAaAwj3LPc/edit?ouid=117825129676522391493&usp=sheets_home&ths=true">MHWS:TU4 equip guide</a></span>
+      </div>
+      <div class="row">
+        <span class="rk">브롤컵 d-3</span>
+        <span class="rv"><a href="https://bangsuhyun96.github.io/health-dashboard/sample/brawl/stat-dashboard.html">브롤컵 d-3</a></span>
+      </div>
+    </div>
+  </div>
+ </div>
 
 </div><!-- wrap end -->
 </div><!-- app-screen end -->
