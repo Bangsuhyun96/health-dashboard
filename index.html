@@ -254,7 +254,7 @@ body.app-ready #theme-toggle{display:flex;}
 .profile-ava{font-size:26px;line-height:1;}
 .profile-col-name{font-size:13px;font-weight:700;}
 .profile-col-sub{font-size:10px;color:#888;}
-.profile-score-box{background:#dceefb;border:1.5px solid #378add;border-radius:7px;padding:4px 10px;text-align:center;flex-shrink:0;}
+.profile-score-box{background:#dceefb;border:1.5px solid #378add;border-radius:7px;padding:4px 10px;text-align:center;flex-shrink:0;display:none;}
 .profile-score-val{font-size:15px;font-weight:700;color:#185fa5;line-height:1;}
 .profile-score-lbl{font-size:8px;color:#185fa5;}
 .profile-toggle{background:none;border:1.5px solid #e8e8e8;cursor:pointer;padding:4px 10px;border-radius:14px;color:#888;font-size:11px;font-weight:500;-webkit-tap-highlight-color:transparent;transition:all .15s;font-family:inherit;}
@@ -983,6 +983,7 @@ body:not(.light-mode) .home-ai::before{background:#0e0e14;}
         <div class="profile-score-lbl">InBody</div>
       </div>
       <button class="profile-toggle" id="profile-toggle-btn" onclick="toggleProfile()">▼ 펼치기</button>
+      <button class="logout-btn" onclick="doLogout()">로그아웃</button>
     </div>
   </div>
   <div class="profile-expand" id="profile-expand">
@@ -1000,7 +1001,6 @@ body:not(.light-mode) .home-ai::before{background:#0e0e14;}
     <div class="stat-grid" id="hdr-stats"></div>
   </div>
 </div>
-<div class="logout-row"><button class="logout-btn" onclick="doLogout()">🚪 로그아웃</button></div>
 
 <!-- 대분류 탭 -->
 <div class="cat-tabs">
