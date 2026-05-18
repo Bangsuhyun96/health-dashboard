@@ -1,0 +1,9 @@
+{
+  "userId": "user5261",
+  "name": "테스터",
+  "age": 22,
+  "gender": "male",
+  "height": 150,
+  "weight": 55,
+  "onboardingDone": false
+}
