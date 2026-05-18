@@ -11,7 +11,19 @@
       "fat": 9.5,
       "local": true,
       "verified": true
+    },
+    {
+      "id": "local_food_1779074244012",
+      "name": "돌체라떼",
+      "category": "음료",
+      "unit": "355ml",
+      "kcal": 190,
+      "prot": 10,
+      "carb": 30,
+      "fat": 3.5,
+      "local": true,
+      "verified": true
     }
   ],
-  "updatedAt": "2026-05-18T03:13:28.544Z"
+  "updatedAt": "2026-05-18T03:17:37.113Z"
 }
