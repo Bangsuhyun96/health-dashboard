@@ -88,7 +88,7 @@ body.app-ready #theme-toggle{display:flex;}
 #login-screen .login-card{background:rgba(255,255,255,0.06) !important;border-color:rgba(255,255,255,0.12) !important;}
 #login-screen .login-input{background:rgba(255,255,255,0.08) !important;border-color:rgba(255,255,255,0.15) !important;color:#fff !important;}
 #login-screen .login-field label{color:#a0aec0 !important;}
-#login-screen .login-tab{color:rgba(255,255,255,0.55) !important;}
+#login-screen .login-tab{color:rgba(255,255,255,0.85) !important;}
 #login-screen .user-chip{background:rgba(255,255,255,0.05) !important;border-color:rgba(255,255,255,0.12) !important;}
 #login-screen .user-chip-name{color:#fff !important;}
 #login-screen .user-chip-id{color:#a0aec0 !important;}
@@ -127,7 +127,7 @@ body.app-ready #theme-toggle{display:flex;}
   transition:background 0.3s,border-color 0.3s;
 }
 .login-tabs{display:flex;gap:0;margin-bottom:20px;background:rgba(0,0,0,0.25);border-radius:10px;padding:3px;}
-.login-tab{flex:1;font-family:inherit;font-size:12px;font-weight:700;padding:8px;border:none;border-radius:8px;cursor:pointer;transition:all .2s;background:transparent;color:rgba(255,255,255,0.6);}
+.login-tab{flex:1;font-family:inherit;font-size:12px;font-weight:700;padding:8px;border:none;border-radius:8px;cursor:pointer;transition:all .2s;background:transparent;color:rgba(255,255,255,0.85);}
 .login-tab.on{background:linear-gradient(135deg,#f5c518,#e6a800);color:#000;font-weight:800;box-shadow:0 2px 12px rgba(245,197,24,0.4);}
 /* login-field CSS가 위에서 정의됨 */
 .login-field label{display:block;font-size:11px;font-weight:600;color:var(--text-secondary);margin-bottom:5px;letter-spacing:.5px;text-transform:uppercase;}
@@ -136,7 +136,7 @@ body.app-ready #theme-toggle{display:flex;}
 .login-input:focus{border-color:var(--accent);background:rgba(255,255,255,0.09);}
 .login-btn{width:100%;font-family:inherit;font-size:14px;font-weight:800;padding:13px;border-radius:12px;border:none;background:linear-gradient(135deg,#f5c518,#e6a800);color:#000;cursor:pointer;transition:opacity .15s,transform .1s;margin-top:4px;box-shadow:0 4px 20px rgba(245,197,24,0.5);letter-spacing:-.2px;}
 .login-btn:active{opacity:.85;transform:scale(0.99);}
-.login-btn-sec{background:rgba(255,255,255,0.12);color:#fff;box-shadow:none;border:1.5px solid rgba(255,255,255,0.35);font-weight:700;}
+.login-btn-sec{background:rgba(255,255,255,0.14);color:#fff !important;box-shadow:none;border:1.5px solid rgba(255,255,255,0.4);font-weight:700;}
 .login-err{font-size:11px;color:var(--danger);text-align:center;margin-top:8px;min-height:16px;}
 .login-ok{font-size:11px;color:var(--success);text-align:center;margin-top:8px;}
 .user-chips{margin-bottom:14px;}
@@ -531,38 +531,43 @@ body:not(.light-mode) .home-ai::before{background:#0e0e14;}
 
     <!-- 사용자 생성 패널 -->
     <div id="lp-create" style="display:none">
-      <div class="warn" style="margin-bottom:12px;font-size:10px">⚠ 쓰기 권한이 있는 기기에서만 가능합니다. 먼저 아래에 쓰기 비밀번호를 입력하세요.</div>
-      <div class="login-field"><label>쓰기 비밀번호 (먼저 활성화)</label>
-        <div style="display:flex;gap:6px">
-          <input class="login-input" type="password" autocomplete="new-password" id="create-write-pw" placeholder="쓰기 비밀번호" style="flex:1">
-          <button class="login-btn login-btn-sec" style="width:auto;padding:11px 14px;margin-top:0;font-size:12px" onclick="activateWriteMode()">활성화</button>
-        </div>
-        <div id="write-mode-msg" class="login-err"></div>
+      <div class="login-field"><label>이름</label><input class="login-input" id="new-name" placeholder="홍길동"></div>
+      <div style="display:flex;gap:8px">
+        <div class="login-field" style="flex:1"><label>나이</label><input class="login-input" type="number" id="new-age" placeholder="30"></div>
+        <div class="login-field" style="flex:1"><label>성별</label><select class="login-input" id="new-gender"><option value="male">남성</option><option value="female">여성</option></select></div>
       </div>
-      <div id="create-form" style="display:none">
-        <div class="login-field"><label>이름</label><input class="login-input" id="new-name" placeholder="홍길동"></div>
-        <div style="display:flex;gap:8px">
-          <div class="login-field" style="flex:1"><label>나이</label><input class="login-input" type="number" id="new-age" placeholder="30"></div>
-          <div class="login-field" style="flex:1"><label>성별</label><select class="login-input" id="new-gender"><option value="male">남성</option><option value="female">여성</option></select></div>
+      <div style="display:flex;gap:8px">
+        <div class="login-field" style="flex:1"><label>키 (cm)</label><input class="login-input" type="number" id="new-height" placeholder="170"></div>
+        <div class="login-field" style="flex:1"><label>체중 (kg)</label><input class="login-input" type="number" id="new-weight" placeholder="65"></div>
+      </div>
+      <div class="login-field"><label>초기 비밀번호</label><input class="login-input" type="password" autocomplete="current-password" id="new-pw" placeholder="••••••••"></div>
+      <div class="login-field"><label>아바타</label>
+        <div style="display:flex;gap:8px;margin-top:4px" id="ava-btns">
+          <span style="font-size:28px;cursor:pointer;opacity:.5;transition:.15s" onclick="pickAva(this,'💪')">💪</span>
+          <span style="font-size:28px;cursor:pointer;opacity:.5;transition:.15s" onclick="pickAva(this,'🧗')">🧗</span>
+          <span style="font-size:28px;cursor:pointer;opacity:.5;transition:.15s" onclick="pickAva(this,'🚴')">🚴</span>
+          <span style="font-size:28px;cursor:pointer;opacity:.5;transition:.15s" onclick="pickAva(this,'🏋️')">🏋️</span>
+          <span style="font-size:28px;cursor:pointer;opacity:.5;transition:.15s" onclick="pickAva(this,'🏃')">🏃</span>
+          <span style="font-size:28px;cursor:pointer;opacity:.5;transition:.15s" onclick="pickAva(this,'⭐')">⭐</span>
         </div>
-        <div style="display:flex;gap:8px">
-          <div class="login-field" style="flex:1"><label>키 (cm)</label><input class="login-input" type="number" id="new-height" placeholder="170"></div>
-          <div class="login-field" style="flex:1"><label>체중 (kg)</label><input class="login-input" type="number" id="new-weight" placeholder="65"></div>
-        </div>
-        <div class="login-field"><label>초기 비밀번호</label><input class="login-input" type="password" autocomplete="current-password" id="new-pw" placeholder="••••••••"></div>
-        <div class="login-field"><label>아바타</label>
-          <div style="display:flex;gap:8px;margin-top:4px" id="ava-btns">
-            <span style="font-size:28px;cursor:pointer;opacity:.5;transition:.15s" onclick="pickAva(this,'💪')">💪</span>
-            <span style="font-size:28px;cursor:pointer;opacity:.5;transition:.15s" onclick="pickAva(this,'🧗')">🧗</span>
-            <span style="font-size:28px;cursor:pointer;opacity:.5;transition:.15s" onclick="pickAva(this,'🚴')">🚴</span>
-            <span style="font-size:28px;cursor:pointer;opacity:.5;transition:.15s" onclick="pickAva(this,'🏋️')">🏋️</span>
-            <span style="font-size:28px;cursor:pointer;opacity:.5;transition:.15s" onclick="pickAva(this,'🏃')">🏃</span>
-            <span style="font-size:28px;cursor:pointer;opacity:.5;transition:.15s" onclick="pickAva(this,'⭐')">⭐</span>
+      </div>
+      <button class="login-btn" onclick="showWriteModal()">사용자 생성</button>
+      <div id="create-msg" class="login-err"></div>
+      <div id="create-ok" style="display:none" class="login-ok"></div>
+      <!-- 쓰기 비밀번호 모달 -->
+      <div id="write-pw-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9998;display:none;align-items:center;justify-content:center">
+        <div style="background:#1a1a2e;border:1.5px solid rgba(255,255,255,.15);border-radius:16px;padding:24px 20px;width:calc(100% - 40px);max-width:360px">
+          <div style="font-size:14px;font-weight:700;color:#fff;margin-bottom:6px">🔑 쓰기 권한 확인</div>
+          <div style="font-size:11px;color:#a0aec0;margin-bottom:14px">사용자 생성을 위해 쓰기 비밀번호가 필요합니다.</div>
+          <div class="login-field"><label style="color:#a0aec0">쓰기 비밀번호</label>
+            <input class="login-input" type="password" autocomplete="new-password" id="create-write-pw" placeholder="쓰기 비밀번호">
+          </div>
+          <div id="write-mode-msg" class="login-err" style="margin-bottom:8px"></div>
+          <div style="display:flex;gap:8px">
+            <button class="login-btn login-btn-sec" style="margin-top:0" onclick="closeWriteModal()">취소</button>
+            <button class="login-btn" style="margin-top:0" onclick="activateWriteMode()">확인 후 생성</button>
           </div>
         </div>
-        <button class="login-btn" onclick="createUser()">사용자 생성</button>
-        <div id="create-msg" class="login-err"></div>
-        <div id="create-ok" style="display:none" class="login-ok"></div>
       </div>
     </div>
     <div style="text-align:center;margin-top:20px">
@@ -2106,6 +2111,21 @@ function doLogout(){
 }
 
 /* ─── 쓰기 모드 활성화 (사용자 생성용) ─── */
+function showWriteModal(){
+  /* 입력값 기본 검증 */
+  var name=(document.getElementById('new-name').value||'').trim();
+  var pw=document.getElementById('new-pw').value;
+  var msg=document.getElementById('create-msg');
+  if(!name){if(msg)msg.textContent='이름을 입력해주세요';return;}
+  if(!pw){if(msg)msg.textContent='초기 비밀번호를 입력해주세요';return;}
+  if(msg)msg.textContent='';
+  var modal=document.getElementById('write-pw-modal');
+  if(modal){modal.style.display='flex';}
+}
+function closeWriteModal(){
+  var modal=document.getElementById('write-pw-modal');
+  if(modal)modal.style.display='none';
+}
 function activateWriteMode(){
   var pw=document.getElementById('create-write-pw').value;
   var msg=document.getElementById('write-mode-msg');
@@ -2116,33 +2136,26 @@ function activateWriteMode(){
       var dec=CryptoJS.AES.decrypt(GH.encToken,pw).toString(CryptoJS.enc.Utf8);
       if(dec&&(dec.indexOf('ghp_')>=0||dec.indexOf('github_pat_')>=0)){
         GH.token=dec;GH.writeMode=true;
-        msg.style.color='#68d391';msg.textContent='쓰기 모드 활성화!';
-        document.getElementById('create-form').style.display='block';
-        return;
+        closeWriteModal();createUser();return;
       }
     }catch(e){}
-    msg.style.color='#fc8181';msg.textContent='비밀번호가 틀렸어요';
-    return;
+    msg.style.color='#fc8181';msg.textContent='비밀번호가 틀렸어요';return;
   }
 
-  /* 방법 2: 로그인한 유저의 writeToken (users.json 평문) */
+  /* 방법 2: 로그인한 유저의 writeToken */
   if(APP.user?.writeToken){
     GH.token=APP.user.writeToken;GH.writeMode=true;
-    msg.style.color='#68d391';msg.textContent='쓰기 모드 활성화! (writeToken 사용 중 — 동기화설정에서 암호화 이관 권장)';
-    document.getElementById('create-form').style.display='block';
-    return;
+    closeWriteModal();createUser();return;
   }
 
-  /* 방법 3: 입력값 자체가 PAT인 경우 (비밀번호 칸에 토큰 직접 입력) */
+  /* 방법 3: 입력값 자체가 PAT */
   if(pw&&(pw.indexOf('ghp_')>=0||pw.indexOf('github_pat_')>=0)){
     GH.token=pw;GH.writeMode=true;
-    msg.style.color='#68d391';msg.textContent='쓰기 모드 활성화! (동기화설정에서 토큰 암호화 저장을 권장합니다)';
-    document.getElementById('create-form').style.display='block';
-    return;
+    closeWriteModal();createUser();return;
   }
 
   msg.style.color='#fc8181';
-  msg.textContent='토큰이 없어요. 동기화설정 Step 2에서 암호화하거나, 이 칸에 PAT(ghp_...)를 직접 입력하세요.';
+  msg.textContent='토큰이 없어요. 동기화설정에서 암호화하거나, 이 칸에 PAT(ghp_...)를 직접 입력하세요.';
 }
 
 /* ─── 사용자 생성 ─── */
@@ -2534,6 +2547,16 @@ function updateProfileFromInbody(){
 }
 function renderProfileHeader(){
   var u=APP.user||{},p=APP.profile||{};
+  /* 최신 인바디 기록 (날짜 내림차순 첫 번째) */
+  var inbodyArr=getStore('inbody').slice().sort((a,b)=>b.date>a.date?1:-1);
+  var latest=inbodyArr[0]||{};
+  /* 온보딩 값 vs 최신 인바디 기록 — 인바디 우선 */
+  var weight=latest.weight||p.weight||0;
+  var muscle=latest.muscle||p.muscle||0;
+  var fatPct=latest.fat||p.fatPct||0;
+  var bmr=latest.bmr||p.bmr||0;
+  var score=latest.score||p.inbodyScore||0;
+
   /* 축소 상태 */
   document.getElementById('hdr-ava').textContent=u.avatar||'💪';
   document.getElementById('hdr-name').textContent=u.name||'사용자';
@@ -2542,23 +2565,27 @@ function renderProfileHeader(){
   if(p.injuries?.length&&!p.injuries.includes('none'))subParts.push(p.injuries.join('·')+'부상 회복');
   document.getElementById('hdr-sub').textContent=subParts.join(' · ')||'대시보드';
   var sb=document.getElementById('hdr-score-box');
-  if(p.inbodyScore){sb.style.display='';document.getElementById('hdr-score').textContent=p.inbodyScore;}
+  if(score){sb.style.display='';document.getElementById('hdr-score').textContent=score;}
   else sb.style.display='none';
+
   /* 펼쳐진 상태 */
   var nameStr=[];
   if(p.age)nameStr.push(p.age+'세');
   if(p.gender)nameStr.push(p.gender==='female'?'여성':'남성');
   if(p.height)nameStr.push(p.height+'cm');
-  if(p.weight)nameStr.push((p.weight||0)+'kg');
+  if(weight)nameStr.push(weight+'kg');
   document.getElementById('hdr-name2').textContent=u.name+(nameStr.length?' · '+nameStr.join(' · '):'');
   document.getElementById('hdr-sub2').textContent=subParts.join(' · ')||'-';
-  document.getElementById('hdr-score2').textContent=p.inbodyScore||'-';
+  document.getElementById('hdr-score2').textContent=score||'-';
+
+  /* stats — 최신 인바디 기준 */
   var stats='';
-  if(p.muscle)stats+=`<div class="stat-box"><div class="stat-val" style="color:#1d9e75">${p.muscle}kg</div><div class="stat-lbl">골격근량</div></div>`;
-  if(p.fatPct)stats+=`<div class="stat-box"><div class="stat-val" style="color:#ef9f27">${p.fatPct}%</div><div class="stat-lbl">체지방률</div></div>`;
-  if(p.bmr)stats+=`<div class="stat-box"><div class="stat-val" style="color:#185fa5">${p.bmr.toLocaleString()}</div><div class="stat-lbl">기초대사량</div></div>`;
-  if(p.performance?.exp)stats+=`<div class="stat-box"><div class="stat-val" style="color:#7b72e9">${p.performance.exp}개월</div><div class="stat-lbl">훈련 경력</div></div>`;
-  document.getElementById('hdr-stats').innerHTML=stats;
+  if(weight)stats+=`<div class="stat-box"><div class="stat-val" style="color:#185fa5">${weight}kg</div><div class="stat-lbl">체중${latest.date?' ('+latest.date.slice(5)+')'  :''}</div></div>`;
+  if(muscle)stats+=`<div class="stat-box"><div class="stat-val" style="color:#1d9e75">${muscle}kg</div><div class="stat-lbl">골격근량</div></div>`;
+  if(fatPct)stats+=`<div class="stat-box"><div class="stat-val" style="color:#ef9f27">${fatPct}%</div><div class="stat-lbl">체지방률</div></div>`;
+  if(bmr)stats+=`<div class="stat-box"><div class="stat-val" style="color:#7b72e9">${Number(bmr).toLocaleString()}</div><div class="stat-lbl">기초대사량</div></div>`;
+  if(p.performance?.exp)stats+=`<div class="stat-box"><div class="stat-val" style="color:#888">${p.performance.exp}개월</div><div class="stat-lbl">훈련경력</div></div>`;
+  document.getElementById('hdr-stats').innerHTML=stats||'<div style="font-size:11px;color:#aaa">인바디를 측정하면 수치가 표시됩니다</div>';
 }
 
 function toggleProfile(){
