@@ -455,7 +455,7 @@ body:not(.light-mode) .home-ai::before{background:#0e0e14;}
       <div id="user-chips" class="user-chips"></div>
       <div class="login-divider">직접 입력</div>
       <div class="login-field"><label>사용자 ID</label><input class="login-input" id="login-id" placeholder="bang" autocomplete="off" onkeydown="if(event.key==='Enter')doLogin()"></div>
-      <div class="login-field"><label>비밀번호</label><input class="login-input" type="password" id="login-pw" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()"></div>
+      <div class="login-field"><label>비밀번호</label><input class="login-input" type="password" autocomplete="current-password" id="login-pw" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()"></div>
       <button class="login-btn" onclick="doLogin()">로그인</button>
       <div class="login-err" id="login-err"></div>
       <div class="repo-mini">
@@ -474,7 +474,7 @@ body:not(.light-mode) .home-ai::before{background:#0e0e14;}
       <div class="warn" style="margin-bottom:12px;font-size:10px">⚠ 쓰기 권한이 있는 기기에서만 가능합니다. 먼저 아래에 쓰기 비밀번호를 입력하세요.</div>
       <div class="login-field"><label>쓰기 비밀번호 (먼저 활성화)</label>
         <div style="display:flex;gap:6px">
-          <input class="login-input" type="password" id="create-write-pw" placeholder="쓰기 비밀번호" style="flex:1">
+          <input class="login-input" type="password" autocomplete="new-password" id="create-write-pw" placeholder="쓰기 비밀번호" style="flex:1">
           <button class="login-btn login-btn-sec" style="width:auto;padding:11px 14px;margin-top:0;font-size:12px" onclick="activateWriteMode()">활성화</button>
         </div>
         <div id="write-mode-msg" class="login-err"></div>
@@ -489,7 +489,7 @@ body:not(.light-mode) .home-ai::before{background:#0e0e14;}
           <div class="login-field" style="flex:1"><label>키 (cm)</label><input class="login-input" type="number" id="new-height" placeholder="170"></div>
           <div class="login-field" style="flex:1"><label>체중 (kg)</label><input class="login-input" type="number" id="new-weight" placeholder="65"></div>
         </div>
-        <div class="login-field"><label>초기 비밀번호</label><input class="login-input" type="password" id="new-pw" placeholder="••••••••"></div>
+        <div class="login-field"><label>초기 비밀번호</label><input class="login-input" type="password" autocomplete="current-password" id="new-pw" placeholder="••••••••"></div>
         <div class="login-field"><label>아바타</label>
           <div style="display:flex;gap:8px;margin-top:4px" id="ava-btns">
             <span style="font-size:28px;cursor:pointer;opacity:.5;transition:.15s" onclick="pickAva(this,'💪')">💪</span>
@@ -563,8 +563,8 @@ body:not(.light-mode) .home-ai::before{background:#0e0e14;}
         → <b>ghp_ 로 시작하는 토큰 복사 (한 번만 표시됨!)</b>
       </div>
       <div class="login-field"><label>GitHub PAT 토큰</label><input class="login-input" id="s-token" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx" autocomplete="off"></div>
-      <div class="login-field"><label>토큰 보호 비밀번호 (이 비밀번호로 쓰기 잠금 해제)</label><input class="login-input" type="password" id="s-tokenpw" placeholder="비밀번호 설정 (잊지 마세요)"></div>
-      <div class="login-field"><label>비밀번호 확인</label><input class="login-input" type="password" id="s-tokenpw2" placeholder="동일하게 입력"></div>
+      <div class="login-field"><label>토큰 보호 비밀번호 (이 비밀번호로 쓰기 잠금 해제)</label><input class="login-input" type="password" autocomplete="new-password" id="s-tokenpw" placeholder="비밀번호 설정 (잊지 마세요)"></div>
+      <div class="login-field"><label>비밀번호 확인</label><input class="login-input" type="password" autocomplete="new-password" id="s-tokenpw2" placeholder="동일하게 입력"></div>
       <div style="display:flex;gap:8px">
         <button class="login-btn login-btn-sec" onclick="setupGoStep(1)" style="flex:1;margin-top:0">← 이전</button>
         <button class="login-btn" onclick="setupStep2Next()" style="flex:2">다음 → 파일 초기화</button>
@@ -608,7 +608,7 @@ body:not(.light-mode) .home-ai::before{background:#0e0e14;}
         <div class="login-field" style="flex:1"><label>키 (cm)</label><input class="login-input" type="number" id="s-height" placeholder="166"></div>
         <div class="login-field" style="flex:1"><label>체중 (kg)</label><input class="login-input" type="number" id="s-weight" placeholder="65.2"></div>
       </div>
-      <div class="login-field"><label>앱 로그인 비밀번호</label><input class="login-input" type="password" id="s-userpw" placeholder="앱 로그인용 비밀번호 (쓰기 비밀번호와 달라도 됨)"></div>
+      <div class="login-field"><label>앱 로그인 비밀번호</label><input class="login-input" type="password" autocomplete="current-password" id="s-userpw" placeholder="앱 로그인용 비밀번호 (쓰기 비밀번호와 달라도 됨)"></div>
       <div class="login-field" style="margin-bottom:8px"><label>아바타</label>
         <div style="display:flex;gap:10px;margin-top:5px" id="s-ava-btns">
           <span style="font-size:26px;cursor:pointer;filter:drop-shadow(0 0 6px rgba(123,114,233,.8))" data-sel="true" onclick="pickSetupAva(this)">💪</span>
@@ -818,11 +818,11 @@ body:not(.light-mode) .home-ai::before{background:#0e0e14;}
       <div class="ob-sub">Claude AI가 입력 데이터를 분석해 맞춤 식단·운동 플랜을 만들어요.</div>
       <div class="ob-card">
         <div class="ob-field"><label>Anthropic API 키</label>
-          <input class="ob-input" type="password" id="ob-api-key" placeholder="sk-ant-api03-...">
+          <input class="ob-input" type="password" autocomplete="off" id="ob-api-key" placeholder="sk-ant-api03-...">
           <div style="font-size:10px;color:#888;margin-top:4px">console.anthropic.com에서 발급. AES-256으로 암호화 저장됩니다.</div>
         </div>
         <div class="ob-field"><label>API 키 보호 비밀번호</label>
-          <input class="ob-input" type="password" id="ob-api-pw" placeholder="API 키 암호화에 사용할 비밀번호">
+          <input class="ob-input" type="password" autocomplete="off" id="ob-api-pw" placeholder="API 키 암호화에 사용할 비밀번호">
         </div>
       </div>
       <div id="ob-gen-area">
@@ -954,17 +954,17 @@ body:not(.light-mode) .home-ai::before{background:#0e0e14;}
   <button class="sub-tab" onclick="setPage('l-lift',this,'train')">중량추적</button>
 </div>
 <div class="sub-tabs" id="sub-stat" style="display:none">
-  <button class="sub-tab on-stat" onclick="setPage('e-tr',this,'stat')">트렌드</button>
-  <button class="sub-tab" onclick="setPage('e-st',this,'stat')">현재상태</button>
-  <button class="sub-tab" onclick="setPage('e-up',this,'stat')">중량현황</button>
-  <button class="sub-tab" onclick="setPage('d-tl',this,'stat')">식단플랜</button>
+  <button class="sub-tab on-stat" onclick="setPage('d-tl',this,'stat')">식단플랜</button>
+  <button style="display:none;" class="sub-tab" onclick="setPage('e-tr',this,'stat')">트렌드</button>
+  <button style="display:none;" class="sub-tab" onclick="setPage('e-st',this,'stat')">현재상태</button>
+  <button style="display:none;" class="sub-tab" onclick="setPage('e-up',this,'stat')">중량현황</button>
   <button class="sub-tab" onclick="setPage('d-pr',this,'stat')">🛒 식재료</button>
-  <button class="sub-tab" onclick="setPage('d-gp',this,'stat')">결핍해결</button>
-  <button class="sub-tab" onclick="setPage('d-rs',this,'stat')">휴식일</button>
   <button class="sub-tab" onclick="setPage('d-sp',this,'stat')">💊 영양제</button>
-  <button class="sub-tab" onclick="setPage('d-ai',this,'stat')" style="background:linear-gradient(135deg,#7b72e9,#a78bfa);color:#fff;border-color:transparent;font-weight:700">🤖 AI</button>
+  <button style="display:none;" class="sub-tab" onclick="setPage('d-gp',this,'stat')">결핍해결</button>
+  <button style="display:none;" class="sub-tab" onclick="setPage('d-rs',this,'stat')">휴식일</button>
   <button class="sub-tab" onclick="setPage('l-sync',this,'stat')">⚙️ 설정</button>
   <button class="sub-tab" onclick="setPage('l-link',this,'stat')">링크</button>
+  <button class="sub-tab" onclick="setPage('d-ai',this,'stat')" style="background:linear-gradient(135deg,#7b72e9,#a78bfa);color:#fff;border-color:transparent;font-weight:700">🤖 AI</button>
 </div>
 
 <!-- ======== 식단 탭들 ======== -->
@@ -1605,14 +1605,14 @@ body:not(.light-mode) .home-ai::before{background:#0e0e14;}
   <div class="ctitle">Step 2 — 토큰 암호화 (쓰기 기기에서만)</div>
   <div style="display:flex;flex-direction:column;gap:7px;margin-bottom:10px">
     <input type="text" id="cfg-raw-token" placeholder="ghp_xxxx (GitHub PAT)" style="font-family:inherit;font-size:11px;padding:7px 10px;border:1.5px solid #ddd;border-radius:8px;width:100%;background:#fff;color:#1a1a1a;outline:none">
-    <input type="password" id="cfg-password" placeholder="암호화 비밀번호" style="font-family:inherit;font-size:11px;padding:7px 10px;border:1.5px solid #ddd;border-radius:8px;width:100%;background:#fff;color:#1a1a1a;outline:none">
-    <input type="password" id="cfg-password2" placeholder="비밀번호 확인" style="font-family:inherit;font-size:11px;padding:7px 10px;border:1.5px solid #ddd;border-radius:8px;width:100%;background:#fff;color:#1a1a1a;outline:none">
+    <input type="password" autocomplete="new-password" id="cfg-password" placeholder="암호화 비밀번호" style="font-family:inherit;font-size:11px;padding:7px 10px;border:1.5px solid #ddd;border-radius:8px;width:100%;background:#fff;color:#1a1a1a;outline:none">
+    <input type="password" autocomplete="new-password" id="cfg-password2" placeholder="비밀번호 확인" style="font-family:inherit;font-size:11px;padding:7px 10px;border:1.5px solid #ddd;border-radius:8px;width:100%;background:#fff;color:#1a1a1a;outline:none">
   </div>
   <button onclick="encryptAndSaveToken()" style="font-family:inherit;font-size:12px;font-weight:700;padding:8px;border:none;border-radius:8px;background:#7b72e9;color:#fff;cursor:pointer;width:100%;margin-bottom:8px">토큰 암호화 & 저장</button>
   <div id="encrypt-result" style="font-size:11px;margin-bottom:16px;min-height:16px"></div>
   <div style="font-size:12px;font-weight:700;color:#555;margin-bottom:4px">Step 3 — 쓰기 모드 활성화</div>
   <div style="display:flex;gap:8px;margin-bottom:8px">
-    <input type="password" id="cfg-unlock-pw" placeholder="비밀번호 입력" style="font-family:inherit;font-size:12px;padding:7px 10px;border:1.5px solid #ddd;border-radius:8px;flex:1;background:#fff;color:#1a1a1a;outline:none">
+    <input type="password" autocomplete="off" id="cfg-unlock-pw" placeholder="비밀번호 입력" style="font-family:inherit;font-size:12px;padding:7px 10px;border:1.5px solid #ddd;border-radius:8px;flex:1;background:#fff;color:#1a1a1a;outline:none">
     <button onclick="unlockWrite()" style="font-family:inherit;font-size:12px;font-weight:700;padding:7px 14px;border:none;border-radius:8px;background:#1d9e75;color:#fff;cursor:pointer;white-space:nowrap">잠금 해제</button>
   </div>
   <div id="unlock-result" style="font-size:11px;margin-bottom:8px;min-height:16px"></div>
@@ -1620,16 +1620,16 @@ body:not(.light-mode) .home-ai::before{background:#0e0e14;}
 <div class="card">
   <div class="ctitle">Step 4 — Claude API 키 관리</div>
   <div style="font-size:11px;color:#888;margin-bottom:8px">AI 식단추천·증량조언·인바디 자동입력에 사용됩니다. AES-256 암호화 저장.</div>
-  <input type="password" id="cfg-api-key" placeholder="sk-ant-api03-..." style="font-family:inherit;font-size:11px;padding:7px 10px;border:1.5px solid #ddd;border-radius:8px;width:100%;background:#fff;color:#1a1a1a;outline:none;margin-bottom:6px">
+  <input type="password" autocomplete="off" id="cfg-api-key" placeholder="sk-ant-api03-..." style="font-family:inherit;font-size:11px;padding:7px 10px;border:1.5px solid #ddd;border-radius:8px;width:100%;background:#fff;color:#1a1a1a;outline:none;margin-bottom:6px">
   <div style="display:flex;gap:6px;margin-bottom:8px">
-    <input type="password" id="cfg-api-pw" placeholder="API 키 보호 비밀번호" style="font-family:inherit;font-size:11px;padding:7px 10px;border:1.5px solid #ddd;border-radius:8px;flex:1;background:#fff;color:#1a1a1a;outline:none">
-    <input type="password" id="cfg-api-pw2" placeholder="확인" style="font-family:inherit;font-size:11px;padding:7px 10px;border:1.5px solid #ddd;border-radius:8px;flex:1;background:#fff;color:#1a1a1a;outline:none">
+    <input type="password" autocomplete="off" id="cfg-api-pw" placeholder="API 키 보호 비밀번호" style="font-family:inherit;font-size:11px;padding:7px 10px;border:1.5px solid #ddd;border-radius:8px;flex:1;background:#fff;color:#1a1a1a;outline:none">
+    <input type="password" autocomplete="off" id="cfg-api-pw2" placeholder="확인" style="font-family:inherit;font-size:11px;padding:7px 10px;border:1.5px solid #ddd;border-radius:8px;flex:1;background:#fff;color:#1a1a1a;outline:none">
   </div>
   <button onclick="saveApiKey()" style="font-family:inherit;font-size:12px;font-weight:700;padding:8px;border:none;border-radius:8px;background:#7b72e9;color:#fff;cursor:pointer;margin-right:8px">API 키 저장</button>
   <div id="api-key-result" style="font-size:11px;margin-top:8px;min-height:16px"></div>
   <div style="font-size:12px;font-weight:700;color:#555;margin:12px 0 6px">API 키 활성화</div>
   <div style="display:flex;gap:8px">
-    <input type="password" id="cfg-api-unlock-pw" placeholder="보호 비밀번호" style="font-family:inherit;font-size:11px;padding:7px 10px;border:1.5px solid #ddd;border-radius:8px;flex:1;background:#fff;color:#1a1a1a;outline:none">
+    <input type="password" autocomplete="off" id="cfg-api-unlock-pw" placeholder="보호 비밀번호" style="font-family:inherit;font-size:11px;padding:7px 10px;border:1.5px solid #ddd;border-radius:8px;flex:1;background:#fff;color:#1a1a1a;outline:none">
     <button onclick="activateApiKey()" style="font-family:inherit;font-size:12px;font-weight:700;padding:7px 14px;border:none;border-radius:8px;background:#a78bfa;color:#fff;cursor:pointer;white-space:nowrap">활성화</button>
   </div>
   <div id="api-activate-result" style="font-size:11px;margin-top:8px;min-height:16px"></div>
@@ -4954,7 +4954,7 @@ function setCat(cat,btn){
   /* 모든 페이지 숨기기 */
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('on'));
   /* 첫 페이지 보이기 */
-  var firstPages={home:'h-home',today:'l-hist',train:'l-exdb',stat:'e-tr',diet:'d-tl',ex:'e-wk',rehab:'r-dx',log:'l-hist'};
+  var firstPages={home:'h-home',today:'l-hist',train:'l-exdb',stat:'d-tl',diet:'d-tl',ex:'e-wk',rehab:'r-dx',log:'l-hist'};
   var fp=document.getElementById(firstPages[cat]);if(fp)fp.classList.add('on');
   /* 첫 중분류 버튼 활성화 */
   var subBtns=document.querySelectorAll('#sub-'+cat+' .sub-tab');
