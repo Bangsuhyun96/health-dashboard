@@ -47,6 +47,7 @@
     {"id":"nuts30","name":"모듬 견과 한봉(30g)","category":"간식","kcal":180,"prot":4,"carb":6,"fat":16,"unit":"30g","verified":true},
     {"id":"sunflower10","name":"해바라기씨 10g","category":"간식","kcal":58,"prot":2,"carb":2,"fat":5,"unit":"10g","verified":true},
     {"id":"olive1tbsp","name":"올리브오일 1큰술","category":"간식","kcal":120,"prot":0,"carb":0,"fat":14,"unit":"15ml","verified":true},
+    {"id":"saltbread","name":"소금빵 1개","category":"간식","kcal":231,"prot":5.5,"carb":31,"fat":9.5,"unit":"65g","verified":true},
 
     {"id":"ramen","name":"라면 1개","category":"치팅","kcal":500,"prot":10,"carb":75,"fat":18,"unit":"1개","verified":true},
     {"id":"chicken_half","name":"치킨 반마리","category":"치팅","kcal":900,"prot":80,"carb":40,"fat":45,"unit":"반마리","verified":false},
