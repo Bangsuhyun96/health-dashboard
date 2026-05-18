@@ -1,0 +1,65 @@
+{
+  "exercises": [
+    {
+      "id": "preacher_curl",
+      "name": "이지바 프리쳐 컬",
+      "category": "이두",
+      "defaultSets": 3,
+      "defaultReps": "10~15",
+      "met": 4,
+      "tips": "팔 완전 잠그지 말고 이두 긴장 유지",
+      "local": true
+    },
+    {
+      "id": "overhead_tri",
+      "name": "오버헤드 트라이셉",
+      "category": "삼두",
+      "defaultSets": 2,
+      "defaultReps": "12",
+      "met": 4,
+      "tips": "롱헤드 직접 자극",
+      "local": true
+    },
+    {
+      "id": "tricep_pushdown",
+      "name": "케이블 트라이셉 푸쉬다운",
+      "category": "삼두",
+      "defaultSets": 3,
+      "defaultReps": "12",
+      "met": 4,
+      "tips": "팔꿈치 옆구리 고정. 손목 꺾지 말것",
+      "local": true
+    },
+    {
+      "id": "hammer_curl",
+      "name": "해머 컬",
+      "category": "이두",
+      "defaultSets": 2,
+      "defaultReps": "12",
+      "met": 4,
+      "tips": "전완 두께. 크림프 지구력 기여",
+      "local": true
+    },
+    {
+      "id": "incline_curl",
+      "name": "인클라인 덤벨 컬",
+      "category": "이두",
+      "defaultSets": 3,
+      "defaultReps": "10",
+      "met": 4,
+      "tips": "장두 완전 스트레치. 크림프 보조",
+      "local": true
+    },
+    {
+      "id": "barbell_curl",
+      "name": "바벨 컬",
+      "category": "이두",
+      "defaultSets": 3,
+      "defaultReps": "10",
+      "met": 4,
+      "tips": "팔꿈치 고정. 내릴 때 천천히",
+      "local": true
+    }
+  ],
+  "updatedAt": "2026-05-18T03:32:30.422Z"
+}
