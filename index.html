@@ -87,7 +87,7 @@ body.app-ready #theme-toggle{display:flex;}
 #login-screen .login-card{background:rgba(255,255,255,0.06) !important;border-color:rgba(255,255,255,0.12) !important;}
 #login-screen .login-input{background:rgba(255,255,255,0.08) !important;border-color:rgba(255,255,255,0.15) !important;color:#fff !important;}
 #login-screen .login-field label{color:#a0aec0 !important;}
-#login-screen .login-tab{color:#a0aec0 !important;}
+#login-screen .login-tab{color:rgba(255,255,255,0.55) !important;}
 #login-screen .user-chip{background:rgba(255,255,255,0.05) !important;border-color:rgba(255,255,255,0.12) !important;}
 #login-screen .user-chip-name{color:#fff !important;}
 #login-screen .user-chip-id{color:#a0aec0 !important;}
@@ -126,16 +126,16 @@ body.app-ready #theme-toggle{display:flex;}
   transition:background 0.3s,border-color 0.3s;
 }
 .login-tabs{display:flex;gap:0;margin-bottom:20px;background:rgba(0,0,0,0.25);border-radius:10px;padding:3px;}
-.login-tab{flex:1;font-family:inherit;font-size:12px;font-weight:600;padding:8px;border:none;border-radius:8px;cursor:pointer;transition:all .2s;background:transparent;color:var(--text-secondary);}
-.login-tab.on{background:linear-gradient(135deg,var(--accent),var(--accent-dark));color:#000;box-shadow:0 2px 12px var(--accent-glow);}
+.login-tab{flex:1;font-family:inherit;font-size:12px;font-weight:700;padding:8px;border:none;border-radius:8px;cursor:pointer;transition:all .2s;background:transparent;color:rgba(255,255,255,0.6);}
+.login-tab.on{background:linear-gradient(135deg,#f5c518,#e6a800);color:#000;font-weight:800;box-shadow:0 2px 12px rgba(245,197,24,0.4);}
 /* login-field CSS가 위에서 정의됨 */
 .login-field label{display:block;font-size:11px;font-weight:600;color:var(--text-secondary);margin-bottom:5px;letter-spacing:.5px;text-transform:uppercase;}
 .login-input{width:100%;font-family:inherit;font-size:13px;padding:11px 14px;border:1.5px solid var(--border-color);border-radius:10px;background:rgba(255,255,255,0.06);color:var(--text-primary);outline:none;transition:border-color .2s,background 0.3s;}
 .login-input::placeholder{color:var(--text-muted);}
 .login-input:focus{border-color:var(--accent);background:rgba(255,255,255,0.09);}
-.login-btn{width:100%;font-family:inherit;font-size:14px;font-weight:700;padding:13px;border-radius:12px;border:none;background:linear-gradient(135deg,var(--accent),var(--accent-dark));color:#000;cursor:pointer;transition:opacity .15s,transform .1s;margin-top:4px;box-shadow:0 4px 20px var(--accent-glow);}
+.login-btn{width:100%;font-family:inherit;font-size:14px;font-weight:800;padding:13px;border-radius:12px;border:none;background:linear-gradient(135deg,#f5c518,#e6a800);color:#000;cursor:pointer;transition:opacity .15s,transform .1s;margin-top:4px;box-shadow:0 4px 20px rgba(245,197,24,0.5);letter-spacing:-.2px;}
 .login-btn:active{opacity:.85;transform:scale(0.99);}
-.login-btn-sec{background:var(--bg-card-hover);color:var(--text-primary);box-shadow:none;border:1px solid var(--border-color);}
+.login-btn-sec{background:rgba(255,255,255,0.12);color:#fff;box-shadow:none;border:1.5px solid rgba(255,255,255,0.35);font-weight:700;}
 .login-err{font-size:11px;color:var(--danger);text-align:center;margin-top:8px;min-height:16px;}
 .login-ok{font-size:11px;color:var(--success);text-align:center;margin-top:8px;}
 .user-chips{margin-bottom:14px;}
@@ -383,6 +383,28 @@ body.app-ready #theme-toggle{display:flex;}
 .photo-drop:hover{background:#f5f3ff;}
 .photo-drop input{display:none;}
 /* ─── 월간 캘린더 ─── */
+/* ─── 모던 달력 피커 ─── */
+.cal-picker-wrap{position:relative;}
+.cal-picker-btn{width:100%;font-family:inherit;font-size:12px;padding:8px 10px;border:1.5px solid #ddd;border-radius:8px;background:#fff;color:#1a1a1a;text-align:left;cursor:pointer;display:flex;align-items:center;justify-content:space-between;box-sizing:border-box;outline:none;}
+.cal-picker-btn.selected{border-color:#1d9e75;}
+.cal-picker-btn .cal-placeholder{color:#aaa;}
+.cal-popup{display:none;position:fixed;background:#fff;border:1.5px solid #e0e0e0;border-radius:14px;box-shadow:0 12px 32px rgba(0,0,0,0.15);z-index:9990;padding:14px;width:260px;}
+.cal-popup.open{display:block;}
+.cal-popup-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
+.cal-popup-title{font-size:13px;font-weight:700;color:#1a1a1a;cursor:pointer;}
+.cal-nav-btn{background:none;border:none;font-size:16px;cursor:pointer;color:#555;width:28px;height:28px;border-radius:6px;display:flex;align-items:center;justify-content:center;}
+.cal-nav-btn:hover{background:#f0f0f0;}
+.cal-days-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;}
+.cal-day-hd{font-size:9px;font-weight:700;text-align:center;padding:3px 0;color:#888;}
+.cal-day-hd:first-child{color:#e57373;}
+.cal-day-hd:last-child{color:#185fa5;}
+.cal-day-cell{font-size:11px;font-weight:500;text-align:center;padding:6px 2px;border-radius:6px;cursor:pointer;color:#333;line-height:1;}
+.cal-day-cell:hover:not(.empty){background:#f0f0f0;}
+.cal-day-cell.today{font-weight:800;color:#1d9e75;}
+.cal-day-cell.selected{background:#1d9e75!important;color:#fff!important;font-weight:700;border-radius:50%;}
+.cal-day-cell.other-month{color:#ccc;}
+.cal-day-cell.empty{cursor:default;}
+/* ─── 기록내역 캘린더 ─── */
 .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;margin-top:6px;}
 .cal-day-label{font-size:9px;font-weight:700;text-align:center;padding:4px 0;color:#888;}
 .cal-day-label:first-child{color:#e57373;}
@@ -414,7 +436,7 @@ body.app-ready #theme-toggle{display:flex;}
   box-sizing:border-box;
 }
 .float-field input:focus,.float-field select:focus{
-  border-color:#185fa5;
+  border-color:rgba(255,255,255,0.6);
 }
 .float-field label{
   position:absolute;
@@ -431,7 +453,7 @@ body.app-ready #theme-toggle{display:flex;}
 .float-field select:not([value=""]) ~ label,
 .float-field.has-value label{
   top:8px;transform:none;
-  font-size:10px;
+  font-size:10px;color:rgba(255,255,255,0.7);
   font-weight:600;letter-spacing:.3px;
 }
 .float-field input::placeholder{color:transparent;}
@@ -1481,18 +1503,33 @@ body:not(.light-mode) .home-ai::before{background:#0e0e14;}
     <div id="ib-photo-msg" style="font-size:11px;margin-top:6px;color:#888"></div>
   </div>
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px">
-    <div style="position:relative">
+    <div>
   <div style="font-size:10px;color:#555;margin-bottom:4px">측정일</div>
-  <input type="date" id="ib-date" style="font-family:inherit;font-size:12px;padding:8px 10px;border:1.5px solid #ddd;border-radius:8px;width:100%;background:#fff;color:#1a1a1a;outline:none;box-sizing:border-box;cursor:pointer" onclick="this.showPicker&&this.showPicker()" onchange="updateIbDateDisplay()">
-  <div id="ib-date-display" style="position:absolute;inset:22px 0 0 0;font-size:12px;padding:8px 10px;border-radius:8px;pointer-events:none;color:#1a1a1a;display:flex;align-items:center">
-    <span id="ib-date-text" style="color:#aaa">날짜 선택</span>
+  <div class="cal-picker-wrap">
+    <button type="button" class="cal-picker-btn" id="ib-date-btn" onclick="toggleIbCal(event)">
+      <span class="cal-placeholder" id="ib-date-label">날짜 선택</span>
+      <span>📅</span>
+    </button>
+    <input type="hidden" id="ib-date">
+    <div class="cal-popup" id="ib-cal-popup">
+      <div class="cal-popup-head">
+        <button class="cal-nav-btn" onclick="moveIbCal(-1)">‹</button>
+        <span class="cal-popup-title" id="ib-cal-title"></span>
+        <button class="cal-nav-btn" onclick="moveIbCal(1)">›</button>
+      </div>
+      <div class="cal-days-grid">
+        <div class="cal-day-hd">일</div><div class="cal-day-hd">월</div><div class="cal-day-hd">화</div>
+        <div class="cal-day-hd">수</div><div class="cal-day-hd">목</div><div class="cal-day-hd">금</div><div class="cal-day-hd">토</div>
+      </div>
+      <div class="cal-days-grid" id="ib-cal-grid"></div>
+    </div>
   </div>
 </div>
-    <div><div style="font-size:10px;color:#555;margin-bottom:4px">체중 (kg)</div><input type="number" id="ib-weight" step="0.1" placeholder="65.2" style="font-family:inherit;font-size:11px;padding:6px 8px;border:1.5px solid #ddd;border-radius:8px;width:100%;background:#fff;color:#1a1a1a;outline:none"></div>
-    <div><div style="font-size:10px;color:#555;margin-bottom:4px">골격근량 (kg)</div><input type="number" id="ib-muscle" step="0.1" placeholder="30.7" style="font-family:inherit;font-size:11px;padding:6px 8px;border:1.5px solid #ddd;border-radius:8px;width:100%;background:#fff;color:#1a1a1a;outline:none"></div>
-    <div><div style="font-size:10px;color:#555;margin-bottom:4px">체지방률 (%)</div><input type="number" id="ib-fat" step="0.1" placeholder="17.3" style="font-family:inherit;font-size:11px;padding:6px 8px;border:1.5px solid #ddd;border-radius:8px;width:100%;background:#fff;color:#1a1a1a;outline:none"></div>
-    <div><div style="font-size:10px;color:#555;margin-bottom:4px">인바디 점수</div><input type="number" id="ib-score" placeholder="81" style="font-family:inherit;font-size:11px;padding:6px 8px;border:1.5px solid #ddd;border-radius:8px;width:100%;background:#fff;color:#1a1a1a;outline:none"></div>
-    <div><div style="font-size:10px;color:#555;margin-bottom:4px">기초대사량 (kcal)</div><input type="number" id="ib-bmr" placeholder="1534" style="font-family:inherit;font-size:11px;padding:6px 8px;border:1.5px solid #ddd;border-radius:8px;width:100%;background:#fff;color:#1a1a1a;outline:none"></div>
+    <div><div style="font-size:10px;color:#555;margin-bottom:4px">체중 (kg)</div><input type="number" id="ib-weight" step="0.1" style="font-family:inherit;font-size:11px;padding:6px 8px;border:1.5px solid #ddd;border-radius:8px;width:100%;background:#fff;color:#1a1a1a;outline:none"></div>
+    <div><div style="font-size:10px;color:#555;margin-bottom:4px">골격근량 (kg)</div><input type="number" id="ib-muscle" step="0.1" style="font-family:inherit;font-size:11px;padding:6px 8px;border:1.5px solid #ddd;border-radius:8px;width:100%;background:#fff;color:#1a1a1a;outline:none"></div>
+    <div><div style="font-size:10px;color:#555;margin-bottom:4px">체지방률 (%)</div><input type="number" id="ib-fat" step="0.1" style="font-family:inherit;font-size:11px;padding:6px 8px;border:1.5px solid #ddd;border-radius:8px;width:100%;background:#fff;color:#1a1a1a;outline:none"></div>
+    <div><div style="font-size:10px;color:#555;margin-bottom:4px">인바디 점수</div><input type="number" id="ib-score" style="font-family:inherit;font-size:11px;padding:6px 8px;border:1.5px solid #ddd;border-radius:8px;width:100%;background:#fff;color:#1a1a1a;outline:none"></div>
+    <div><div style="font-size:10px;color:#555;margin-bottom:4px">기초대사량 (kcal)</div><input type="number" id="ib-bmr" style="font-family:inherit;font-size:11px;padding:6px 8px;border:1.5px solid #ddd;border-radius:8px;width:100%;background:#fff;color:#1a1a1a;outline:none"></div>
   </div>
   <button onclick="saveInbody()" style="font-family:inherit;font-size:13px;font-weight:700;padding:10px;border:none;border-radius:10px;background:#1d9e75;color:#fff;cursor:pointer;width:100%;margin-bottom:8px">인바디 기록 추가</button>
   <button onclick="pushInbodyLifts()" style="font-family:inherit;font-size:12px;font-weight:600;padding:8px;border:1.5px solid #1d9e75;border-radius:10px;background:#e6fdf2;color:#0a5c46;cursor:pointer;width:100%;margin-bottom:10px">☁️ GitHub에 저장 (인바디 + 중량)</button>
@@ -2380,6 +2417,64 @@ function initApp(){
 }
 
 /* ─── 프로필 헤더 ─── */
+/* ─── 인바디 달력 피커 ─── */
+var _ibCalDate=new Date();
+function toggleIbCal(e){
+  e&&e.stopPropagation();
+  var pop=document.getElementById('ib-cal-popup');
+  if(!pop)return;
+  var isOpen=pop.classList.contains('open');
+  document.querySelectorAll('.cal-popup.open').forEach(p=>p.classList.remove('open'));
+  if(!isOpen){
+    /* 팝업 위치 계산 */
+    var btn=document.getElementById('ib-date-btn');
+    var rect=btn.getBoundingClientRect();
+    pop.style.top=(rect.bottom+window.scrollY+4)+'px';
+    pop.style.left=rect.left+'px';
+    pop.classList.add('open');
+    renderIbCal();
+  }
+}
+function moveIbCal(dir){
+  _ibCalDate.setMonth(_ibCalDate.getMonth()+dir);
+  renderIbCal();
+}
+function renderIbCal(){
+  var y=_ibCalDate.getFullYear(),m=_ibCalDate.getMonth();
+  var title=document.getElementById('ib-cal-title');
+  var grid=document.getElementById('ib-cal-grid');
+  if(title)title.textContent=y+'년 '+(m+1)+'월';
+  if(!grid)return;
+  var today=new Date().toISOString().slice(0,10);
+  var sel=document.getElementById('ib-date')?.value||'';
+  var first=new Date(y,m,1).getDay();
+  var days=new Date(y,m+1,0).getDate();
+  var html='';
+  for(var i=0;i<first;i++)html+=`<div class="cal-day-cell empty"></div>`;
+  for(var d=1;d<=days;d++){
+    var ds=y+'-'+String(m+1).padStart(2,'0')+'-'+String(d).padStart(2,'0');
+    var cls='cal-day-cell'+(ds===today?' today':'')+(ds===sel?' selected':'');
+    html+=`<div class="${cls}" onclick="pickIbDate('${ds}')">${d}</div>`;
+  }
+  grid.innerHTML=html;
+}
+function pickIbDate(ds){
+  document.getElementById('ib-date').value=ds;
+  var d=new Date(ds);
+  var label=document.getElementById('ib-date-label');
+  if(label){label.textContent=(d.getMonth()+1)+'월 '+d.getDate()+'일 '+d.getFullYear();label.style.color='#1a1a1a';}
+  var btn=document.getElementById('ib-date-btn');if(btn)btn.classList.add('selected');
+  document.getElementById('ib-cal-popup')?.classList.remove('open');
+}
+/* 달력 외부 클릭 시 닫기 */
+document.addEventListener('click',function(e){
+  if(!e.target.closest('.cal-picker-wrap'))
+    document.querySelectorAll('.cal-popup.open').forEach(p=>p.classList.remove('open'));
+});
+function updateIbDateDisplay(){
+  var v=document.getElementById('ib-date')?.value;
+  if(v)pickIbDate(v);
+}
 function updateProfileFromInbody(){
   /* 인바디 저장 시 헤더 stats 즉시 갱신 */
   var arr=getStore('inbody').slice().sort((a,b)=>a.date>b.date?1:-1);
@@ -4437,12 +4532,12 @@ function loadInbodyToForm(date){
   var set=function(id,v){var el=document.getElementById(id);if(el&&v!=null)el.value=v;};
   set('ib-date',r.date);set('ib-weight',r.weight);set('ib-muscle',r.muscle);
   set('ib-fat',r.fat);set('ib-score',r.score);set('ib-bmr',r.bmr);
-  updateIbDateDisplay();
+  if(r.date){_ibCalDate=new Date(r.date);pickIbDate(r.date);}
   document.getElementById('l-inbody')?.scrollIntoView({behavior:'smooth',block:'start'});
 }
 function renderInbodyHistory(){
   var el=document.getElementById('inbody-history');if(!el)return;
-  var arr=getStore('inbody');
+  var arr=getStore('inbody').slice().sort((a,b)=>b.date>a.date?1:-1);
   if(!arr.length){el.innerHTML='<div style="text-align:center;color:#888;font-size:12px;padding:12px">인바디 기록이 없습니다.</div>';return;}
   el.innerHTML=arr.map(r=>`<div class="ib-hist-row">
     <div onclick="loadInbodyToForm('${r.date}')" style="flex:1;cursor:pointer">
@@ -5171,21 +5266,7 @@ function renderHome(){
     }
   }
 }
-/* ─── 인바디 날짜 표시 업데이트 ─── */
-function updateIbDateDisplay(){
-  var el=document.getElementById('ib-date');
-  var disp=document.getElementById('ib-date-text');
-  if(!el||!disp)return;
-  if(el.value){
-    var d=new Date(el.value);
-    var m=d.getMonth()+1,day=d.getDate();
-    disp.textContent=d.getFullYear()+'년 '+m+'월 '+day+'일';
-    disp.style.color='#1a1a1a';
-  }else{
-    disp.textContent='날짜 선택';
-    disp.style.color='#aaa';
-  }
-}
+
 function trackTab(tabId){
   var log=lGet('v5_tab_log')||[];
   log.push({tab:tabId,ts:Date.now(),hour:new Date().getHours()});
