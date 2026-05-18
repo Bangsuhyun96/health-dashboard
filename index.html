@@ -912,6 +912,11 @@ body:not(.light-mode) .home-ai::before{background:#0e0e14;}
 </div>
 <!-- ==================== 메인 앱 ==================== -->
 <div id="app-screen">
+<!-- 앱 로딩 오버레이 -->
+<div id="app-loading" style="display:none;position:fixed;inset:0;background:rgba(10,10,15,0.88);z-index:9997;flex-direction:column;align-items:center;justify-content:center;gap:16px">
+  <div style="width:44px;height:44px;border:3px solid rgba(245,197,24,0.2);border-top-color:#f5c518;border-radius:50%;animation:spin .8s linear infinite"></div>
+  <div id="app-loading-msg" style="font-size:12px;color:rgba(255,255,255,0.7);font-weight:600">데이터 불러오는 중...</div>
+</div>
 <div id="sync-bar"></div>
 <!-- 오늘의 배너 (앱 푸시 예정 - 현재 비활성) -->
 <div id="today-banner" style="display:none;background:linear-gradient(135deg,#185fa5,#7b72e9);border-radius:14px;padding:14px 16px;margin:12px 12px 0;box-shadow:0 4px 15px rgba(24,95,165,.3)"></div>
@@ -2424,24 +2429,62 @@ async function finishOnboarding(){
   initApp();
 }
 /* ─── 앱 초기화 ─── */
+/* ─── 앱 로딩 오버레이 ─── */
+function showAppLoading(msg){
+  var el=document.getElementById('app-loading');
+  var ml=document.getElementById('app-loading-msg');
+  if(el){el.style.display='flex';}
+  if(ml)ml.textContent=msg||'데이터 불러오는 중...';
+}
+function hideAppLoading(){
+  var el=document.getElementById('app-loading');
+  if(el)el.style.display='none';
+}
+
 function initApp(){
   renderProfileHeader();
   loadDB().then(()=>{renderExDBList();renderFoodDBList();renderExerciseBlocks();});
   renderDiet();renderExercise();renderRehab();loadSyncConfig();
   showTodayBanner();
-  /* 기본 화면 = 홈 */
-  initLogTab();
-  renderHome();
 
-  /* ── 자동 pull (접속 시 1시간 이상 지났으면 백그라운드 sync) ── */
   var uid=APP.user?.id;
   var lastPull=lGet('v5_last_pull_'+uid)||0;
   var ONE_HOUR=60*60*1000;
-  if(GH.owner&&GH.repo&&(Date.now()-lastPull>ONE_HOUR)){
-    setTimeout(()=>pullFromGitHub(false),1500); /* 앱 렌더 완료 후 백그라운드 */
+  var hasLocalData=!!(getStore('logs').length||getStore('inbody').length);
+
+  /* 로컬 데이터가 없거나 1시간 이상 지났으면 pull 후 렌더 */
+  if(GH.owner&&GH.repo&&(!hasLocalData||Date.now()-lastPull>ONE_HOUR)){
+    if(!hasLocalData){
+      /* 첫 접속 — 로딩 보여주고 pull 완료 후 렌더 */
+      showAppLoading('GitHub에서 데이터 불러오는 중...');
+      pullFromGitHub(false).then(()=>{
+        initLogTab();
+        renderHome();
+        hideAppLoading();
+      }).catch(()=>{
+        initLogTab();
+        renderHome();
+        hideAppLoading();
+      });
+    }else{
+      /* 로컬 데이터 있음 → 즉시 렌더 후 백그라운드 pull */
+      initLogTab();
+      renderHome();
+      setTimeout(()=>{
+        showAppLoading('최신 데이터 동기화 중...');
+        pullFromGitHub(false).then(()=>{
+          renderHome();
+          hideAppLoading();
+        }).catch(()=>hideAppLoading());
+      },800);
+    }
+  }else{
+    /* pull 불필요 — 즉시 렌더 */
+    initLogTab();
+    renderHome();
   }
 
-  if(GH.needEncryptWarning)setTimeout(()=>showSyncBar('⚠ writeToken 평문 노출 → 동기화설정 Step 2 암호화 권장','#ef9f27'),1500);
+  if(GH.needEncryptWarning)setTimeout(()=>showSyncBar('⚠ writeToken 평문 노출 → 동기화설정 Step 2 암호화 권장','#ef9f27'),2000);
   if(APP._pendingHashUpdate&&GH.writeMode&&GH.token){
     var{id,newHash}=APP._pendingHashUpdate;APP._pendingHashUpdate=null;
     (async()=>{try{var{users}=await fetchUsers();users=users.map(u=>u.id===id?{...u,passwordHash:newHash}:u);await ghPut('data/user.json',{users});showSyncBar('✓ 비밀번호 해시 업데이트 완료','#1d9e75');}catch(e){console.warn(e);}})();
@@ -5002,9 +5045,12 @@ async function pullFromGitHub(force){
     var onLift=document.getElementById('l-lift')?.classList.contains('on');
     var onExDB=document.getElementById('l-exdb')?.classList.contains('on');
     var onFoodDB=document.getElementById('l-fooddb')?.classList.contains('on');
+    var onHome=document.getElementById('h-home')?.classList.contains('on');
     if(onHist||!force)renderLogHistory();
     if(onInbody){renderInbodyHistory();renderInbodyGraph&&renderInbodyGraph('weight',document.querySelector('#inbody-graph-btns .filter-btn.on'));}
     if(onLift)renderLiftHistory();
+    if(onHome)renderHome();
+    renderProfileHeader();
     /* DB pull 후 메모리 DB 재병합 + 리스트 갱신 */
     if(pulled.exercises||pulled.foods){
       mergeLocalDB();
