@@ -539,6 +539,17 @@
       "fat": 49,
       "unit": "1세트",
       "verified": false
+    },
+    {
+      "id": "food_1779089137597",
+      "name": "두부 한 모",
+      "category": "단백질",
+      "unit": "400g",
+      "kcal": 320,
+      "prot": 32,
+      "carb": 4,
+      "fat": 20,
+      "verified": true
     }
   ]
 }
