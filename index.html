@@ -5626,7 +5626,18 @@ function toggleLogDetail(date, cardEl){
     <span>지방 <b>${log.nutrition.fat||0}g</b></span>
   </div>`:'';
   var memo=log.memo?`<div style="font-size:11px;color:#888;margin-top:8px">📝 ${log.memo}</div>`:'';
-  var editBtn=!isClosed?`<button onclick="goTodayRecord('${date}')" style="font-family:inherit;font-size:11px;font-weight:700;padding:7px 14px;border:none;border-radius:8px;background:#7b72e9;color:#fff;cursor:pointer;margin-top:10px;width:100%">✏️ 기록하기에서 수정</button>`:'';
+  var copyText=`📅 ${date} ${(log.exTypes||[]).map(t=>({weight:'💪 웨이트',climbing:'🧗 클라이밍',bike:'🚴 바이크',rest:'😴 휴식',rehab:'🩺 재활'}[t]||t)).join(' ')}\n`;
+  (log.exercises||[]).filter(e=>e.name&&e.sets?.length).forEach(e=>{
+    copyText+=`🏋️ ${e.name} ${e.sets.length}세트\n`;
+    e.sets.forEach((s,i)=>copyText+=`  ${i+1}세트: ${s.kg?s.kg+'kg':''}${s.reps?' × '+s.reps:''}\n`);
+  });
+  if(log.nutrition){var n=log.nutrition;copyText+=`🍗 단백질 ${n.prot||0}g · 칼로리 ${n.kcal||0} · 탄수 ${n.carb||0}g · 지방 ${n.fat||0}g\n`;}
+  copyText+=`💤 수면 ${log.sleep||7}h · 💧 ${((log.water||1800)/1000).toFixed(1)}L`;
+  if(log.memo)copyText+=`\n📝 ${log.memo}`;
+
+  var editBtn=!isClosed
+    ?`<button onclick="goTodayRecord('${date}')" style="font-family:inherit;font-size:11px;font-weight:700;padding:7px 14px;border:none;border-radius:8px;background:#7b72e9;color:#fff;cursor:pointer;margin-top:10px;width:100%">✏️ 기록하기에서 수정</button>`
+    :`<button onclick="copyLogText(\`${copyText.replace(/`/g,"'")}\`)" style="font-family:inherit;font-size:11px;font-weight:700;padding:7px 14px;border:none;border-radius:8px;background:linear-gradient(135deg,#1d9e75,#0a5c46);color:#fff;cursor:pointer;margin-top:10px;width:100%">📋 텍스트 복사</button>`;
 
   inner.innerHTML=(exLines||'')+nutHtml+memo+editBtn;
   slide.classList.add('open');
