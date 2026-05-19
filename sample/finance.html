@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<title>재무 관리 — 방수현</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/tabler-icons.min.css">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --bg:#f5f5f7;
+  --surface:#fff;
+  --surface-2:#f0f0f5;
+  --border:#e5e5ea;
+  --text:#1a1a1a;
+  --text-2:#6e6e73;
+  --text-3:#aeaeb2;
+  --accent:#7b72e9;
+  --accent-bg:#f3f0ff;
+  --accent-border:#d4c8ff;
+  --green:#1d9e75;
+  --green-bg:#e6fdf2;
+  --green-border:#a3e9cc;
+  --orange:#d4720a;
+  --orange-bg:#fff7e6;
+  --orange-border:#fdd8a0;
+  --red:#e02020;
+  --red-bg:#fdecea;
+  --red-border:#f5b8b8;
+  --blue:#185fa5;
+  --blue-bg:#dceefb;
+  --blue-border:#9ecef5;
+  --radius-sm:8px;
+  --radius-md:12px;
+  --radius-lg:16px;
+}
+body{font-family:-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;font-size:14px;background:var(--bg);color:var(--text);min-height:100vh;padding:20px 16px 60px;}
+
+/* 헤더 */
+.page-header{margin-bottom:20px;}
+.page-title{font-size:22px;font-weight:800;letter-spacing:-.5px;margin-bottom:4px;}
+.page-sub{font-size:12px;color:var(--text-2);}
+
+/* 네비 */
+.nav{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:20px;}
+.nav-btn{padding:7px 14px;font-size:12px;font-weight:600;cursor:pointer;border-radius:99px;border:1.5px solid var(--border);color:var(--text-2);background:var(--surface);transition:all .15s;font-family:inherit;white-space:nowrap;}
+.nav-btn.on{background:var(--accent-bg);color:var(--accent);border-color:var(--accent-border);}
+.nav-btn:hover:not(.on){border-color:var(--accent);color:var(--accent);}
+
+/* 섹션 */
+.section{display:none;}
+.section.on{display:block;}
+
+/* 카드 */
+.card{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--radius-lg);padding:16px;margin-bottom:12px;}
+.ch{font-weight:700;font-size:14px;margin-bottom:12px;display:flex;align-items:center;gap:8px;color:var(--text);}
+.ch i{color:var(--accent);}
+
+/* 배지 */
+.badge{font-size:10px;font-weight:700;padding:3px 8px;border-radius:99px;}
+.bg{background:var(--green-bg);color:var(--green);}
+.ba{background:var(--orange-bg);color:var(--orange);}
+.bi{background:var(--blue-bg);color:var(--blue);}
+.br{background:var(--red-bg);color:var(--red);}
+.bp{background:var(--accent-bg);color:var(--accent);}
+
+/* 행 */
+.row{display:flex;justify-content:space-between;align-items:flex-start;padding:9px 0;border-bottom:1px solid var(--border);gap:12px;font-size:13px;}
+.row:last-child{border-bottom:none;padding-bottom:0;}
+.rl{color:var(--text-2);flex-shrink:0;line-height:1.5;min-width:100px;}
+.rv{text-align:right;font-weight:600;line-height:1.5;}
+.rv small{font-weight:400;font-size:11px;color:var(--text-2);display:block;margin-top:1px;}
+
+/* 알림 박스 */
+.ok{background:var(--green-bg);border-left:3px solid var(--green);padding:10px 14px;font-size:12px;color:var(--green);line-height:1.6;margin:8px 0;border-radius:0 var(--radius-sm) var(--radius-sm) 0;}
+.tip{background:var(--orange-bg);border-left:3px solid var(--orange);padding:10px 14px;font-size:12px;color:var(--orange);line-height:1.6;margin:8px 0;border-radius:0 var(--radius-sm) var(--radius-sm) 0;}
+.info{background:var(--blue-bg);border-left:3px solid var(--blue);padding:10px 14px;font-size:12px;color:var(--blue);line-height:1.6;margin:8px 0;border-radius:0 var(--radius-sm) var(--radius-sm) 0;}
+.warn{background:var(--red-bg);border-left:3px solid var(--red);padding:10px 14px;font-size:12px;color:var(--red);line-height:1.6;margin:8px 0;border-radius:0 var(--radius-sm) var(--radius-sm) 0;}
+
+/* 스텝 리스트 */
+.step-list{list-style:none;}
+.step-list li{display:flex;gap:12px;padding:11px 0;border-bottom:1px solid var(--border);font-size:13px;line-height:1.55;}
+.step-list li:last-child{border-bottom:none;}
+.snum{min-width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;margin-top:2px;background:var(--accent-bg);color:var(--accent);}
+.snum.red{background:var(--red-bg);color:var(--red);}
+.snum.green{background:var(--green-bg);color:var(--green);}
+
+/* 그리드 */
+.g2{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:12px;}
+.mc{background:var(--surface-2);border-radius:var(--radius-md);padding:12px;}
+.mc .ml{font-size:11px;color:var(--text-2);margin-bottom:4px;}
+.mc .mv{font-size:18px;font-weight:800;color:var(--text);}
+.mc .ms{font-size:11px;color:var(--text-3);margin-top:2px;}
+
+/* 시뮬레이터 */
+.sim{background:var(--surface-2);border-radius:var(--radius-md);padding:14px;margin-top:8px;}
+.sim-r{display:flex;justify-content:space-between;font-size:13px;padding:3px 0;color:var(--text-2);}
+.sim-r span:last-child{color:var(--green);font-weight:600;}
+.sim-t{display:flex;justify-content:space-between;font-size:15px;font-weight:800;padding-top:10px;border-top:1.5px solid var(--border);margin-top:8px;}
+
+/* 섹션 타이틀 */
+.tl{font-size:10px;font-weight:700;color:var(--text-3);text-transform:uppercase;letter-spacing:.8px;margin:20px 0 10px;padding-left:2px;}
+.tl:first-child{margin-top:0;}
+
+/* 개념 박스 */
+.concept-box{border:1.5px solid var(--border);border-radius:var(--radius-md);padding:12px;margin-bottom:10px;background:var(--surface);}
+.cb-title{font-size:13px;font-weight:700;margin-bottom:5px;display:flex;align-items:center;gap:6px;color:var(--text);}
+.cb-body{font-size:12px;color:var(--text-2);line-height:1.65;}
+
+/* 진행바 */
+.prog-wrap{margin:8px 0;}
+.prog-label{display:flex;justify-content:space-between;font-size:11px;color:var(--text-2);margin-bottom:4px;}
+.prog-bar{height:6px;background:var(--border);border-radius:4px;overflow:hidden;}
+.prog-fill{height:100%;border-radius:4px;transition:width .5s ease;}
+
+/* 태그 */
+.pill-row{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px;}
+.pill{font-size:11px;padding:3px 10px;border-radius:99px;border:1.5px solid var(--border);color:var(--text-2);}
+
+/* 링크 목록 */
+.link-item{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);}
+.link-item:last-child{border-bottom:none;}
+.link-icon{width:32px;height:32px;border-radius:var(--radius-sm);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:16px;}
+.link-body{flex:1;min-width:0;}
+.link-title{font-size:13px;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.link-url{font-size:11px;color:var(--text-3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.link-arrow{color:var(--text-3);flex-shrink:0;}
+</style>
+</head>
+<body>
+
+<div class="page-header">
+  <div class="page-title">💰 재무 관리</div>
+  <div class="page-sub">방수현 · 2026년 업데이트</div>
+</div>
+
+<div class="nav" id="nav"></div>
+<div id="sections"></div>
+
+<script>
+const pages = [
+  {id:'overview', label:'개요', icon:'ti-layout-dashboard'},
+  {id:'invest',   label:'투자', icon:'ti-chart-candlestick'},
+  {id:'pension',  label:'청약·연금', icon:'ti-building-bank'},
+  {id:'spend',    label:'지출', icon:'ti-receipt'},
+  {id:'insurance',label:'보험', icon:'ti-shield-check'},
+  {id:'links',    label:'링크', icon:'ti-link'},
+];
+
+const content = {
+  overview: `
+    <div class="tl">월별 재무 현황</div>
+    <div class="g2">
+      <div class="mc"><div class="ml">월 수입 (실수령)</div><div class="mv" style="color:var(--green)">—만원</div><div class="ms">세후 기준</div></div>
+      <div class="mc"><div class="ml">고정 납입 합계</div><div class="mv" style="color:var(--accent)">150만원</div><div class="ms">청약+연금+IRP</div></div>
+      <div class="mc"><div class="ml">생활비 예산</div><div class="mv">—만원</div><div class="ms">월 평균</div></div>
+      <div class="mc"><div class="ml">연간 세금 환급</div><div class="mv" style="color:var(--green)">+215만원</div><div class="ms">4개 상품 합산</div></div>
+    </div>
+
+    <div class="tl">자산 배분 현황</div>
+    <div class="card">
+      <div class="ch"><i class="ti ti-chart-pie"></i> 자산 카테고리별 배분</div>
+      <div class="prog-wrap">
+        <div class="prog-label"><span>비상금 (파킹통장)</span><span>—만원</span></div>
+        <div class="prog-bar"><div class="prog-fill" style="width:0%;background:var(--blue)"></div></div>
+      </div>
+      <div class="prog-wrap">
+        <div class="prog-label"><span>투자 (연금저축+IRP+ETF)</span><span>—만원</span></div>
+        <div class="prog-bar"><div class="prog-fill" style="width:0%;background:var(--accent)"></div></div>
+      </div>
+      <div class="prog-wrap">
+        <div class="prog-label"><span>청약 통장</span><span>—만원</span></div>
+        <div class="prog-bar"><div class="prog-fill" style="width:0%;background:var(--green)"></div></div>
+      </div>
+      <div class="tip">⚠️ 이 페이지의 금액은 직접 수정해서 사용하세요. 실제 수치로 업데이트하면 재무 현황을 한눈에 파악할 수 있습니다.</div>
+    </div>
+
+    <div class="tl">이번 달 체크리스트</div>
+    <div class="card">
+      <div class="ch"><i class="ti ti-list-check"></i> 월간 필수 확인</div>
+      <ul class="step-list">
+        <li><div class="snum green">✓</div><div><strong>주택드림 청약 자동이체 확인</strong><br><span style="color:var(--text-2)">월 25만원 — 납입일 확인</span></div></li>
+        <li><div class="snum green">✓</div><div><strong>연금저축펀드 납입 확인</strong><br><span style="color:var(--text-2)">월 50만원 — ETF 잔고 확인</span></div></li>
+        <li><div class="snum green">✓</div><div><strong>IRP 납입 확인</strong><br><span style="color:var(--text-2)">월 25만원 — 연간 300만원 목표</span></div></li>
+        <li><div class="snum">!</div><div><strong>파킹통장 잔고 확인</strong><br><span style="color:var(--text-2)">목표: 비상금 600~900만원 유지</span></div></li>
+        <li><div class="snum">!</div><div><strong>카드 지출 내역 점검</strong><br><span style="color:var(--text-2)">예산 초과 항목 확인 및 조정</span></div></li>
+      </ul>
+    </div>`,
+
+  invest: `
+    <div class="tl">연금저축펀드</div>
+    <div class="card">
+      <div class="ch"><i class="ti ti-chart-bar"></i> 연금저축펀드 <span class="badge bg">세액공제</span></div>
+      <div class="row"><span class="rl">연간 납입 목표</span><span class="rv">600만원 <small>월 50만원</small></span></div>
+      <div class="row"><span class="rl">세액공제율</span><span class="rv">16.5% <small>총급여 5,500만원 이하</small></span></div>
+      <div class="row"><span class="rl">연간 환급액</span><span class="rv" style="color:var(--green)">+99만원</span></div>
+      <div class="row"><span class="rl">운용 전략</span><span class="rv">S&P500 ETF 70%<small>+ 채권 혹은 TDF 30%</small></span></div>
+      <div class="row"><span class="rl">수령 시작</span><span class="rv">만 55세 이후 <small>연금소득세 3.3~5.5%</small></span></div>
+      <div class="ok">✅ 연금저축은 장기 투자 계좌입니다. S&P500 ETF처럼 글로벌 지수 추종 상품을 담아두고 건드리지 않는 것이 가장 좋은 전략입니다.</div>
+    </div>
+
+    <div class="tl">IRP (개인형 퇴직연금)</div>
+    <div class="card">
+      <div class="ch"><i class="ti ti-building-bank"></i> IRP <span class="badge bi">추가 세액공제</span></div>
+      <div class="row"><span class="rl">연간 납입 목표</span><span class="rv">300만원 <small>월 25만원</small></span></div>
+      <div class="row"><span class="rl">추가 세액공제</span><span class="rv" style="color:var(--green)">+49.5만원 <small>연금저축과 합산 900만원 한도</small></span></div>
+      <div class="row"><span class="rl">안전자산 의무</span><span class="rv">30% 이상 <small>채권·MMF·예금</small></span></div>
+      <div class="row"><span class="rl">운용 전략</span><span class="rv">ETF 70% + 채권 30%</span></div>
+      <div class="tip">⚠️ IRP는 중도 인출 시 세액공제 받은 금액을 반납해야 합니다. 비상금과는 별도로 관리하세요.</div>
+    </div>
+
+    <div class="tl">파킹통장 (비상금)</div>
+    <div class="card">
+      <div class="ch"><i class="ti ti-piggy-bank"></i> 파킹통장 현황</div>
+      <div class="row"><span class="rl">목표 잔고</span><span class="rv">600~900만원 <small>생활비 3~6개월치</small></span></div>
+      <div class="row"><span class="rl">현재 금리</span><span class="rv">연 2~3.5% <small>저축은행 파킹 기준</small></span></div>
+      <div class="row"><span class="rl">연간 이자 (700만 기준)</span><span class="rv" style="color:var(--green)">+약 17만원</span></div>
+      <div class="row"><span class="rl">추천 상품</span><span class="rv">토스뱅크 or 저축은행 파킹</span></div>
+      <div class="ok">✅ 월급 입금 → 파킹통장 대기 → 자동이체 날에 적금·연금·청약으로 이동. 대기 기간에도 하루 단위 이자 발생.</div>
+    </div>
+
+    <div class="tl">연간 세금 혜택 합산</div>
+    <div class="sim">
+      <div style="font-size:11px;color:var(--text-2);margin-bottom:10px">4개 상품 합산 연간 실질 혜택</div>
+      <div class="sim-r"><span>주택드림 청약 (월 25만원)</span><span>+52만원</span></div>
+      <div class="sim-r"><span>연금저축 세액공제 (월 50만원)</span><span>+99만원</span></div>
+      <div class="sim-r"><span>IRP 추가 세액공제 (월 25만원)</span><span>+49.5만원</span></div>
+      <div class="sim-r"><span>파킹통장 추가 이자</span><span>+15만원</span></div>
+      <div class="sim-t"><span>연간 합산 실질 혜택</span><span style="color:var(--green)">약 215만원</span></div>
+      <div style="font-size:11px;color:var(--text-2);margin-top:8px">= 월 약 17.9만원 자동 이익</div>
+    </div>`,
+
+  pension: `
+    <div class="tl">주택드림 청약통장</div>
+    <div class="card">
+      <div class="ch"><i class="ti ti-home"></i> 주택드림 청약 <span class="badge bg">진행중</span></div>
+      <div class="row"><span class="rl">월 납입액</span><span class="rv">25만원</span></div>
+      <div class="row"><span class="rl">금리</span><span class="rv">4.5% <small>2년 유지 후 우대금리</small></span></div>
+      <div class="row"><span class="rl">소득공제</span><span class="rv">연 300만원 × 40% <small>연 최대 45만원 절세</small></span></div>
+      <div class="row"><span class="rl">청약 연결 대출</span><span class="rv">최저 2.2% <small>당첨 시 주택드림대출 연계</small></span></div>
+      <div class="row"><span class="rl">조건</span><span class="rv">만 19~34세 / 연소득 5천만원↓ / 무주택</span></div>
+      <div class="ok">✅ 2년 유지 시 4.5% 우대금리 자동 적용. 매달 25만원씩 꾸준히 납입해 청약 가점을 쌓아가세요.</div>
+    </div>
+
+    <div class="tl">연말정산 공제 챙기기</div>
+    <div class="card">
+      <div class="ch"><i class="ti ti-receipt-tax"></i> 연말정산 항목 정리</div>
+      <ul class="step-list">
+        <li><div class="snum">1</div><div><strong>청약 소득공제 신청</strong><br><span style="color:var(--text-2)">무주택확인서 발급 → 연말정산 시 제출. 연 최대 40~45만원 절세</span></div></li>
+        <li><div class="snum">2</div><div><strong>연금저축 세액공제 확인</strong><br><span style="color:var(--text-2)">연간 600만원 납입 여부 확인. 99만원 환급</span></div></li>
+        <li><div class="snum">3</div><div><strong>IRP 납입 한도 채우기</strong><br><span style="color:var(--text-2)">12월 전 300만원 목표 달성. 49.5만원 추가 환급</span></div></li>
+        <li><div class="snum">4</div><div><strong>의료비·교육비·기부금 증빙 수집</strong><br><span style="color:var(--text-2)">간소화 서비스에서 자동 수집 안 되는 항목은 직접 영수증 보관</span></div></li>
+      </ul>
+      <div class="info">ℹ️ 12월에 연금저축·IRP 잔여 납입 한도를 확인하고 채우면 환급액이 최대화됩니다.</div>
+    </div>`,
+
+  spend: `
+    <div class="tl">월 지출 예산 계획</div>
+    <div class="card">
+      <div class="ch"><i class="ti ti-wallet"></i> 카테고리별 예산</div>
+      <div class="row"><span class="rl">식비</span><span class="rv">—만원 <small>외식 포함</small></span></div>
+      <div class="row"><span class="rl">교통</span><span class="rv">—만원 <small>대중교통·주유</small></span></div>
+      <div class="row"><span class="rl">통신</span><span class="rv">—만원 <small>핸드폰·인터넷</small></span></div>
+      <div class="row"><span class="rl">건강/운동</span><span class="rv">—만원 <small>헬스장·클라이밍</small></span></div>
+      <div class="row"><span class="rl">구독 서비스</span><span class="rv">—만원 <small>넷플릭스·유튜브 등</small></span></div>
+      <div class="row"><span class="rl">여가/취미</span><span class="rv">—만원</span></div>
+      <div class="row"><span class="rl">기타 생활비</span><span class="rv">—만원</span></div>
+      <div class="tip">⚠️ 위 항목들을 실제 지출로 업데이트하세요. 카드 내역을 월말에 카테고리별로 집계하면 됩니다.</div>
+    </div>
+
+    <div class="tl">구독 서비스 목록</div>
+    <div class="card">
+      <div class="ch"><i class="ti ti-credit-card"></i> 정기 결제 목록</div>
+      <div class="row"><span class="rl">유튜브 프리미엄</span><span class="rv">—원/월</span></div>
+      <div class="row"><span class="rl">넷플릭스</span><span class="rv">—원/월</span></div>
+      <div class="row"><span class="rl">ChatGPT Plus</span><span class="rv">—원/월</span></div>
+      <div class="row"><span class="rl">Claude Pro</span><span class="rv">—원/월</span></div>
+      <div class="row"><span class="rl">기타</span><span class="rv">—원/월</span></div>
+      <div class="ok">✅ 분기마다 구독 서비스를 검토해서 사용하지 않는 항목을 정리하세요.</div>
+    </div>
+
+    <div class="tl">지출 절감 팁</div>
+    <div class="card">
+      <div class="ch"><i class="ti ti-bulb"></i> 실용적인 절감 방법</div>
+      <ul class="step-list">
+        <li><div class="snum">1</div><div><strong>카드 혜택 최적화</strong><br><span style="color:var(--text-2)">식비·교통비 캐시백 카드 1장 + 통신비 할인 카드 1장으로 운영</span></div></li>
+        <li><div class="snum">2</div><div><strong>외식 vs 식재료 비율 조정</strong><br><span style="color:var(--text-2)">주 2회 이상 직접 조리 시 월 식비 3~5만원 절감 가능</span></div></li>
+        <li><div class="snum">3</div><div><strong>구독 서비스 가족/친구 공유</strong><br><span style="color:var(--text-2)">넷플릭스·유튜브는 가족 계정 공유로 1인당 비용 절반</span></div></li>
+      </ul>
+    </div>`,
+
+  insurance: `
+    <div class="tl">보험 현황</div>
+    <div class="card">
+      <div class="ch"><i class="ti ti-shield-check"></i> 가입 보험 목록</div>
+      <div class="row"><span class="rl">실손 의료보험</span><span class="rv"><span class="badge bg">가입</span> <small>월 —원</small></span></div>
+      <div class="row"><span class="rl">암 보험</span><span class="rv"><span class="badge ba">미확인</span></span></div>
+      <div class="row"><span class="rl">치아 보험</span><span class="rv"><span class="badge ba">미확인</span></span></div>
+      <div class="row"><span class="rl">생명 보험</span><span class="rv"><span class="badge ba">미확인</span></span></div>
+      <div class="tip">⚠️ 실제 가입 여부와 보험료를 업데이트하세요.</div>
+    </div>
+
+    <div class="tl">30대 초반 필수 보험 체크리스트</div>
+    <div class="card">
+      <div class="ch"><i class="ti ti-checklist"></i> 우선순위별 보험</div>
+      <ul class="step-list">
+        <li><div class="snum green">1</div><div><strong>실손 의료보험 (최우선)</strong><br><span style="color:var(--text-2)">입원·통원 치료비의 80~100% 보장. 미가입 시 의료비 리스크 가장 큼. 월 3~5만원 수준</span></div></li>
+        <li><div class="snum">2</div><div><strong>암 보험</strong><br><span style="color:var(--text-2)">30대 초반 가입 시 보험료 가장 저렴. 진단비 위주로 설계. 월 3~5만원</span></div></li>
+        <li><div class="snum">3</div><div><strong>치아 보험</strong><br><span style="color:var(--text-2)">임플란트·크라운 비용 보장. 대기기간(1~2년) 고려해 미리 가입. 월 2~3만원</span></div></li>
+        <li><div class="snum">4</div><div><strong>운전자 보험 (운전 시)</strong><br><span style="color:var(--text-2)">교통사고 형사·민사 합의금 보장. 월 1~2만원으로 큰 리스크 커버</span></div></li>
+      </ul>
+      <div class="ok">✅ 보험은 실손 → 암 → 치아 순으로 우선순위를 두고, 총 보험료가 월 수입의 5~10%를 넘지 않도록 설계하세요.</div>
+    </div>
+
+    <div class="tl">보험 점검 원칙</div>
+    <div class="card">
+      <div class="ch"><i class="ti ti-info-circle"></i> 보험 관리 원칙</div>
+      <div class="concept-box">
+        <div class="cb-title">❌ 과잉 보험 피하기</div>
+        <div class="cb-body">저축성 보험·종신보험은 수수료가 높고 수익률이 낮습니다. 저축은 ETF·파킹통장으로, 보험은 순수 보장성으로 분리하는 것이 원칙입니다.</div>
+      </div>
+      <div class="concept-box">
+        <div class="cb-title">✅ 연 1회 보험 리뷰</div>
+        <div class="cb-body">매년 1월, 가입한 보험의 보장 내용과 보험료를 점검하세요. 불필요한 특약은 삭제하고 보장이 부족한 부분을 보완합니다.</div>
+      </div>
+    </div>`,
+
+  links: `
+    <div class="tl">관련 링크 모음</div>
+    <div class="card">
+      <div id="link-items">
+        <a class="link-item" href="https://bangsuhyun96.github.io/health-dashboard" target="_blank" style="text-decoration:none;color:inherit;display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border)">
+          <div class="link-icon" style="background:var(--accent-bg);">💪</div>
+          <div class="link-body"><div class="link-title">LvUP 헬스 대시보드</div><div class="link-url">bangsuhyun96.github.io/health-dashboard</div></div>
+          <i class="ti ti-external-link link-arrow"></i>
+        </a>
+        <a class="link-item" href="https://docs.google.com/spreadsheets/d/16ek7bFxO44iQuc9spl8BC8iqtctB4Sy9AwAaAwj3LPc/edit" target="_blank" style="text-decoration:none;color:inherit;display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border)">
+          <div class="link-icon" style="background:#e6fdf2;">🗡️</div>
+          <div class="link-body"><div class="link-title">몬헌 TU4.5 장비 가이드</div><div class="link-url">docs.google.com/spreadsheets</div></div>
+          <i class="ti ti-external-link link-arrow"></i>
+        </a>
+        <a class="link-item" href="https://bangsuhyun96.github.io/health-dashboard/sample/brawl/stat-dashboard.html" target="_blank" style="text-decoration:none;color:inherit;display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border)">
+          <div class="link-icon" style="background:var(--orange-bg);">🎮</div>
+          <div class="link-body"><div class="link-title">브롤컵 d-3 통계 대시보드</div><div class="link-url">bangsuhyun96.github.io/health-dashboard/sample/brawl</div></div>
+          <i class="ti ti-external-link link-arrow"></i>
+        </a>
+        <a class="link-item" href="https://finlife.fss.or.kr" target="_blank" style="text-decoration:none;color:inherit;display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border)">
+          <div class="link-icon" style="background:var(--blue-bg);">🏦</div>
+          <div class="link-body"><div class="link-title">금융상품 한눈에 (금감원)</div><div class="link-url">finlife.fss.or.kr — 파킹통장 금리 비교</div></div>
+          <i class="ti ti-external-link link-arrow"></i>
+        </a>
+        <a class="link-item" href="https://www.hometax.go.kr" target="_blank" style="text-decoration:none;color:inherit;display:flex;align-items:center;gap:10px;padding:10px 0;">
+          <div class="link-icon" style="background:var(--green-bg);">🧾</div>
+          <div class="link-body"><div class="link-title">홈택스 (연말정산·증빙)</div><div class="link-url">hometax.go.kr — 소득확인증명서·연말정산</div></div>
+          <i class="ti ti-external-link link-arrow"></i>
+        </a>
+      </div>
+    </div>
+    <div class="info">ℹ️ 링크를 추가하려면 HTML 파일을 직접 수정하거나, LvUP 앱의 링크 탭을 활용하세요.</div>
+  `
+};
+
+function render(){
+  const nav=document.getElementById('nav');
+  const secs=document.getElementById('sections');
+  pages.forEach((p,i)=>{
+    const btn=document.createElement('button');
+    btn.className='nav-btn'+(i===0?' on':'');
+    btn.innerHTML=`<i class="ti ${p.icon}" aria-hidden="true" style="font-size:13px;margin-right:4px;vertical-align:middle"></i>${p.label}`;
+    btn.onclick=()=>{
+      document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('on'));
+      document.querySelectorAll('.section').forEach(s=>s.classList.remove('on'));
+      btn.classList.add('on');
+      document.getElementById('sec-'+p.id).classList.add('on');
+    };
+    nav.appendChild(btn);
+    const sec=document.createElement('div');
+    sec.id='sec-'+p.id;
+    sec.className='section'+(i===0?' on':'');
+    sec.innerHTML=content[p.id];
+    secs.appendChild(sec);
+  });
+}
+render();
+</script>
+</body>
+</html>

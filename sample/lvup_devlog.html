@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<title>LvUP 개발일지</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/tabler-icons.min.css">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --bg:#f5f5f7;--surface:#fff;--surface-2:#f0f0f5;
+  --border:#e5e5ea;--text:#1a1a1a;--text-2:#6e6e73;--text-3:#aeaeb2;
+  --accent:#7b72e9;--accent-bg:#f3f0ff;--accent-border:#d4c8ff;
+  --green:#1d9e75;--green-bg:#e6fdf2;--green-border:#a3e9cc;
+  --orange:#d4720a;--orange-bg:#fff7e6;
+  --red:#e02020;--red-bg:#fdecea;
+  --blue:#185fa5;--blue-bg:#dceefb;
+  --gold:#c9a000;--gold-bg:#fff8e1;
+  --radius-sm:8px;--radius-md:12px;--radius-lg:16px;
+}
+body{font-family:-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;font-size:14px;background:var(--bg);color:var(--text);min-height:100vh;padding:20px 16px 60px;}
+
+.page-header{margin-bottom:20px;}
+.page-title{font-size:22px;font-weight:800;letter-spacing:-.5px;margin-bottom:4px;}
+.page-sub{font-size:12px;color:var(--text-2);}
+
+.nav{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:20px;}
+.nav-btn{padding:7px 14px;font-size:12px;font-weight:600;cursor:pointer;border-radius:99px;border:1.5px solid var(--border);color:var(--text-2);background:var(--surface);transition:all .15s;font-family:inherit;white-space:nowrap;}
+.nav-btn.on{background:var(--accent-bg);color:var(--accent);border-color:var(--accent-border);}
+.nav-btn:hover:not(.on){border-color:var(--accent);color:var(--accent);}
+
+.section{display:none;}
+.section.on{display:block;}
+
+.card{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--radius-lg);padding:16px;margin-bottom:12px;}
+.ch{font-weight:700;font-size:14px;margin-bottom:12px;display:flex;align-items:center;gap:8px;color:var(--text);}
+.ch i{color:var(--accent);}
+
+.tl{font-size:10px;font-weight:700;color:var(--text-3);text-transform:uppercase;letter-spacing:.8px;margin:20px 0 10px;padding-left:2px;}
+.tl:first-child{margin-top:0;}
+
+/* 통계 그리드 */
+.g2{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:12px;}
+.mc{background:var(--surface-2);border-radius:var(--radius-md);padding:12px;}
+.mc .ml{font-size:11px;color:var(--text-2);margin-bottom:4px;}
+.mc .mv{font-size:20px;font-weight:800;color:var(--text);}
+.mc .ms{font-size:11px;color:var(--text-3);margin-top:2px;}
+
+/* 배지 */
+.badge{font-size:10px;font-weight:700;padding:3px 8px;border-radius:99px;flex-shrink:0;}
+.done{background:var(--green-bg);color:var(--green);}
+.pend{background:var(--orange-bg);color:var(--orange);}
+.skip{background:var(--surface-2);color:var(--text-3);}
+
+/* 로그 테이블 */
+.log-table{width:100%;border-collapse:collapse;}
+.log-table th{font-size:10px;font-weight:700;color:var(--text-3);text-align:left;padding:6px 8px;border-bottom:2px solid var(--border);text-transform:uppercase;letter-spacing:.5px;}
+.log-table td{font-size:12px;padding:9px 8px;border-bottom:1px solid var(--border);vertical-align:top;line-height:1.5;}
+.log-table tr:last-child td{border-bottom:none;}
+.log-table .num{color:var(--text-3);font-size:11px;width:28px;}
+.log-table .req{flex:1;}
+.log-table .st{text-align:center;width:50px;}
+
+/* 알림 */
+.ok{background:var(--green-bg);border-left:3px solid var(--green);padding:10px 14px;font-size:12px;color:var(--green);line-height:1.6;margin:8px 0;border-radius:0 var(--radius-sm) var(--radius-sm) 0;}
+.info{background:var(--blue-bg);border-left:3px solid var(--blue);padding:10px 14px;font-size:12px;color:var(--blue);line-height:1.6;margin:8px 0;border-radius:0 var(--radius-sm) var(--radius-sm) 0;}
+.warn{background:var(--orange-bg);border-left:3px solid var(--orange);padding:10px 14px;font-size:12px;color:var(--orange);line-height:1.6;margin:8px 0;border-radius:0 var(--radius-sm) var(--radius-sm) 0;}
+
+/* 타임라인 (버그/보안) */
+.tl-item{display:flex;gap:10px;padding:9px 0;border-bottom:1px solid var(--border);font-size:12px;line-height:1.5;}
+.tl-item:last-child{border-bottom:none;}
+.tl-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-top:5px;}
+.tl-green{background:var(--green);}
+.tl-orange{background:var(--orange);}
+.tl-red{background:var(--red);}
+
+/* 스택 태그 */
+.stack{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;}
+.tag{font-size:11px;padding:3px 10px;border-radius:99px;border:1.5px solid var(--border);color:var(--text-2);background:var(--surface);}
+.tag.hl{border-color:var(--accent-border);color:var(--accent);background:var(--accent-bg);}
+</style>
+</head>
+<body>
+
+<div class="page-header">
+  <div class="page-title">💪 LvUP 개발일지</div>
+  <div class="page-sub">방수현 · 2026.05.07 ~ 진행중 · 순수 HTML+Vanilla JS 단일 파일</div>
+</div>
+
+<div class="nav" id="nav"></div>
+<div id="sections"></div>
+
+<script>
+const pages = [
+  {id:'overview', label:'개요', icon:'ti-layout-dashboard'},
+  {id:'s1',       label:'섹션1 (05.07~11)', icon:'ti-code'},
+  {id:'s2',       label:'섹션2 (05.14~18)', icon:'ti-code'},
+  {id:'s3',       label:'섹션3 (05.19)', icon:'ti-code'},
+  {id:'bugs',     label:'버그 수정', icon:'ti-bug'},
+  {id:'security', label:'보안', icon:'ti-shield'},
+  {id:'pending',  label:'미결', icon:'ti-clock'},
+];
+
+const content = {
+
+overview: `
+  <div class="tl">프로젝트 현황</div>
+  <div class="g2">
+    <div class="mc"><div class="ml">누적 기능 개발</div><div class="mv" style="color:var(--accent)">100+</div><div class="ms">3개 섹션 합산</div></div>
+    <div class="mc"><div class="ml">버그 수정</div><div class="mv" style="color:var(--green)">30+</div><div class="ms">전체 세션</div></div>
+    <div class="mc"><div class="ml">파일 크기</div><div class="mv">524KB</div><div class="ms">단일 HTML</div></div>
+    <div class="mc"><div class="ml">GitHub</div><div class="mv" style="font-size:14px">배포중</div><div class="ms">health-dashboard</div></div>
+  </div>
+
+  <div class="tl">프로젝트 스택</div>
+  <div class="card">
+    <div class="ch"><i class="ti ti-stack"></i> 기술 스택</div>
+    <div class="stack">
+      <span class="tag hl">HTML5</span>
+      <span class="tag hl">Vanilla JS</span>
+      <span class="tag hl">SVG</span>
+      <span class="tag">GitHub Pages</span>
+      <span class="tag">GitHub API (REST)</span>
+      <span class="tag">Claude API</span>
+      <span class="tag">CryptoJS AES-256</span>
+      <span class="tag">localStorage</span>
+    </div>
+    <div style="margin-top:12px;font-size:12px;color:var(--text-2);line-height:1.7">
+      <b>저장소:</b> <a href="https://github.com/Bangsuhyun96/health-dashboard" target="_blank" style="color:var(--accent)">github.com/Bangsuhyun96/health-dashboard</a><br>
+      <b>라이브:</b> <a href="https://bangsuhyun96.github.io/health-dashboard/" target="_blank" style="color:var(--accent)">bangsuhyun96.github.io/health-dashboard</a><br>
+      <b>사용자:</b> 방수현 (user8791) · 30세 · 166.9cm · 65.2kg
+    </div>
+  </div>
+
+  <div class="tl">데이터 구조</div>
+  <div class="card">
+    <div class="ch"><i class="ti ti-database"></i> 저장 구조</div>
+    <div style="font-size:12px;color:var(--text-2);line-height:1.8;font-family:monospace;background:var(--surface-2);padding:12px;border-radius:var(--radius-sm)">
+localStorage: v5_{userId}_{key}<br>
+GitHub:<br>
+&nbsp;&nbsp;data/users/{userId}/profile.json<br>
+&nbsp;&nbsp;data/users/{userId}/inbody.json<br>
+&nbsp;&nbsp;data/users/{userId}/lifts.json<br>
+&nbsp;&nbsp;data/users/{userId}/logs/YYYY-MM.json<br>
+&nbsp;&nbsp;data/db/exercises.json<br>
+&nbsp;&nbsp;data/db/foods.json
+    </div>
+  </div>
+
+  <div class="tl">탭 구조</div>
+  <div class="card">
+    <div class="ch"><i class="ti ti-layout"></i> 현재 탭 구조</div>
+    <div style="font-size:12px;color:var(--text-2);line-height:2;font-family:monospace;background:var(--surface-2);padding:12px;border-radius:var(--radius-sm)">
+🏠 홈 | 📋 오늘 | 💪 운동 | 📊 분석<br>
+<br>
+오늘: 기록내역 | 기록하기 | 오늘루틴<br>
+운동: 운동DB | 식단DB | 인바디 | 중량추적<br>
+분석: 트렌드 | 현재상태 | 중량현황 | 식단플랜<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;🛒식재료 | 결핍해결 | 휴식일 | 💊영양제<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;🔗링크 | 🤖AI | ⚙️설정
+    </div>
+  </div>`,
+
+s1: `
+  <div class="info">ℹ️ 2026.05.07~05.11 · 피트니스 코칭 → 대시보드 설계 → GitHub 동기화 → 멀티유저 설계</div>
+
+  <div class="tl">HTML 대시보드 개발 (v1~v4)</div>
+  <div class="card">
+    <table class="log-table">
+      <tr><th>#</th><th>요청</th><th>상태</th></tr>
+      <tr><td class="num">1</td><td>식단 대시보드 최초 HTML 생성 (시간표·영양소·수분·가격·결핍해결)</td><td class="st"><span class="badge done">✓</span></td></tr>
+      <tr><td class="num">2</td><td>카카오톡 인앱브라우저 + PC Chrome 호환성 수정</td><td class="st"><span class="badge done">✓</span></td></tr>
+      <tr><td class="num">3</td><td>대분류(식단·운동·재활) + 중분류 탭 구조 설계 및 구현</td><td class="st"><span class="badge done">✓</span></td></tr>
+      <tr><td class="num">4</td><td>운동 탭 추가 (주간루틴·90일예측·과거트렌드·현재상태·상체현황·클라이밍·숨겨진강점)</td><td class="st"><span class="badge done">✓</span></td></tr>
+      <tr><td class="num">5</td><td>재활 탭 추가 (진단분석·발목재활·하체복귀·회복영양·금지목록)</td><td class="st"><span class="badge done">✓</span></td></tr>
+      <tr><td class="num">6</td><td>기록 탭 추가 (일일기록·기록내역·인바디추적·중량추적)</td><td class="st"><span class="badge done">✓</span></td></tr>
+      <tr><td class="num">7</td><td>일일기록 — 운동유형·식단·영양제 체크·컨디션·발목통증</td><td class="st"><span class="badge done">✓</span></td></tr>
+      <tr><td class="num">8</td><td>기본 메뉴 변경 시 +- 칼로리 자동 계산</td><td class="st"><span class="badge done">✓</span></td></tr>
+      <tr><td class="num">9</td><td>운동 소모 칼로리 계산 (웨이트 MET·클라이밍·바이크)</td><td class="st"><span class="badge done">✓</span></td></tr>
+      <tr><td class="num">10</td><td>수면 시간·수분 섭취량 슬라이더 추가</td><td class="st"><span class="badge done">✓</span></td></tr>
+      <tr><td class="num">11</td><td>인바디 추적 — 골격근량 변화량 자동 계산·166cm 위치 바</td><td class="st"><span class="badge done">✓</span></td></tr>
+      <tr><td class="num">12</td><td>중량 추적 — 검색 기능·종목별 최고 중량·전체 운동 목록 60종</td><td class="st"><span class="badge done">✓</span></td></tr>
+      <tr><td class="num">13</td><td>프로필 헤더 축소/확장 토글 (기본 접힘)</td><td class="st"><span class="badge done">✓</span></td></tr>
+    </table>
+  </div>
+
+  <div class="tl">GitHub 동기화 & 보안 (초기)</div>
+  <div class="card">
+    <table class="log-table">
+      <tr><th>#</th><th>요청</th><th>상태</th></tr>
+      <tr><td class="num">1</td><td>GitHub Public + AES-256 암호화 토큰 방식 결정</td><td class="st"><span class="badge done">✓</span></td></tr>
+      <tr><td class="num">2</td><td>CryptoJS AES-256 토큰 암호화 구현</td><td class="st"><span class="badge done">✓</span></td></tr>
+      <tr><td class="num">3</td><td>GitHub API 읽기/쓰기 구현 (data/health.json)</td><td class="st"><span class="badge done">✓</span></td></tr>
+      <tr><td class="num">4</td><td>동기화 상태 바 (하단 고정)</td><td class="st"><span class="badge done">✓</span></td></tr>
+      <tr><td class="num">5</td><td>동기화설정 탭 추가 (Step1~3 + JSON 백업 + 가이드)</td><td class="st"><span class="badge done">✓</span></td></tr>
+      <tr><td class="num">6</td><td>저장 3초 후 자동 Push 구현</td><td class="st"><span class="badge done">✓</span></td></tr>
+      <tr><td class="num">7</td><td>JSON 내보내기/가져오기 백업 기능</td><td class="st"><span class="badge done">✓</span></td></tr>
+    </table>
+  </div>
+
+  <div class="tl">멀티유저 & 온보딩 설계</div>
+  <div class="card">
+    <table class="log-table">
+      <tr><th>#</th><th>요청</th><th>상태</th></tr>
+      <tr><td class="num">1</td><td>로그인 화면 UI (ID·비밀번호·프로필 선택·사용자 생성)</td><td class="st"><span class="badge done">✓</span></td></tr>
+      <tr><td class="num">2</td><td>사용자 생성 흐름 설계 (쓰기권한 PC → ID 전달 방식)</td><td class="st"><span class="badge done">✓</span></td></tr>
+      <tr><td class="num">3</td><td>첫 로그인 온보딩 플로우 설계 (Step1~6, Claude API 개인화)</td><td class="st"><span class="badge done">✓</span></td></tr>
+      <tr><td class="num">4</td><td>Claude API 연동 스마트 기능 설계 (식단추천·증량조언·인바디·리포트)</td><td class="st"><span class="badge done">✓</span></td></tr>
+      <tr><td class="num">5</td><td>5명 이하 JSON 방식 유지 결정</td><td class="st"><span class="badge done">✓</span></td></tr>
+    </table>
+  </div>`,
+
+s2: `
+  <div class="info">ℹ️ 2026.05.14~05.18 · v5 빌드 완성 → DB 시스템 → GitHub 동기화 재설계 → 모바일 최적화</div>
+
+  <div class="tl">일일기록 탭 전면 개편</div>
+  <div class="card">
+    <table class="log-table">
+      <tr><th>#</th><th>요청</th><th>상태</th></tr>
+      <tr><td class="num">1</td><td>웨이트 기록 종목별 블록 구조로 전면 교체</td><td class="st"><span class="badge done">✓</span></td></tr>
+      <tr><td class="num">2</td><td>식단 자유 텍스트 입력 + DB 선택 이원화</td><td class="st"><span class="badge done">✓</span></td></tr>
+      <tr><td class="num">3</td><td>내장 DB 40종+ 자동 매칭 → 즉시 영양소 계산</td><td class="st"><span class="badge done">✓</span></td></tr>
+      <tr><td class="num">4</td><td>DB 미매칭 항목 Claude AI 자동 분석 (API 키 연결 시)</td><td class="st"><span class="badge done">✓</span></td></tr>
+      <tr><td class="num">5</td><td>단백질/탄수/지방 목표 대비 바 차트 + 피드백</td><td class="st"><span class="badge done">✓</span></td></tr>
+      <tr><td class="num">6</td><td>수분 슬라이더 + 코멘트 한 줄</td><td class="st"><span class="badge done">✓</span></td></tr>
+      <tr><td class="num">7</td><td>세트 추가 시 이전 세트 값 자동 복사</td><td class="st"><span class="badge done">✓</span></td></tr>
+      <tr><td class="num">8</td><td>exercise-blocks 모바일 최적화 (grid 레이아웃, inputmode)</td><td class="st"><span class="badge done">✓</span></td></tr>
+    </table>
+  </div>
+
+  <div class="tl">운동DB / 식단DB 서브탭</div>
+  <div class="card">
+    <table class="log-table">
+      <tr><th>#</th><th>요청</th><th>상태</th></tr>
+      <tr><td class="num">1</td><td>운동DB / 식단DB 서브탭 2개 추가</td><td class="st"><span class="badge done">✓</span></td></tr>
+      <tr><td class="num">2</td><td>exercises.json 39→63종목 확장 (MET/기본세트/팁 포함)</td><td class="st"><span class="badge done">✓</span></td></tr>
+      <tr><td class="num">3</td><td>foods.json 43→45식품 (영양소 전체 포함)</td><td class="st"><span class="badge done">✓</span></td></tr>
+      <tr><td class="num">4</td><td>중분류 필터 탭 → 종목/식품 카드 CRUD</td><td class="st"><span class="badge done">✓</span></td></tr>
+      <tr><td class="num">5</td><td>종목 선택 피커 (바텀시트 모달, 카테고리 탭 필터)</td><td class="st"><span class="badge done">✓</span></td></tr>
+      <tr><td class="num">6</td><td>일일기록 ↔ 운동DB 연동 (defaultSets/Reps 자동 채우기)</td><td class="st"><span class="badge done">✓</span></td></tr>
+      <tr><td class="num">7</td><td>일일기록 ↔ 식단DB 연동 (영양소 자동 계산)</td><td class="st"><span class="badge done">✓</span></td></tr>
+    </table>
+  </div>
+
+  <div class="tl">GitHub 동기화 재설계</div>
+  <div class="card">
+    <table class="log-table">
+      <tr><th>#</th><th>요청</th><th>상태</th></tr>
+      <tr><td class="num">1</td><td>data/ 폴더 전체 초기화 후 새 구조 설계</td><td class="st"><span class="badge done">✓</span></td></tr>
+      <tr><td class="num">2</td><td>월별 로그 분리 구조 (logs/YYYY-MM.json) 확정</td><td class="st"><span class="badge done">✓</span></td></tr>
+      <tr><td class="num">3</td><td>pullFromGitHub 이달+지난달 fetch + 로컬 병합</td><td class="st"><span class="badge done">✓</span></td></tr>
+      <tr><td class="num">4</td><td>pushToGitHub 월별 그룹핑 후 파일별 독립 처리</td><td class="st"><span class="badge done">✓</span></td></tr>
+      <tr><td class="num">5</td><td>ghPut 422 에러 → SHA 자동 조회 후 재시도 로직</td><td class="st"><span class="badge done">✓</span></td></tr>
+      <tr><td class="num">6</td><td>setStore() 자동 push 제거 → [전송] 버튼으로 수동화</td><td class="st"><span class="badge done">✓</span></td></tr>
+      <tr><td class="num">7</td><td>접속 시 자동 pull (1시간 기준 백그라운드)</td><td class="st"><span class="badge done">✓</span></td></tr>
+    </table>
+  </div>`,
+
+s3: `
+  <div class="info">ℹ️ 2026.05.19 · 홈화면 고도화 → UX 개선 → 보안 강화 → 마감 기능</div>
+
+  <div class="tl">기능 개발</div>
+  <div class="card">
+    <table class="log-table">
+      <tr><th>#</th><th>요청</th><th>상태</th></tr>
+      <tr><td class="num">1</td><td>홈화면 구현 (인사말·AI멘트·요일도트·원형프로그레스·스파크라인·CTA)</td><td class="st"><span class="badge done">✓</span></td></tr>
+      <tr><td class="num">2</td><td>중량 그래프 (분석>중량현황, 종목선택, PR마커 ⭐)</td><td class="st"><span class="badge done">✓</span></td></tr>
+      <tr><td class="num">3</td><td>체성분 그래프 (인바디, 탭전환, bezier 곡선, 목표점선)</td><td class="st"><span class="badge done">✓</span></td></tr>
+      <tr><td class="num">4</td><td>PR 토스트 애니메이션 (골드 glow, 3초 자동 사라짐)</td><td class="st"><span class="badge done">✓</span></td></tr>
+      <tr><td class="num">5</td><td>운동DB YouTube 링크 📹 버튼</td><td class="st"><span class="badge done">✓</span></td></tr>
+      <tr><td class="num">6</td><td>Wake Lock API (기록하기 진입 시 화면 켜짐 유지)</td><td class="st"><span class="badge done">✓</span></td></tr>
+      <tr><td class="num">7</td><td>영양제 탭 복구 + 루테인 지아잔틴 아스타잔틴 추가</td><td class="st"><span class="badge done">✓</span></td></tr>
+      <tr><td class="num">8</td><td>운동DB/식단DB GitHub 통합 연동 (exercises.json 단일화)</td><td class="st"><span class="badge done">✓</span></td></tr>
+      <tr><td class="num">9</td><td>이두/삼두 카테고리 분리 (운동피커·DB탭·모달 전체)</td><td class="st"><span class="badge done">✓</span></td></tr>
+      <tr><td class="num">10</td><td>식품 피커 음료 탭 추가</td><td class="st"><span class="badge done">✓</span></td></tr>
+      <tr><td class="num">11</td><td>인바디 커스텀 달력 피커 (Flood Fill 배경 제거)</td><td class="st"><span class="badge done">✓</span></td></tr>
+      <tr><td class="num">12</td><td>인바디 저장 후 그래프/헤더/홈 즉시 갱신</td><td class="st"><span class="badge done">✓</span></td></tr>
+      <tr><td class="num">13</td><td>헤더 최신 인바디 기록 실시간 연동</td><td class="st"><span class="badge done">✓</span></td></tr>
+      <tr><td class="num">14</td><td>앱 로딩 오버레이 (첫 접속/백그라운드 pull)</td><td class="st"><span class="badge done">✓</span></td></tr>
+      <tr><td class="num">15</td><td>홈 오늘 기록 요약 카드 (운동·영양 즉시 확인)</td><td class="st"><span class="badge done">✓</span></td></tr>
+      <tr><td class="num">16</td><td>기록내역 타임라인 뷰 (날짜 내림차순, 클릭→기록하기 이동)</td><td class="st"><span class="badge done">✓</span></td></tr>
+      <tr><td class="num">17</td><td>오늘루틴 읽기전용 대시보드 (오늘 기록 현황 오버레이)</td><td class="st"><span class="badge done">✓</span></td></tr>
+      <tr><td class="num">18</td><td>마감 기능 (✅ 마감 버튼, 요약 뷰, 📋 텍스트 복사)</td><td class="st"><span class="badge done">✓</span></td></tr>
+      <tr><td class="num">19</td><td>종목 선택 시 최근 기록 자동 불러오기</td><td class="st"><span class="badge done">✓</span></td></tr>
+      <tr><td class="num">20</td><td>계정 관리 (표시/숨김, 삭제) — 설정 탭</td><td class="st"><span class="badge done">✓</span></td></tr>
+      <tr><td class="num">21</td><td>사용자 생성 흐름 개선 (폼 먼저 → 쓰기비번 모달)</td><td class="st"><span class="badge done">✓</span></td></tr>
+      <tr><td class="num">22</td><td>링크 관리 탭 (추가/수정/삭제, localStorage 저장)</td><td class="st"><span class="badge done">✓</span></td></tr>
+      <tr><td class="num">23</td><td>영양제 타임라인 업데이트 (5종 + 복용 시간 최적화)</td><td class="st"><span class="badge done">✓</span></td></tr>
+      <tr><td class="num">24</td><td>Floating Label 로그인 폼</td><td class="st"><span class="badge done">✓</span></td></tr>
+      <tr><td class="num">25</td><td>라이트모드 default 설정</td><td class="st"><span class="badge done">✓</span></td></tr>
+    </table>
+  </div>
+
+  <div class="tl">UX 개선</div>
+  <div class="card">
+    <table class="log-table">
+      <tr><th>#</th><th>요청</th><th>상태</th></tr>
+      <tr><td class="num">1</td><td>kg 입력 select박스 방지 (type=text inputmode=decimal)</td><td class="st"><span class="badge done">✓</span></td></tr>
+      <tr><td class="num">2</td><td>웨이트 횟수(reps) 자동입력 제거</td><td class="st"><span class="badge done">✓</span></td></tr>
+      <tr><td class="num">3</td><td>모달 바깥 클릭 닫기 (운동/식품 피커)</td><td class="st"><span class="badge done">✓</span></td></tr>
+      <tr><td class="num">4</td><td>운동DB/식단DB 모달 외부 클릭 닫기 제거 (종목 추가 중 보호)</td><td class="st"><span class="badge done">✓</span></td></tr>
+      <tr><td class="num">5</td><td>테마 토글 우측 하단으로 이동</td><td class="st"><span class="badge done">✓</span></td></tr>
+      <tr><td class="num">6</td><td>hdr-score-box 제거, 펼치기/로그아웃 버튼 재배치</td><td class="st"><span class="badge done">✓</span></td></tr>
+      <tr><td class="num">7</td><td>스크롤 레이아웃 흔들림 방지 (overflow-y:scroll)</td><td class="st"><span class="badge done">✓</span></td></tr>
+      <tr><td class="num">8</td><td>인바디 기록 날짜 내림차순 정렬</td><td class="st"><span class="badge done">✓</span></td></tr>
+      <tr><td class="num">9</td><td>달력 팝업 위치 (화면 하단 초과 시 위로 표시)</td><td class="st"><span class="badge done">✓</span></td></tr>
+      <tr><td class="num">10</td><td>홈 CTA 자동채우기 제거 (탭 이동만)</td><td class="st"><span class="badge done">✓</span></td></tr>
+    </table>
+  </div>`,
+
+bugs: `
+  <div class="tl">섹션2 버그 수정</div>
+  <div class="card">
+    <div class="tl-item"><div class="tl-dot tl-green"></div><div><b>selectedDietType 미정의</b> — saveLog 에러 수정</div></div>
+    <div class="tl-item"><div class="tl-dot tl-green"></div><div><b>updateBurnCalc / calcBurnKcal 함수 누락</b> — 재정의</div></div>
+    <div class="tl-item"><div class="tl-dot tl-green"></div><div><b>initSuppChecks 함수 누락</b> — 영양제 리스트 전체 미표시</div></div>
+    <div class="tl-item"><div class="tl-dot tl-green"></div><div><b>중복 함수</b> (renderNutrition, renderSupplements 등) 정리</div></div>
+    <div class="tl-item"><div class="tl-dot tl-green"></div><div><b>422 SHA 불일치</b> — ghGetSha 사전 조회로 완전 해결</div></div>
+    <div class="tl-item"><div class="tl-dot tl-green"></div><div><b>이중 경로 버그</b> (data/users/.../data/users/... 생성) 수정</div></div>
+    <div class="tl-item"><div class="tl-dot tl-green"></div><div><b>addExerciseBlockFromDB</b> — 종목 추가 안 됨 (callback 흐름 수정)</div></div>
+  </div>
+
+  <div class="tl">섹션3 버그 수정</div>
+  <div class="card">
+    <div class="tl-item"><div class="tl-dot tl-green"></div><div><b>Uncaught SyntaxError 5492</b> — 삭제 버튼 앞 백틱 잔재 제거</div></div>
+    <div class="tl-item"><div class="tl-dot tl-green"></div><div><b>Password field form 경고</b> — autocomplete 속성 15개 전체 추가</div></div>
+    <div class="tl-item"><div class="tl-dot tl-green"></div><div><b>기록내역 날짜 클릭 시 탭 미변경</b> — goTodayRecord() 구현</div></div>
+    <div class="tl-item"><div class="tl-dot tl-green"></div><div><b>기록내역 어제자 저장 시 오늘로 마감</b> — log-date 기준으로 수정</div></div>
+    <div class="tl-item"><div class="tl-dot tl-green"></div><div><b>로그아웃 후 설정값 잔존</b> — doLogout()에 필드 초기화 추가</div></div>
+    <div class="tl-item"><div class="tl-dot tl-green"></div><div><b>계정 간 토큰 공유</b> — v5_enc_token → v5_enc_token_{uid} 계정별 분리</div></div>
+    <div class="tl-item"><div class="tl-dot tl-green"></div><div><b>계정 삭제 409 충돌</b> — 파일 삭제 먼저 순차 실행 후 user.json PUT</div></div>
+    <div class="tl-item"><div class="tl-dot tl-green"></div><div><b>로그아웃 후 설정 탭 열린 채 로그인</b> — 로그아웃 시 홈탭 초기화</div></div>
+    <div class="tl-item"><div class="tl-dot tl-green"></div><div><b>마감 상태 로그인 후 초기화</b> — l-daily-form 기본 hidden 처리</div></div>
+    <div class="tl-item"><div class="tl-dot tl-green"></div><div><b>과거 기록 기록하기 탭 잔존</b> — initLogTab() 진입 시 메모리 초기화</div></div>
+    <div class="tl-item"><div class="tl-dot tl-green"></div><div><b>마감 후 타 탭 이동 시 수정폼 재표시</b> — initLogTab에 마감 체크 내장</div></div>
+    <div class="tl-item"><div class="tl-dot tl-green"></div><div><b>GitHub 403 오류</b> — raw.githubusercontent.com 폴백 추가</div></div>
+    <div class="tl-item"><div class="tl-dot tl-green"></div><div><b>SVG 가로 늘어짐</b> — preserveAspectRatio="xMidYMid meet" 수정</div></div>
+    <div class="tl-item"><div class="tl-dot tl-green"></div><div><b>체중 추이 입력 순 표시</b> — 날짜 오름차순 정렬로 수정</div></div>
+  </div>`,
+
+security: `
+  <div class="tl">계정 격리 문제 및 수정 이력</div>
+  <div class="card">
+    <div class="ch"><i class="ti ti-shield-check"></i> 수정 완료</div>
+    <div class="tl-item"><div class="tl-dot tl-green"></div><div><b>v5_enc_token 공유</b> → <code>v5_enc_token_{uid}</code> 계정별 분리</div></div>
+    <div class="tl-item"><div class="tl-dot tl-green"></div><div><b>v5_closed_{date} 공유</b> → <code>v5_closed_{uid}_{date}</code> 계정별 분리</div></div>
+    <div class="tl-item"><div class="tl-dot tl-green"></div><div><b>로그아웃 시 캐시 미삭제</b> → profile/last_pull/enc_api/enc_token 전부 삭제</div></div>
+    <div class="tl-item"><div class="tl-dot tl-green"></div><div><b>v5_tab_log 계정 공유</b> → <code>uk('tab_log')</code> 계정별 분리</div></div>
+    <div class="tl-item"><div class="tl-dot tl-green"></div><div><b>로그인 화면 숨김 필터</b> → hidden:true 계정 칩에서 제외</div></div>
+    <div class="tl-item"><div class="tl-dot tl-green"></div><div><b>로그아웃 후 설정탭 열림</b> → 로그아웃 시 홈탭으로 강제 초기화</div></div>
+  </div>
+
+  <div class="tl">의도적 공유 (정상)</div>
+  <div class="card">
+    <div class="ok">✅ v5_db_cache (exercises/foods) — DB는 권한자 간 공유가 맞음. 의도적 설계.</div>
+    <div class="ok">✅ v5_repo (저장소 설정) — 같은 기기에서 공유. 의도적 설계.</div>
+  </div>
+
+  <div class="tl">암호화 구조</div>
+  <div class="card">
+    <div class="ch"><i class="ti ti-lock"></i> 토큰 보안</div>
+    <div style="font-size:12px;color:var(--text-2);line-height:1.8">
+      • GitHub PAT → CryptoJS AES-256 암호화 → localStorage 저장<br>
+      • 복호화: 쓰기 비밀번호 입력 시에만<br>
+      • 계정별 키: <code>v5_enc_token_{userId}</code><br>
+      • Claude API 키: <code>v5_enc_api_{userId}</code> (동일 방식)<br>
+      • 로그아웃 시 메모리 + localStorage 모두 초기화
+    </div>
+  </div>`,
+
+pending: `
+  <div class="tl">다음 세션 예정</div>
+  <div class="card">
+    <table class="log-table">
+      <tr><th>#</th><th>항목</th><th>상태</th></tr>
+      <tr><td class="num">1</td><td>세트 간 휴식 타이머</td><td class="st"><span class="badge pend">예정</span></td></tr>
+      <tr><td class="num">2</td><td>세트 완료 체크 (✅ 체크박스)</td><td class="st"><span class="badge pend">예정</span></td></tr>
+      <tr><td class="num">3</td><td>성능 최적화 (inline style → CSS 클래스)</td><td class="st"><span class="badge pend">예정</span></td></tr>
+      <tr><td class="num">4</td><td>메모리 캐시 레이어 (getStore 중복 호출 개선)</td><td class="st"><span class="badge pend">예정</span></td></tr>
+      <tr><td class="num">5</td><td>인바디 사진 자동 입력 (Vision API)</td><td class="st"><span class="badge pend">예정</span></td></tr>
+    </table>
+  </div>
+
+  <div class="tl">장기 과제</div>
+  <div class="card">
+    <table class="log-table">
+      <tr><th>#</th><th>항목</th><th>비고</th></tr>
+      <tr><td class="num">1</td><td>모듈 분리 (js/auth.js 등 8개 파일)</td><td style="color:var(--text-3)">기능 완성 후</td></tr>
+      <tr><td class="num">2</td><td>Web Push PWA (알림 기능)</td><td style="color:var(--text-3)">장기</td></tr>
+      <tr><td class="num">3</td><td>Supabase 전환 (백엔드)</td><td style="color:var(--text-3)">장기</td></tr>
+      <tr><td class="num">4</td><td>주간 리포트 자동 생성</td><td style="color:var(--text-3)">장기</td></tr>
+    </table>
+  </div>
+
+  <div class="warn">⚠️ v5_db_cache 계정 공유 → 나중에 계정별 탭 분리 검토</div>`
+};
+
+function render(){
+  const nav=document.getElementById('nav');
+  const secs=document.getElementById('sections');
+  pages.forEach((p,i)=>{
+    const btn=document.createElement('button');
+    btn.className='nav-btn'+(i===0?' on':'');
+    btn.innerHTML=`<i class="ti ${p.icon}" aria-hidden="true" style="font-size:13px;margin-right:4px;vertical-align:middle"></i>${p.label}`;
+    btn.onclick=()=>{
+      document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('on'));
+      document.querySelectorAll('.section').forEach(s=>s.classList.remove('on'));
+      btn.classList.add('on');
+      document.getElementById('sec-'+p.id).classList.add('on');
+    };
+    nav.appendChild(btn);
+    const sec=document.createElement('div');
+    sec.id='sec-'+p.id;
+    sec.className='section'+(i===0?' on':'');
+    sec.innerHTML=content[p.id];
+    secs.appendChild(sec);
+  });
+}
+render();
+</script>
+</body>
+</html>
