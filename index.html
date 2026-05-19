@@ -254,7 +254,7 @@ body.app-ready #theme-toggle{display:flex;}
 .profile-ava{font-size:26px;line-height:1;}
 .profile-col-name{font-size:13px;font-weight:700;}
 .profile-col-sub{font-size:10px;color:#888;}
-.profile-score-box{background:#dceefb;border:1.5px solid #378add;border-radius:7px;padding:4px 10px;text-align:center;flex-shrink:0;display:none;}
+.profile-score-box{background:#dceefb;border:1.5px solid #378add;border-radius:7px;padding:4px 10px;text-align:center;flex-shrink:0;}
 .profile-score-val{font-size:15px;font-weight:700;color:#185fa5;line-height:1;}
 .profile-score-lbl{font-size:8px;color:#185fa5;}
 .profile-toggle{background:none;border:1.5px solid #e8e8e8;cursor:pointer;padding:4px 10px;border-radius:14px;color:#888;font-size:11px;font-weight:500;-webkit-tap-highlight-color:transparent;transition:all .15s;font-family:inherit;}
@@ -459,6 +459,55 @@ body.app-ready #theme-toggle{display:flex;}
 }
 .float-field input::placeholder{color:transparent;}
 .float-field input:focus::placeholder{color:transparent;}
+
+/* ─── 홈 오늘 요약 카드 ─── */
+.home-today-card{background:var(--surface,#fff);border:1.5px solid var(--border,#e8e8e8);border-radius:14px;padding:14px;margin-bottom:14px;cursor:pointer;transition:box-shadow .15s;}
+.home-today-card:active{box-shadow:0 2px 8px rgba(0,0,0,0.08);}
+.home-today-card-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;}
+.home-today-card-title{font-size:12px;font-weight:700;color:var(--text-primary,#333);}
+.home-today-card-edit{font-size:10px;color:#7b72e9;font-weight:600;}
+.home-today-ex-row{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:8px;}
+.home-today-ex-tag{font-size:10px;font-weight:600;padding:3px 8px;border-radius:20px;background:#f0f4ff;color:#185fa5;}
+.home-today-ex-tag.climbing{background:#e6fdf2;color:#1d9e75;}
+.home-today-sets{font-size:11px;color:var(--text-secondary,#666);line-height:1.7;}
+.home-today-nut{display:flex;gap:10px;margin-top:8px;padding-top:8px;border-top:1px solid var(--border,#f0f0f0);}
+.home-today-nut-item{display:flex;flex-direction:column;align-items:center;flex:1;}
+.home-today-nut-val{font-size:13px;font-weight:800;}
+.home-today-nut-lbl{font-size:9px;color:#888;margin-top:1px;}
+.home-today-empty{text-align:center;padding:14px 0;color:#bbb;font-size:12px;}
+
+/* ─── 오늘루틴 읽기전용 대시보드 ─── */
+.routine-dashboard{padding:0;}
+.routine-today-banner{background:linear-gradient(135deg,#1a1a2e,#16213e);border-radius:12px;padding:12px 14px;margin-bottom:12px;display:flex;align-items:center;justify-content:space-between;}
+.routine-today-banner-title{font-size:13px;font-weight:800;color:#f5c518;}
+.routine-today-banner-sub{font-size:10px;color:rgba(255,255,255,0.6);margin-top:2px;}
+.routine-ex-card{background:var(--surface,#fff);border:1.5px solid var(--border,#e8e8e8);border-radius:12px;padding:12px 14px;margin-bottom:8px;}
+.routine-ex-name{font-size:13px;font-weight:700;color:var(--text-primary,#1a1a1a);margin-bottom:6px;display:flex;align-items:center;justify-content:space-between;}
+.routine-ex-plan{font-size:10px;color:#888;margin-bottom:6px;}
+.routine-ex-record{font-size:11px;font-weight:600;}
+.routine-ex-record.done{color:#1d9e75;}
+.routine-ex-record.none{color:#bbb;}
+.routine-set-row{display:flex;gap:6px;flex-wrap:wrap;margin-top:4px;}
+.routine-set-chip{font-size:10px;padding:3px 8px;border-radius:20px;background:#f0f4ff;color:#185fa5;font-weight:600;}
+.routine-set-chip.done{background:#e6fdf2;color:#1d9e75;}
+.routine-go-btn{width:100%;font-family:inherit;font-size:13px;font-weight:700;padding:12px;border:none;border-radius:12px;background:linear-gradient(135deg,#7b72e9,#185fa5);color:#fff;cursor:pointer;margin-top:8px;}
+
+/* ─── 기록내역 타임라인 ─── */
+.timeline-list{padding:0;}
+.timeline-item{display:flex;gap:10px;margin-bottom:16px;cursor:pointer;}
+.timeline-dot-col{display:flex;flex-direction:column;align-items:center;padding-top:3px;}
+.timeline-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
+.timeline-line{width:2px;flex:1;background:#e8e8e8;margin-top:4px;}
+.timeline-content{flex:1;padding-bottom:4px;}
+.timeline-date{font-size:10px;color:#888;font-weight:600;margin-bottom:4px;}
+.timeline-card{background:var(--surface,#fff);border:1.5px solid var(--border,#e8e8e8);border-radius:12px;padding:10px 12px;transition:border-color .15s;}
+.timeline-card:active{border-color:#7b72e9;}
+.timeline-type-row{display:flex;gap:5px;margin-bottom:6px;flex-wrap:wrap;}
+.timeline-type-tag{font-size:9px;font-weight:700;padding:2px 7px;border-radius:10px;}
+.timeline-ex-list{font-size:11px;color:var(--text-primary,#333);line-height:1.7;margin-bottom:5px;}
+.timeline-nut-row{display:flex;gap:8px;font-size:10px;color:#888;}
+.timeline-nut-val{font-weight:700;color:var(--text-primary,#555);}
+.timeline-edit-hint{font-size:9px;color:#7b72e9;font-weight:600;margin-top:4px;text-align:right;}
 /* ─── 홈화면 ─── */
 .home-wrap{padding:4px 0 20px;}
 .home-greeting{font-size:18px;font-weight:800;color:var(--text-primary,#1a1a1a);margin-bottom:2px;}
@@ -983,7 +1032,6 @@ body:not(.light-mode) .home-ai::before{background:#0e0e14;}
         <div class="profile-score-lbl">InBody</div>
       </div>
       <button class="profile-toggle" id="profile-toggle-btn" onclick="toggleProfile()">▼ 펼치기</button>
-      <button class="logout-btn" onclick="doLogout()">로그아웃</button>
     </div>
   </div>
   <div class="profile-expand" id="profile-expand">
@@ -1001,6 +1049,7 @@ body:not(.light-mode) .home-ai::before{background:#0e0e14;}
     <div class="stat-grid" id="hdr-stats"></div>
   </div>
 </div>
+<div class="logout-row"><button class="logout-btn" onclick="doLogout()">🚪 로그아웃</button></div>
 
 <!-- 대분류 탭 -->
 <div class="cat-tabs">
@@ -1368,6 +1417,11 @@ body:not(.light-mode) .home-ai::before{background:#0e0e14;}
       <div class="home-week-dots" id="home-week-dots"></div>
       <div class="home-week-bar"><div class="home-week-bar-fill" id="home-week-bar" style="width:0%"></div></div>
       <div style="font-size:10px;color:var(--text-secondary,#888);margin-top:4px" id="home-week-label"></div>
+    </div>
+    <!-- 오늘 기록 요약 -->
+    <div class="home-section">
+      <div class="home-section-title">오늘 기록</div>
+      <div id="home-today-summary"></div>
     </div>
     <!-- 원형 프로그레스 -->
     <div class="home-rings">
@@ -2998,6 +3052,91 @@ function renderExercise(){
 }
 
 /* ─── 주간루틴: 오늘 요일 최상단 표시 (금요일 버그 수정) ─── */
+/* ─── 오늘루틴 읽기전용 대시보드 ─── */
+function renderTodayRoutineDashboard(){
+  var el=document.getElementById('wk-c');if(!el)return;
+  var p=APP.profile||{};
+  var now=new Date();
+  var todayStr=now.toISOString().slice(0,10);
+  var dayMap={0:'일요일',1:'월요일',2:'화요일',3:'수요일',4:'목요일',5:'금요일',6:'토요일'};
+  var todayKor=dayMap[now.getDay()];
+
+  /* 오늘 기록 */
+  var todayLog=getStore('logs').find(l=>l.date===todayStr)||{};
+  var recordedExs=todayLog.exercises||[];
+
+  /* 오늘 루틴 찾기 — renderDetailedRoutine이 만드는 wk 배열에서 오늘 요일 추출 */
+  var bench=p?.performance?.bench||65;
+  var squat=p?.performance?.squat||60;
+  var lat=p?.performance?.lat||54;
+  var dead=p?.performance?.dead||60;
+
+  /* 오늘 루틴 데이터 (요일별 매핑) */
+  var routineMap={
+    '월요일':{label:'가슴 + 삼두',tag:'웨이트',color:'#185fa5',items:['벤치프레스','인클라인 덤벨프레스','케이블 플라이 (로우)','딥스 (가슴 버전)','케이블 트라이셉 푸쉬다운','오버헤드 트라이셉 익스텐션']},
+    '화요일':{label:'클라이밍',tag:'클라이밍',color:'#1d9e75',items:['웜업 클라이밍','메인 클라이밍','쿨다운']},
+    '수요일':{label:'등 + 이두',tag:'웨이트',color:'#185fa5',items:['렛풀다운','바벨 로우','시티드 케이블 로우','바벨 컬','해머 컬']},
+    '목요일':{label:'클라이밍',tag:'클라이밍',color:'#1d9e75',items:['웜업 클라이밍','메인 클라이밍','쿨다운']},
+    '금요일':{label:'하체 + 어깨',tag:'웨이트',color:'#7b72e9',items:['스쿼트','레그프레스','레그컬','밀리터리 프레스','사이드 레터럴 레이즈']},
+    '토요일':{label:'휴식 or 가벼운 활동',tag:'휴식',color:'#888',items:[]},
+    '일요일':{label:'휴식 or 가벼운 활동',tag:'휴식',color:'#888',items:[]},
+  };
+  /* 프로필 커스텀 루틴 있으면 우선 */
+  var plan=p?.plan?.routine;
+  if(plan){
+    var dayIdx=now.getDay();
+    var dayKeys=['일요일','월요일','화요일','수요일','목요일','금요일','토요일'];
+    var todayPlan=plan[dayKeys[dayIdx]];
+    if(todayPlan?.exercises?.length){
+      routineMap[todayKor]={label:todayPlan.label||todayKor,tag:todayPlan.tag||'웨이트',color:'#185fa5',items:todayPlan.exercises};
+    }
+  }
+
+  var todayRoutine=routineMap[todayKor]||{label:'루틴 없음',tag:'',color:'#888',items:[]};
+  var tagColor={웨이트:'#185fa5',클라이밍:'#1d9e75',휴식:'#888'};
+  var tagBg={웨이트:'#f0f4ff',클라이밍:'#e6fdf2',휴식:'#f5f5f5'};
+
+  /* 기록된 운동 매칭 */
+  var html=`<div class="routine-dashboard">
+    <div class="routine-today-banner">
+      <div>
+        <div class="routine-today-banner-title">${todayKor} · ${todayRoutine.label}</div>
+        <div class="routine-today-banner-sub">${todayStr} · ${todayLog.date?'기록 있음 ✓':'아직 기록 없음'}</div>
+      </div>
+      <span style="font-size:24px">${todayRoutine.tag==='클라이밍'?'🧗':todayRoutine.tag==='휴식'?'😴':'💪'}</span>
+    </div>`;
+
+  if(todayRoutine.items.length){
+    todayRoutine.items.forEach(name=>{
+      var recorded=recordedExs.find(e=>e.name===name);
+      var sets=recorded?.sets?.filter(s=>s.kg||s.reps)||[];
+      var isDone=sets.length>0;
+      var bestKg=isDone?Math.max(...sets.map(s=>parseFloat(s.kg)||0)):0;
+
+      html+=`<div class="routine-ex-card">
+        <div class="routine-ex-name">
+          <span>${name}</span>
+          <span style="font-size:16px">${isDone?'✅':'⬜'}</span>
+        </div>`;
+
+      if(isDone){
+        html+=`<div class="routine-ex-record done">✓ ${sets.length}세트 완료${bestKg?' · 최대 '+bestKg+'kg':''}</div>
+          <div class="routine-set-row">${sets.map((s,i)=>`<span class="routine-set-chip done">${i+1}세트 ${s.kg?s.kg+'kg':''}${s.reps?' × '+s.reps:''}</span>`).join('')}</div>`;
+      }else{
+        html+=`<div class="routine-ex-record none">아직 기록 없음</div>`;
+      }
+      html+='</div>';
+    });
+  }else{
+    html+=`<div style="text-align:center;padding:20px;color:#bbb;font-size:12px">오늘은 휴식일입니다 🛋</div>`;
+  }
+
+  /* 기록하기 버튼 */
+  html+=`<button class="routine-go-btn" onclick="goTodayRecord('${todayStr}')">✏️ 기록하기 탭에서 수정</button>`;
+  html+='</div>';
+
+  el.innerHTML=html;
+}
 function renderWeeklyRoutineTodayFirst(){
   var el=document.getElementById('wk-c');if(!el)return;
   var p=APP.profile||{};
@@ -4404,11 +4543,11 @@ function showCalDetail(date){
   var ankleColor=(log.ankle||0)===0?'#1d9e75':(log.ankle||0)<=3?'#ef9f27':'#e57373';
 
   detailEl.style.display='block';
-  detailEl.innerHTML=`<div class="log-card" onclick="loadLogToDaily('${date}')" style="cursor:pointer;border:2px solid #f5c518">
+  detailEl.innerHTML=`<div class="log-card" onclick="goTodayRecord('${date}')" style="cursor:pointer;border:2px solid #f5c518">
     <div class="log-card-head">
       <span class="log-date-lbl">📅 ${date}</span>
       <div style="display:flex;gap:6px;align-items:center">
-        <span style="font-size:10px;color:#a0a0a0">↗ 상세보기</span>
+        <span style="font-size:10px;color:#7b72e9;font-weight:600">기록하기에서 수정 →</span>
         <button class="log-del" onclick="event.stopPropagation();deleteLog('${date}');showCalDetail('${date}')">삭제</button>
       </div>
     </div>
@@ -5236,11 +5375,22 @@ function setCat(cat,btn){
   if(subBtns[0])subBtns[0].classList.add('on-'+cat);
   /* 탭별 초기화 */
   if(cat==='home'){renderHome();}
-  if(cat==='today'){initLogTab();renderWeeklyRoutineTodayFirst();}
+  if(cat==='today'){initLogTab();renderTodayRoutineDashboard();}
   if(cat==='train'){renderExDBList();renderInbodyHistory();renderLiftHistory();}
   if(cat==='stat'){var p=APP.profile||{};renderTrend(p);renderCurrentState(p);}
 }
 /* ─── 홈화면 렌더 ─── */
+/* ─── 홈/기록내역에서 기록하기 탭으로 이동 ─── */
+function goTodayRecord(date){
+  /* 오늘탭 → 기록하기 서브탭으로 이동 */
+  var catBtn=document.querySelector('.cat-tab-today');
+  if(catBtn)setCat('today',catBtn);
+  var allSubs=document.querySelectorAll('#sub-today .sub-tab');
+  var dailyBtn=Array.from(allSubs).find(b=>b.getAttribute('onclick')?.includes('l-daily'));
+  if(dailyBtn)setPage('l-daily',dailyBtn,'today');
+  /* 해당 날짜 기록 로드 */
+  setTimeout(()=>loadLogToDaily(date||new Date().toISOString().slice(0,10)),100);
+}
 function renderHome(){
   var p=APP.profile||{};
   var uid=APP.user?.id;
@@ -5304,6 +5454,47 @@ function renderHome(){
     var pct=Math.round(doneDays/goalDays*100);
     if(barEl)barEl.style.width=Math.min(pct,100)+'%';
     if(wlabelEl)wlabelEl.textContent=`${doneDays}/${goalDays}일 완료 (목표 ${goalDays}일)`;
+  }
+
+  /* 오늘 기록 요약 카드 */
+  var summEl=document.getElementById('home-today-summary');
+  if(summEl){
+    var todayLog=logs.find(l=>l.date===todayStr);
+    if(todayLog){
+      /* 운동 태그 */
+      var exTypes=todayLog.exTypes||[];
+      var tagMap={weight:'웨이트 💪',climbing:'클라이밍 🧗',bike:'바이크 🚴',rest:'휴식 😴',rehab:'재활 🩺'};
+      var tags=exTypes.map(t=>`<span class="home-today-ex-tag${t==='climbing'?' climbing':''}">${tagMap[t]||t}</span>`).join('');
+      /* 운동 세트 요약 */
+      var exLines=(todayLog.exercises||[]).filter(e=>e.name&&e.sets?.length).map(e=>{
+        var best=e.sets.reduce((m,s)=>parseFloat(s.kg||0)>parseFloat(m.kg||0)?s:m,e.sets[0]);
+        return `<span style="color:#185fa5;font-weight:700">${e.name}</span> ${e.sets.length}세트${best?.kg?' · 최대 '+best.kg+'kg':''}`;
+      }).join('<br>');
+      /* 영양 */
+      var nut=todayLog.nutrition||{};
+      var goalProt2=p.plan?.macros?.prot||137;
+      var goalKcal2=p.plan?.kcal?.workout||2600;
+      var protPct=nut.prot?Math.round(nut.prot/goalProt2*100):0;
+      var kcalPct=nut.kcal?Math.round(nut.kcal/goalKcal2*100):0;
+      var protColor=protPct>=90?'#1d9e75':protPct>=60?'#ef9f27':'#e57373';
+      var kcalColor=kcalPct>=90?'#1d9e75':kcalPct>=60?'#ef9f27':'#e57373';
+      summEl.innerHTML=`<div class="home-today-card" onclick="goTodayRecord('${todayStr}')">
+        <div class="home-today-card-head">
+          <span class="home-today-card-title">📅 ${todayStr.slice(5).replace('-','월 ')}일</span>
+          <span class="home-today-card-edit">수정하기 →</span>
+        </div>
+        ${tags?`<div class="home-today-ex-row">${tags}</div>`:''}
+        ${exLines?`<div class="home-today-sets">${exLines}</div>`:''}
+        ${(nut.prot||nut.kcal)?`<div class="home-today-nut">
+          <div class="home-today-nut-item"><div class="home-today-nut-val" style="color:${protColor}">${nut.prot||0}g</div><div class="home-today-nut-lbl">단백질</div></div>
+          <div class="home-today-nut-item"><div class="home-today-nut-val" style="color:${kcalColor}">${nut.kcal||0}</div><div class="home-today-nut-lbl">칼로리</div></div>
+          <div class="home-today-nut-item"><div class="home-today-nut-val" style="color:#185fa5">${nut.carb||0}g</div><div class="home-today-nut-lbl">탄수화물</div></div>
+          <div class="home-today-nut-item"><div class="home-today-nut-val" style="color:#ef9f27">${nut.fat||0}g</div><div class="home-today-nut-lbl">지방</div></div>
+        </div>`:''}
+      </div>`;
+    }else{
+      summEl.innerHTML=`<div class="home-today-empty">오늘 기록이 없습니다<br><span style="font-size:10px">아래 버튼으로 기록을 시작하세요</span></div>`;
+    }
   }
 
   /* 원형 프로그레스 — 오늘 기록 */
@@ -5412,6 +5603,7 @@ function setPage(pageId,btn,cat){
   if(pageId==='e-wk')renderWeeklyRoutineTodayFirst();
   if(pageId==='e-tr'){var p=APP.profile||{};renderTrend(p);}
   if(pageId==='e-st'){var p=APP.profile||{};renderCurrentState(p);}
+  if(pageId==='e-wk'){renderTodayRoutineDashboard();}else
   if(pageId==='e-up'){var p=APP.profile||{};renderUpperBody(p);renderLiftGraph('벤치프레스',document.querySelector('#lift-graph-btns .filter-btn.on'));}
   if(pageId==='l-daily'){initLogTab();requestWakeLock();}
   else{releaseWakeLock();}
