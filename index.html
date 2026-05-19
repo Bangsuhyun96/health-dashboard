@@ -384,7 +384,25 @@ body.app-ready #theme-toggle{display:flex;}
 .photo-drop:hover{background:#f5f3ff;}
 .photo-drop input{display:none;}
 /* ─── 월간 캘린더 ─── */
-/* ─── 모던 달력 피커 ─── */
+/* ─── 마감 요약 뷰 ─── */
+.closed-card{background:var(--surface,#fff);border:2px solid #1d9e75;border-radius:16px;padding:16px;margin-bottom:12px;}
+.closed-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;}
+.closed-title{font-size:14px;font-weight:800;color:var(--text-primary,#1a1a1a);}
+.closed-badge{font-size:10px;font-weight:700;background:#e6fdf2;color:#1d9e75;padding:3px 10px;border-radius:20px;}
+.closed-section{margin-bottom:12px;}
+.closed-section-title{font-size:10px;font-weight:700;color:#888;letter-spacing:.4px;margin-bottom:6px;}
+.closed-ex-item{font-size:12px;color:var(--text-primary,#333);padding:5px 0;border-bottom:1px solid var(--border,#f5f5f5);line-height:1.6;}
+.closed-ex-name{font-weight:700;color:#185fa5;}
+.closed-nut-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;}
+.closed-nut-box{background:var(--surface-2,#f9f9f9);border-radius:8px;padding:7px;text-align:center;}
+.closed-nut-val{font-size:13px;font-weight:800;color:var(--text-primary,#333);}
+.closed-nut-lbl{font-size:9px;color:#888;margin-top:1px;}
+.closed-meta{display:flex;gap:10px;flex-wrap:wrap;font-size:11px;color:#888;}
+.closed-meta span{display:flex;align-items:center;gap:3px;}
+.closed-actions{display:flex;gap:8px;margin-top:14px;}
+.closed-copy-btn{flex:1;font-family:inherit;font-size:12px;font-weight:700;padding:10px;border:1.5px solid #1d9e75;border-radius:10px;background:#e6fdf2;color:#0a5c46;cursor:pointer;}
+.closed-edit-btn{font-family:inherit;font-size:12px;font-weight:700;padding:10px 16px;border:1.5px solid #ddd;border-radius:10px;background:var(--surface,#fff);color:#888;cursor:pointer;}
+
 .cal-picker-wrap{position:relative;}
 .cal-picker-btn{width:100%;font-family:inherit;font-size:12px;padding:8px 10px;border:1.5px solid #ddd;border-radius:8px;background:#fff;color:#1a1a1a;text-align:left;cursor:pointer;display:flex;align-items:center;justify-content:space-between;box-sizing:border-box;outline:none;}
 .cal-picker-btn.selected{border-color:#1d9e75;}
@@ -1028,7 +1046,7 @@ body:not(.light-mode) .home-ai::before{background:#0e0e14;}
     </div>
     <div style="display:flex;align-items:center;gap:8px">
       <button class="profile-toggle" id="profile-toggle-btn" onclick="toggleProfile()">▼ 펼치기</button>
-      <button class="logout-btn" onclick="doLogout()" style="margin:0">🚪</button>
+      <button class="logout-btn" onclick="doLogout()" style="margin:0;font-size:11px;padding:4px 10px">로그아웃</button>
     </div>
   </div>
   <div class="profile-expand" id="profile-expand">
@@ -1259,6 +1277,7 @@ body:not(.light-mode) .home-ai::before{background:#0e0e14;}
 <!-- 일일기록 -->
 <div id="l-daily" class="page">
 <div id="daily-record-banner" style="display:none;padding:10px 14px;border-radius:10px;margin-bottom:10px;"></div>
+<div id="l-daily-form">
 
 <!-- ① 날짜 + 초기화 -->
 <div class="card">
@@ -1391,8 +1410,15 @@ body:not(.light-mode) .home-ai::before{background:#0e0e14;}
 </div>
 
 <!-- 저장 버튼 -->
-<button onclick="saveLog()" style="font-family:inherit;font-size:14px;font-weight:700;padding:14px;border:none;border-radius:12px;background:#7b72e9;color:#fff;cursor:pointer;width:100%;margin-bottom:4px;box-shadow:0 4px 12px rgba(123,114,233,.3)">기록 저장</button>
-<div id="save-msg" style="text-align:center;font-size:11px;margin-bottom:16px;color:#0a5c46;display:none">✓ 저장됐어요!</div>
+<div style="display:flex;gap:8px;margin-bottom:4px">
+  <button onclick="saveLog()" style="font-family:inherit;font-size:14px;font-weight:700;padding:14px;border:none;border-radius:12px;background:#7b72e9;color:#fff;cursor:pointer;flex:1;box-shadow:0 4px 12px rgba(123,114,233,.3)">기록 저장</button>
+  <button onclick="closeLog()" id="close-log-btn" style="font-family:inherit;font-size:14px;font-weight:700;padding:14px 18px;border:none;border-radius:12px;background:linear-gradient(135deg,#1d9e75,#0a5c46);color:#fff;cursor:pointer;box-shadow:0 4px 12px rgba(29,158,117,.3)" title="마감">✅ 마감</button>
+</div>
+<div id="save-msg" style="text-align:center;font-size:11px;margin-bottom:8px;color:#0a5c46;display:none">✓ 저장됐어요!</div>
+
+</div><!-- /l-daily-form -->
+<!-- 마감 요약 뷰 -->
+<div id="log-closed-view" style="display:none"></div>
 
 </div>
 
@@ -1658,7 +1684,7 @@ body:not(.light-mode) .home-ai::before{background:#0e0e14;}
   </div>
 </div>
 <!-- 운동 추가/수정 모달 -->
-<div id="exdb-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:999;overflow-y:auto;padding:20px" onclick="if(event.target===this)closeExDBModal()">
+<div id="exdb-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:999;overflow-y:auto;padding:20px">
   <div style="background:#fff;border-radius:16px;padding:20px;max-width:420px;margin:0 auto">
     <div style="font-size:14px;font-weight:700;margin-bottom:14px" id="exdb-modal-title">종목 추가</div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
@@ -1705,7 +1731,7 @@ body:not(.light-mode) .home-ai::before{background:#0e0e14;}
   </div>
 </div>
 <!-- 식품 추가 모달 -->
-<div id="fooddb-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:999;overflow-y:auto;padding:20px" onclick="if(event.target===this)closeFoodDBModal()">
+<div id="fooddb-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:999;overflow-y:auto;padding:20px">
   <div style="background:#fff;border-radius:16px;padding:20px;max-width:420px;margin:0 auto">
     <div style="font-size:14px;font-weight:700;margin-bottom:14px" id="fooddb-modal-title">식품 추가</div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
@@ -3445,18 +3471,18 @@ function renderSuppPage(){
     {name:'오메가3',time:'아침식사직후',note:'항염·혈행·회복. EPA+DHA 기준 1g/일. 지용성이라 식사 후 복용'},
     {name:'루테인 지아잔틴 아스타잔틴',time:'점심식사직후',note:'눈 황반·블루라이트 차단·항산화. 지용성이라 식사 직후 필수'},
     {name:'락토핏 코어맥스',time:'오후3시',note:'장 건강·면역. 식간(공복)에 유산균 생존율 높음'},
-    {name:'크레아틴 5g',time:'자유',note:'근력·회복·ATP 재합성. 물 +500ml 추가 필수. 매일 꾸준히'},
+    {name:'크레아틴 5g',time:'운동전후',note:'근력·회복·ATP 재합성. 물 +500ml 추가 필수. 매일 꾸준히'},
     {name:'마그네슘 글리시네이트',time:'취침전',note:'수면질·근육이완·ATP 생산. 취침 30~60분 전. 과량 시 설사 주의'},
   ];
 
-  var timeGroups={'아침식사직후':[],'점심식사직후':[],'오후3시':[],'자유':[],'취침전':[],'기타':[]};
+  var timeGroups={'아침식사직후':[],'점심식사직후':[],'오후3시':[],'운동전후':[],'취침전':[],'기타':[]};
   supps.forEach(s=>{var g=timeGroups[s.time]||timeGroups['기타'];g.push(s);});
 
   var timeLabels={
     '아침식사직후':'🌅 아침 식사 직후',
     '점심식사직후':'☀️ 점심 식사 직후',
     '오후3시':'🕒 오후 3시 (식간)',
-    '자유':'🕐 시간 자유',
+    '운동전후':'🏋️ 운동 전후','자유':'🕐 시간 자유',
     '취침전':'🌙 취침 30~60분 전',
     '기타':'기타'
   };
@@ -4029,7 +4055,7 @@ function renderExerciseBlocks(){
       var isLast=si===b.sets.length-1;
       h+=`<div style="display:grid;grid-template-columns:28px 1fr 1fr 36px;gap:4px;margin-bottom:5px;align-items:center">
         <span style="font-size:12px;font-weight:800;color:${catC};text-align:center;line-height:1">${si+1}</span>
-        <input type="number" id="set_kg_${b.id}_${si}" value="${s.kg||''}" placeholder="kg" step="0.5" inputmode="decimal"
+        <input type="text" id="set_kg_${b.id}_${si}" value="${s.kg||''}" placeholder="kg" inputmode="decimal" pattern="[0-9.]*"
           style="font-family:inherit;font-size:15px;font-weight:700;padding:9px 4px;border:1.5px solid ${s.kg?catC+'66':'#e0e0e0'};border-radius:8px;outline:none;text-align:center;background:#fff;color:#1a1a1a;width:100%;-webkit-appearance:none;min-height:40px"
           oninput="syncBlockData();updateBurnCalc();this.style.borderColor=this.value?'${catC}66':'#e0e0e0'">
         <input type="text" id="set_rp_${b.id}_${si}" value="${s.reps||''}" placeholder="회" inputmode="text"
@@ -5332,6 +5358,113 @@ function setCat(cat,btn){
 }
 /* ─── 홈화면 렌더 ─── */
 /* ─── 홈/기록내역에서 기록하기 탭으로 이동 ─── */
+/* ─── 마감 기능 ─── */
+function closeLog(){
+  syncBlockData();
+  /* 먼저 저장 */
+  saveLog();
+  /* 마감 날짜 기록 */
+  var date=document.getElementById('log-date')?.value||new Date().toISOString().slice(0,10);
+  lSet('v5_closed_'+date,'1');
+  /* 요약 뷰 렌더 */
+  renderClosedView(date);
+}
+
+function renderClosedView(date){
+  var log=getStore('logs').find(l=>l.date===date);
+  if(!log)return;
+  var cv=document.getElementById('log-closed-view');
+  var lDaily=document.getElementById('l-daily-form');
+  if(!cv)return;
+
+  /* 폼 숨기고 요약 뷰 표시 */
+  if(lDaily)lDaily.style.display='none';
+  document.getElementById('close-log-btn').style.display='none';
+  cv.style.display='block';
+
+  var d=new Date(date);
+  var days=['일','월','화','수','목','금','토'];
+  var dateLabel=`${d.getMonth()+1}월 ${d.getDate()}일 (${days[d.getDay()]})`;
+  var typeLabel={weight:'💪 웨이트',climbing:'🧗 클라이밍',bike:'🚴 바이크',rest:'😴 휴식',rehab:'🩺 재활'};
+  var types=(log.exTypes||[]).map(t=>typeLabel[t]||t).join(' · ');
+
+  /* 운동 섹션 */
+  var exHtml='';
+  if(log.exercises?.length){
+    exHtml='<div class="closed-section"><div class="closed-section-title">🏋️ 운동</div>';
+    log.exercises.filter(e=>e.name&&e.sets?.length).forEach(e=>{
+      var setsStr=e.sets.map((s,i)=>`${i+1}세트 ${s.kg?s.kg+'kg':''}${s.reps?' × '+s.reps:''}`).join('  ');
+      var best=e.sets.reduce((m,s)=>parseFloat(s.kg||0)>parseFloat(m.kg||0)?s:m,e.sets[0]);
+      exHtml+=`<div class="closed-ex-item"><span class="closed-ex-name">${e.name}</span> ${e.sets.length}세트${best?.kg?' · 최대 '+best.kg+'kg':''}<br><span style="font-size:10px;color:#888">${setsStr}</span></div>`;
+    });
+    exHtml+='</div>';
+  }
+
+  /* 영양 섹션 */
+  var nutHtml='';
+  if(log.nutrition){
+    var n=log.nutrition;
+    nutHtml=`<div class="closed-section"><div class="closed-section-title">🍽 영양</div>
+      <div class="closed-nut-grid">
+        <div class="closed-nut-box"><div class="closed-nut-val" style="color:#1d9e75">${n.prot||0}g</div><div class="closed-nut-lbl">단백질</div></div>
+        <div class="closed-nut-box"><div class="closed-nut-val" style="color:#e57373">${n.kcal||0}</div><div class="closed-nut-lbl">칼로리</div></div>
+        <div class="closed-nut-box"><div class="closed-nut-val" style="color:#ef9f27">${n.carb||0}g</div><div class="closed-nut-lbl">탄수화물</div></div>
+        <div class="closed-nut-box"><div class="closed-nut-val" style="color:#888">${n.fat||0}g</div><div class="closed-nut-lbl">지방</div></div>
+      </div></div>`;
+  }
+
+  /* 메타 */
+  var metaHtml=`<div class="closed-meta">
+    <span>💤 수면 ${log.sleep||7}h</span>
+    <span>💧 ${((log.water||1800)/1000).toFixed(1)}L</span>
+    ${log.ankle?`<span>🦶 통증 ${log.ankle}/10</span>`:''}
+    ${log.memo?`<span>📝 ${log.memo}</span>`:''}
+  </div>`;
+
+  /* 복사 텍스트 생성 */
+  var copyText=`📅 ${dateLabel} ${types}\n`;
+  (log.exercises||[]).filter(e=>e.name&&e.sets?.length).forEach(e=>{
+    copyText+=`\n🏋️ ${e.name} ${e.sets.length}세트\n`;
+    e.sets.forEach((s,i)=>copyText+=`  ${i+1}세트: ${s.kg?s.kg+'kg':''}${s.reps?' × '+s.reps:''}\n`);
+  });
+  if(log.nutrition){var n=log.nutrition;copyText+=`\n🍗 단백질 ${n.prot||0}g · 칼로리 ${n.kcal||0} · 탄수 ${n.carb||0}g · 지방 ${n.fat||0}g\n`;}
+  copyText+=`💤 수면 ${log.sleep||7}h · 💧 ${((log.water||1800)/1000).toFixed(1)}L`;
+  if(log.memo)copyText+=`\n📝 ${log.memo}`;
+
+  cv.innerHTML=`<div class="closed-card">
+    <div class="closed-header">
+      <div class="closed-title">📅 ${dateLabel}</div>
+      <div class="closed-badge">✅ 마감완료</div>
+    </div>
+    <div style="font-size:11px;color:#888;margin-bottom:12px">${types}</div>
+    ${exHtml}${nutHtml}${metaHtml}
+    <div class="closed-actions">
+      <button class="closed-copy-btn" onclick="copyLogText(\`${copyText.replace(/`/g,"'")}\`)">📋 텍스트 복사</button>
+      <button class="closed-edit-btn" onclick="reopenLog('${date}')">수정하기</button>
+    </div>
+  </div>`;
+}
+
+function copyLogText(text){
+  navigator.clipboard?.writeText(text).then(()=>showToast('📋 클립보드에 복사됐어요!')).catch(()=>{
+    var ta=document.createElement('textarea');ta.value=text;document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);showToast('📋 복사됐어요!');
+  });
+}
+
+function reopenLog(date){
+  lSet('v5_closed_'+date,'0');
+  var cv=document.getElementById('log-closed-view');if(cv)cv.style.display='none';
+  var lf=document.getElementById('l-daily-form');if(lf)lf.style.display='';
+  var cb=document.getElementById('close-log-btn');if(cb)cb.style.display='';
+}
+
+function showToast(msg){
+  var t=document.getElementById('pr-toast');if(!t)return;
+  t.textContent=msg;t.style.display='block';t.style.animation='none';
+  requestAnimationFrame(()=>{t.style.animation='prFlash .4s ease forwards';});
+  clearTimeout(t._timer);t._timer=setTimeout(()=>{t.style.opacity='0';t.style.transition='opacity .5s';setTimeout(()=>{t.style.display='none';t.style.opacity='1';t.style.transition='';},500);},2500);
+}
+
 function goTodayRecord(date){
   /* 오늘탭 → 기록하기 서브탭으로 이동 */
   var catBtn=document.querySelector('.cat-tab-today');
@@ -5555,7 +5688,21 @@ function setPage(pageId,btn,cat){
   if(pageId==='e-tr'){var p=APP.profile||{};renderTrend(p);}
   if(pageId==='e-st'){var p=APP.profile||{};renderCurrentState(p);}
   if(pageId==='e-up'){var p=APP.profile||{};renderUpperBody(p);renderLiftGraph('벤치프레스',document.querySelector('#lift-graph-btns .filter-btn.on'));}
-  if(pageId==='l-daily'){initLogTab();requestWakeLock();}
+  if(pageId==='l-daily'){
+    initLogTab();requestWakeLock();
+    /* 마감 여부 확인 */
+    var todayDate=new Date().toISOString().slice(0,10);
+    var isClosed=lGet('v5_closed_'+todayDate)==='1';
+    if(isClosed){
+      var lf=document.getElementById('l-daily-form');if(lf)lf.style.display='none';
+      var cb=document.getElementById('close-log-btn');if(cb)cb.style.display='none';
+      renderClosedView(todayDate);
+    }else{
+      var cv=document.getElementById('log-closed-view');if(cv)cv.style.display='none';
+      var lf2=document.getElementById('l-daily-form');if(lf2)lf2.style.display='';
+      var cb2=document.getElementById('close-log-btn');if(cb2)cb2.style.display='';
+    }
+  }
   else{releaseWakeLock();}
   if(pageId==='l-inbody'){
     renderInbodyHistory();
@@ -6025,8 +6172,17 @@ function selectExerciseFromPicker(exId){
     exerciseBlocks.push(b);
   }
   b.name=ex.name;b.exId=ex.id;
-  /* 세트가 1개이고 비어있으면 defaultSets/Reps 자동 채우기 */
-  if(b.sets.length===1&&!b.sets[0].kg&&!b.sets[0].reps){
+  /* 최근 기록에서 해당 종목 마지막 세트 불러오기 */
+  var recentSets=null;
+  var logs=getStore('logs');
+  for(var li=0;li<logs.length;li++){
+    var found=(logs[li].exercises||[]).find(e=>e.name===ex.name&&e.sets?.length);
+    if(found){recentSets=found.sets.map(s=>({kg:s.kg||'',reps:s.reps||''}));break;}
+  }
+  if(recentSets&&recentSets.length){
+    b.sets=recentSets;
+    showToast('📋 '+ex.name+' 최근 기록 불러옴');
+  }else{
     b.sets=[];
     for(var i=0;i<(ex.defaultSets||3);i++)b.sets.push({kg:'',reps:''});
   }
@@ -6091,15 +6247,11 @@ function toggleAiType(btn){
   var target=document.getElementById(map[val]);if(target)target.style.display='block';
 }
 function startTodayWorkout(){
-  /* 오늘탭 → 기록하기로 이동 */
+  /* 오늘탭 → 기록하기로 이동만 (자동채우기 없음) */
   var catBtn=document.querySelector('.cat-tab-today');if(catBtn)setCat('today',catBtn);
   var allSubs=document.querySelectorAll('#sub-today .sub-tab');
   var dailyBtn=Array.from(allSubs).find(b=>b.getAttribute('onclick')?.includes('l-daily'));
   if(dailyBtn)setPage('l-daily',dailyBtn,'today');
-  setTimeout(()=>{
-    loadTodayRoutineToBlocks();
-    document.getElementById('l-daily')?.scrollIntoView({behavior:'smooth',block:'start'});
-  },100);
 }
 function loadTodayRoutineToBlocks(){
   var p=APP.profile||{};var plan=p.plan||{};
@@ -6130,7 +6282,7 @@ function initSuppChecks(){
     {name:'오메가3',time:'아침식사직후'},
     {name:'루테인 지아잔틴 아스타잔틴',time:'점심식사직후'},
     {name:'락토핏 코어맥스',time:'오후3시'},
-    {name:'크레아틴 5g',time:'자유'},
+    {name:'크레아틴 5g',time:'운동전후'},
     {name:'마그네슘 글리시네이트',time:'취침전'},
   ];
   var prev={};el.querySelectorAll('input[type=checkbox]').forEach((cb,i)=>{prev[i]=cb.checked;});
