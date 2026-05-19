@@ -1815,6 +1815,13 @@ body:not(.light-mode) .home-ai::before{background:#0e0e14;}
   </div>
 </div>
 <div class="card"><div class="ctitle">초기 설정 가이드</div><div id="setup-guide"></div></div>
+
+<!-- 계정 관리 카드 -->
+<div class="card">
+  <div class="ctitle">👥 계정 관리</div>
+  <div style="font-size:11px;color:#888;margin-bottom:12px">로그인 화면 표시 여부 설정 및 계정 삭제. 쓰기 모드 활성화 필요.</div>
+  <div id="account-mgmt-list"><div style="font-size:11px;color:#aaa;text-align:center;padding:12px">불러오는 중...</div></div>
+  <button onclick="loadAccountMgmt()" style="font-family:inherit;font-size:11px;font-weight:700;padding:7px;border:1.5px solid #ddd;border-radius:8px;background:#f5f5f5;color:#555;cursor:pointer;width:100%;margin-top:8px">새로고침</button>
 </div>
 
 <!-- 링크 -->
@@ -2072,8 +2079,9 @@ async function fetchAndRenderUserChips(){
   el.innerHTML='<div style="font-size:11px;color:#a0aec0;margin-bottom:8px">불러오는 중...</div>';
   try{
     var {users}=await fetchUsers();
-    if(!users.length){el.innerHTML='<div style="font-size:11px;color:#a0aec0;margin-bottom:8px">등록된 사용자가 없습니다 (사용자 생성 탭 이용)</div>';return;}
-    el.innerHTML=users.map(u=>`<div class="user-chip" onclick="quickPick('${u.id}')"><div class="user-chip-ava">${u.avatar||'💪'}</div><div><div class="user-chip-name">${u.name}</div><div class="user-chip-id">@${u.id}</div></div></div>`).join('');
+    var visible=users.filter(u=>!u.hidden);
+    if(!visible.length){el.innerHTML='<div style="font-size:11px;color:#a0aec0;margin-bottom:8px">등록된 사용자가 없습니다 (사용자 생성 탭 이용)</div>';return;}
+    el.innerHTML=visible.map(u=>`<div class="user-chip" onclick="quickPick('${u.id}')"><div class="user-chip-ava">${u.avatar||'💪'}</div><div><div class="user-chip-name">${u.name}</div><div class="user-chip-id">@${u.id}</div></div></div>`).join('');
   }catch(e){el.innerHTML=`<div style="font-size:11px;color:#fc8181;margin-bottom:8px">오류: ${e.message}</div>`;}
 }
 function quickPick(id){document.getElementById('login-id').value=id;document.getElementById('login-pw').focus();}
@@ -5703,6 +5711,7 @@ function setPage(pageId,btn,cat){
   btn.classList.add('on-'+cat);
   /* 탭별 렌더 연결 */
   if(pageId==='d-sp'){renderSuppPage();}
+  if(pageId==='l-sync'){setTimeout(loadAccountMgmt,300);}
   if(pageId==='l-exdb')renderExDBList();
   if(pageId==='l-fooddb')renderFoodDBList();
   if(pageId==='e-wk')renderWeeklyRoutineTodayFirst();
@@ -6313,6 +6322,100 @@ function initSuppChecks(){
   el.innerHTML=supps.map((s,i)=>`<div class="supp-check"><input type="checkbox" id="sc-${i}" ${prev[i]===false?'':'checked'}><label for="sc-${i}">${s.name}${s.time?` <span style="font-size:9px;color:#888">(${s.time})</span>`:''}</label></div>`).join('');
 }
 
+/* ─── 계정 관리 ─── */
+async function loadAccountMgmt(){
+  var el=document.getElementById('account-mgmt-list');if(!el)return;
+  el.innerHTML='<div style="font-size:11px;color:#aaa;text-align:center;padding:12px">불러오는 중...</div>';
+  try{
+    var {users,sha}=await fetchUsers();
+    if(!users.length){el.innerHTML='<div style="font-size:11px;color:#aaa;text-align:center;padding:12px">등록된 계정이 없습니다</div>';return;}
+    var currentId=APP.user?.id;
+    el.innerHTML=users.map(u=>{
+      var isHidden=u.hidden===true;
+      var isCurrent=u.id===currentId;
+      return`<div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border,#f0f0f0)">
+        <div style="font-size:24px">${u.avatar||'💪'}</div>
+        <div style="flex:1">
+          <div style="font-size:12px;font-weight:700;color:var(--text-primary,#1a1a1a)">${u.name} ${isCurrent?'<span style="font-size:9px;color:#1d9e75;background:#e6fdf2;padding:2px 6px;border-radius:8px">현재 계정</span>':''}</div>
+          <div style="font-size:10px;color:#888">@${u.id}</div>
+        </div>
+        <div style="display:flex;gap:6px;align-items:center">
+          <!-- 로그인 화면 표시 토글 -->
+          <button onclick="toggleUserVisibility('${u.id}',${!isHidden})" 
+            style="font-family:inherit;font-size:10px;font-weight:700;padding:4px 8px;border-radius:8px;cursor:pointer;border:1.5px solid ${isHidden?'#ddd':'#1d9e75'};background:${isHidden?'#f5f5f5':'#e6fdf2'};color:${isHidden?'#888':'#0a5c46'}">
+            ${isHidden?'숨김':'표시'}
+          </button>
+          <!-- 삭제 (현재 계정은 불가) -->
+          ${!isCurrent?`<button onclick="deleteUserAccount('${u.id}','${u.name}')"
+            style="font-family:inherit;font-size:10px;font-weight:700;padding:4px 8px;border-radius:8px;cursor:pointer;border:1.5px solid #e57373;background:#fdecea;color:#c0392b">
+            삭제
+          </button>`:'<span style="font-size:9px;color:#bbb;padding:0 4px">삭제불가</span>'}
+        </div>
+      </div>`;
+    }).join('');
+  }catch(e){el.innerHTML=`<div style="font-size:11px;color:#e57373;text-align:center;padding:12px">오류: ${e.message}</div>`;}
+}
+
+async function toggleUserVisibility(userId,hidden){
+  if(!GH.writeMode){showSyncBar('쓰기 모드를 먼저 활성화해주세요','#e57373');return;}
+  try{
+    var {users,sha}=await fetchUsers();
+    var u=users.find(x=>x.id===userId);
+    if(!u)return;
+    u.hidden=hidden;
+    await ghPut('data/user.json',{users,updatedAt:new Date().toISOString()});
+    showToast(hidden?`👁 ${u.name} 계정을 숨겼습니다`:`✅ ${u.name} 계정을 표시합니다`);
+    loadAccountMgmt();
+    /* 로그인 화면 칩 갱신 */
+    fetchAndRenderUserChips();
+  }catch(e){showSyncBar('저장 실패: '+e.message,'#e57373');}
+}
+
+async function deleteUserAccount(userId,userName){
+  if(!GH.writeMode){showSyncBar('쓰기 모드를 먼저 활성화해주세요','#e57373');return;}
+  if(!confirm(`"${userName}" 계정을 삭제할까요?\n\n⚠️ 해당 계정의 모든 기록/인바디/프로필 데이터가 GitHub에서 삭제됩니다.\n이 작업은 되돌릴 수 없습니다.`))return;
+
+  try{
+    /* 1. user.json에서 제거 */
+    var {users}=await fetchUsers();
+    var filtered=users.filter(u=>u.id!==userId);
+    await ghPut('data/user.json',{users:filtered,updatedAt:new Date().toISOString()});
+
+    /* 2. 해당 유저 데이터 파일 삭제 시도 (없어도 계속) */
+    var paths=[
+      'data/users/'+userId+'/profile.json',
+      'data/users/'+userId+'/inbody.json',
+      'data/users/'+userId+'/lifts.json',
+    ];
+    /* 월별 로그는 SHA 조회 후 삭제 — 간단히 최근 12개월만 */
+    var now=new Date();
+    for(var m=0;m<12;m++){
+      var d=new Date(now.getFullYear(),now.getMonth()-m,1);
+      paths.push('data/users/'+userId+'/logs/'+d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'.json');
+    }
+    for(var path of paths){
+      try{
+        var sha=await ghGetSha(path);
+        if(sha)await ghDelete(path,sha);
+      }catch(e){}
+    }
+
+    showToast('🗑 '+userName+' 계정이 삭제됐습니다');
+    loadAccountMgmt();
+    fetchAndRenderUserChips();
+  }catch(e){showSyncBar('삭제 실패: '+e.message,'#e57373');}
+}
+
+/* GitHub 파일 삭제 */
+async function ghDelete(path,sha){
+  if(!GH.token||!GH.owner||!GH.repo)throw new Error('쓰기 권한 없음');
+  var r=await fetch(ghBase()+'contents/'+path,{
+    method:'DELETE',
+    headers:{'Authorization':'token '+GH.token,'Content-Type':'application/json'},
+    body:JSON.stringify({message:'Delete '+path,sha})
+  });
+  if(!r.ok)throw new Error('HTTP '+r.status);
+}
 function clearAllStorage(){
   if(!confirm('로컬 저장 데이터(세션·쿠키·스토리지)를 모두 삭제할까요?\n\nGitHub 저장소의 데이터는 삭제되지 않습니다.'))return;
   /* localStorage */
