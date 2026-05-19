@@ -3061,81 +3061,34 @@ function renderTodayRoutineDashboard(){
   var dayMap={0:'일요일',1:'월요일',2:'화요일',3:'수요일',4:'목요일',5:'금요일',6:'토요일'};
   var todayKor=dayMap[now.getDay()];
 
-  /* 오늘 기록 */
+  /* 기존 루틴 렌더 그대로 사용 */
+  renderWeeklyRoutineTodayFirst();
+
+  /* 오늘 기록 현황 — 오늘 카드에만 주입 */
   var todayLog=getStore('logs').find(l=>l.date===todayStr)||{};
   var recordedExs=todayLog.exercises||[];
+  if(!recordedExs.length)return;
 
-  /* 오늘 루틴 찾기 — renderDetailedRoutine이 만드는 wk 배열에서 오늘 요일 추출 */
-  var bench=p?.performance?.bench||65;
-  var squat=p?.performance?.squat||60;
-  var lat=p?.performance?.lat||54;
-  var dead=p?.performance?.dead||60;
+  /* 오늘 카드 찾기 */
+  var cards=Array.from(el.querySelectorAll('.wk-card'));
+  var todayCard=cards.find(c=>c.querySelector('.wk-day')?.textContent.includes(todayKor));
+  if(!todayCard)return;
 
-  /* 오늘 루틴 데이터 (요일별 매핑) */
-  var routineMap={
-    '월요일':{label:'가슴 + 삼두',tag:'웨이트',color:'#185fa5',items:['벤치프레스','인클라인 덤벨프레스','케이블 플라이 (로우)','딥스 (가슴 버전)','케이블 트라이셉 푸쉬다운','오버헤드 트라이셉 익스텐션']},
-    '화요일':{label:'클라이밍',tag:'클라이밍',color:'#1d9e75',items:['웜업 클라이밍','메인 클라이밍','쿨다운']},
-    '수요일':{label:'등 + 이두',tag:'웨이트',color:'#185fa5',items:['렛풀다운','바벨 로우','시티드 케이블 로우','바벨 컬','해머 컬']},
-    '목요일':{label:'클라이밍',tag:'클라이밍',color:'#1d9e75',items:['웜업 클라이밍','메인 클라이밍','쿨다운']},
-    '금요일':{label:'하체 + 어깨',tag:'웨이트',color:'#7b72e9',items:['스쿼트','레그프레스','레그컬','밀리터리 프레스','사이드 레터럴 레이즈']},
-    '토요일':{label:'휴식 or 가벼운 활동',tag:'휴식',color:'#888',items:[]},
-    '일요일':{label:'휴식 or 가벼운 활동',tag:'휴식',color:'#888',items:[]},
-  };
-  /* 프로필 커스텀 루틴 있으면 우선 */
-  var plan=p?.plan?.routine;
-  if(plan){
-    var dayIdx=now.getDay();
-    var dayKeys=['일요일','월요일','화요일','수요일','목요일','금요일','토요일'];
-    var todayPlan=plan[dayKeys[dayIdx]];
-    if(todayPlan?.exercises?.length){
-      routineMap[todayKor]={label:todayPlan.label||todayKor,tag:todayPlan.tag||'웨이트',color:'#185fa5',items:todayPlan.exercises};
-    }
-  }
+  /* 기록 현황 배너 삽입 (카드 상단) */
+  var banner=document.createElement('div');
+  banner.style.cssText='background:#e6fdf2;border:1px solid #1d9e75;border-radius:8px;padding:7px 10px;margin-bottom:10px;font-size:11px;color:#0a5c46;font-weight:600;';
+  banner.innerHTML='✅ 오늘 기록 있음 — '+recordedExs.filter(e=>e.name&&e.sets?.length).map(e=>{
+    var best=e.sets.reduce((m,s)=>parseFloat(s.kg||0)>parseFloat(m.kg||0)?s:m,e.sets[0]);
+    return`<span style="font-weight:700">${e.name}</span> ${e.sets.length}세트${best?.kg?' · '+best.kg+'kg':''}`;
+  }).join(' · ');
+  todayCard.insertBefore(banner, todayCard.firstChild);
 
-  var todayRoutine=routineMap[todayKor]||{label:'루틴 없음',tag:'',color:'#888',items:[]};
-  var tagColor={웨이트:'#185fa5',클라이밍:'#1d9e75',휴식:'#888'};
-  var tagBg={웨이트:'#f0f4ff',클라이밍:'#e6fdf2',휴식:'#f5f5f5'};
-
-  /* 기록된 운동 매칭 */
-  var html=`<div class="routine-dashboard">
-    <div class="routine-today-banner">
-      <div>
-        <div class="routine-today-banner-title">${todayKor} · ${todayRoutine.label}</div>
-        <div class="routine-today-banner-sub">${todayStr} · ${todayLog.date?'기록 있음 ✓':'아직 기록 없음'}</div>
-      </div>
-      <span style="font-size:24px">${todayRoutine.tag==='클라이밍'?'🧗':todayRoutine.tag==='휴식'?'😴':'💪'}</span>
-    </div>`;
-
-  if(todayRoutine.items.length){
-    todayRoutine.items.forEach(name=>{
-      var recorded=recordedExs.find(e=>e.name===name);
-      var sets=recorded?.sets?.filter(s=>s.kg||s.reps)||[];
-      var isDone=sets.length>0;
-      var bestKg=isDone?Math.max(...sets.map(s=>parseFloat(s.kg)||0)):0;
-
-      html+=`<div class="routine-ex-card">
-        <div class="routine-ex-name">
-          <span>${name}</span>
-          <span style="font-size:16px">${isDone?'✅':'⬜'}</span>
-        </div>`;
-
-      if(isDone){
-        html+=`<div class="routine-ex-record done">✓ ${sets.length}세트 완료${bestKg?' · 최대 '+bestKg+'kg':''}</div>
-          <div class="routine-set-row">${sets.map((s,i)=>`<span class="routine-set-chip done">${i+1}세트 ${s.kg?s.kg+'kg':''}${s.reps?' × '+s.reps:''}</span>`).join('')}</div>`;
-      }else{
-        html+=`<div class="routine-ex-record none">아직 기록 없음</div>`;
-      }
-      html+='</div>';
-    });
-  }else{
-    html+=`<div style="text-align:center;padding:20px;color:#bbb;font-size:12px">오늘은 휴식일입니다 🛋</div>`;
-  }
-
-  /* 기록하기 버튼 */
-  html+=`<button class="routine-go-btn" onclick="goTodayRecord('${todayStr}')">✏️ 기록하기 탭에서 수정</button>`;
-  html+='</div>';
-
-  el.innerHTML=html;
+  /* 기록하기 버튼 추가 */
+  var goBtn=document.createElement('button');
+  goBtn.className='routine-go-btn';
+  goBtn.textContent='✏️ 기록하기에서 수정';
+  goBtn.onclick=()=>goTodayRecord(todayStr);
+  todayCard.appendChild(goBtn);
 }
 function renderWeeklyRoutineTodayFirst(){
   var el=document.getElementById('wk-c');if(!el)return;
@@ -5375,7 +5328,7 @@ function setCat(cat,btn){
   if(subBtns[0])subBtns[0].classList.add('on-'+cat);
   /* 탭별 초기화 */
   if(cat==='home'){renderHome();}
-  if(cat==='today'){initLogTab();renderTodayRoutineDashboard();}
+  if(cat==='today'){initLogTab();}
   if(cat==='train'){renderExDBList();renderInbodyHistory();renderLiftHistory();}
   if(cat==='stat'){var p=APP.profile||{};renderTrend(p);renderCurrentState(p);}
 }
@@ -5603,7 +5556,6 @@ function setPage(pageId,btn,cat){
   if(pageId==='e-wk')renderWeeklyRoutineTodayFirst();
   if(pageId==='e-tr'){var p=APP.profile||{};renderTrend(p);}
   if(pageId==='e-st'){var p=APP.profile||{};renderCurrentState(p);}
-  if(pageId==='e-wk'){renderTodayRoutineDashboard();}else
   if(pageId==='e-up'){var p=APP.profile||{};renderUpperBody(p);renderLiftGraph('벤치프레스',document.querySelector('#lift-graph-btns .filter-btn.on'));}
   if(pageId==='l-daily'){initLogTab();requestWakeLock();}
   else{releaseWakeLock();}
