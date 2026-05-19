@@ -2013,7 +2013,7 @@ function loadRepoConfig(){
     GH.owner=DEFAULT_REPO.owner;GH.repo=DEFAULT_REPO.repo;GH.branch=DEFAULT_REPO.branch;
     lSet('v5_repo',DEFAULT_REPO);
   }
-  GH.encToken=lGet('v5_enc_token')||null;
+  /* encToken은 로그인 후 계정별로 로드 */
   var o=document.getElementById('rml-owner'),r=document.getElementById('rml-repo');
   if(o&&GH.owner)o.value=GH.owner;if(r&&GH.repo)r.value=GH.repo;
 }
@@ -2135,7 +2135,7 @@ async function doLogin(){
        1) 로컬 암호화 토큰 (이미 이 기기에서 설정한 경우)
        2) users.json의 writeToken (평문 PAT — 공개 저장소라 보안 위험, 즉시 이관 권고)
        3) 없으면 읽기 전용 모드 */
-    GH.encToken=lGet('v5_enc_token')||null;
+    GH.encToken=lGet('v5_enc_token_'+(u.id||'default'))||lGet('v5_enc_token')||null;
     if(!GH.encToken && u.writeToken){
       GH.token=u.writeToken;
       GH.writeMode=true;
@@ -2193,6 +2193,13 @@ async function loadUserProfile(u){
 function doLogout(){
   sessionStorage.removeItem('v5_uid');
   localStorage.removeItem('v5_last_uid');
+  /* 현재 계정 관련 캐시 삭제 (APP.user 초기화 전에 uid 확보) */
+  var _logoutUid=APP.user?.id||'_';
+  localStorage.removeItem('v5_profile_'+_logoutUid);
+  localStorage.removeItem('v5_last_pull_'+_logoutUid);
+  localStorage.removeItem('v5_enc_api_'+_logoutUid);
+  localStorage.removeItem('v5_enc_token_'+_logoutUid);
+  localStorage.removeItem('v5_enc_token');
   APP.user=null;APP.profile=null;APP.apiKey=null;
   GH.token=null;GH.writeMode=false;GH.encToken=null;GH.sha={};
   /* 설정 입력 필드 초기화 */
@@ -2203,9 +2210,12 @@ function doLogout(){
   });
   /* 결과 메시지 초기화 */
   ['encrypt-result','unlock-result','api-key-result','write-mode-msg',
-   'login-err','create-msg'].forEach(id=>{
+   'login-err','create-msg','sync-action-result'].forEach(id=>{
     var el=document.getElementById(id);if(el)el.textContent='';
   });
+  /* 설정 UI 상태 초기화 */
+  var unlockRes=document.getElementById('unlock-result');
+  if(unlockRes)unlockRes.textContent='';
   showScreen('login');
   fetchAndRenderUserChips();
 }
@@ -5042,7 +5052,7 @@ function loadSyncConfig(){
     var ow=document.getElementById('cfg-owner');var rp=document.getElementById('cfg-repo');var br=document.getElementById('cfg-branch');
     if(ow)ow.value=GH.owner;if(rp)rp.value=GH.repo;if(br)br.value=GH.branch;
   }
-  GH.encToken=lGet('v5_enc_token')||null;
+  GH.encToken=lGet('v5_enc_token_'+(APP.user?.id||'default'))||lGet('v5_enc_token')||null;
   updateSyncStatusUI();
   renderSetupGuide();
 }
@@ -5067,7 +5077,7 @@ function encryptAndSaveToken(){
   if(!pw){if(res)res.textContent='비밀번호를 입력해주세요';return;}
   if(pw!==pw2){if(res)res.textContent='비밀번호가 일치하지 않아요';return;}
   var enc=CryptoJS.AES.encrypt(raw,pw).toString();
-  GH.encToken=enc;lSet('v5_enc_token',enc);
+  GH.encToken=enc;lSet('v5_enc_token_'+(APP.user?.id||'default'),enc);lSet('v5_enc_token',enc);
   if(res){res.style.color='#0a5c46';res.textContent='✓ 암호화 저장 완료. 비밀번호를 잊지 마세요!';}
 }
 function unlockWrite(){
@@ -5382,7 +5392,7 @@ function closeLog(){
   syncBlockData();
   var date=document.getElementById('log-date')?.value||new Date().toISOString().slice(0,10);
   saveLog();
-  lSet('v5_closed_'+date,'1');
+  lSet('v5_closed_'+(APP.user?.id||'_')+'_'+date,'1');
   renderClosedView(date);
 }
 
@@ -5468,7 +5478,7 @@ function copyLogText(text){
 }
 
 function reopenLog(date){
-  lSet('v5_closed_'+date,'0');
+  lSet('v5_closed_'+(APP.user?.id||'_')+'_'+date,'0');
   var cv=document.getElementById('log-closed-view');if(cv)cv.style.display='none';
   var lf=document.getElementById('l-daily-form');if(lf)lf.style.display='';
   var cb=document.getElementById('close-log-btn');if(cb)cb.style.display='';
@@ -5500,7 +5510,7 @@ function goTodayRecord(date){
   setTimeout(()=>{
     loadLogToDaily(targetDate);
     /* 해당 날짜 마감 여부 확인 */
-    var isClosed=lGet('v5_closed_'+targetDate)==='1';
+    var isClosed=lGet('v5_closed_'+(APP.user?.id||'_')+'_'+targetDate)==='1';
     var cv=document.getElementById('log-closed-view');
     var lf=document.getElementById('l-daily-form');
     var cb=document.getElementById('close-log-btn');
@@ -5687,13 +5697,13 @@ function renderHome(){
 }
 
 function trackTab(tabId){
-  var log=lGet('v5_tab_log')||[];
+  var log=lGet(uk('tab_log'))||[];
   log.push({tab:tabId,ts:Date.now(),hour:new Date().getHours()});
   if(log.length>500)log=log.slice(-500);
-  lSet('v5_tab_log',log);
+  lSet(uk('tab_log'),log);
 }
 function analyzeTabUsage(){
-  var log=lGet('v5_tab_log')||[];
+  var log=lGet(uk('tab_log'))||[];
   if(!log.length){console.log('탭 로그 없음');return;}
   var cnt={};var hourMap={};
   log.forEach(l=>{
@@ -5733,7 +5743,7 @@ function setPage(pageId,btn,cat){
     initLogTab();requestWakeLock();
     /* 마감 여부: 현재 log-date 기준 (goTodayRecord에서 날짜 세팅 후 별도 확인하므로 여기선 오늘만) */
     var todayDate=new Date().toISOString().slice(0,10);
-    var isClosed=lGet('v5_closed_'+todayDate)==='1';
+    var isClosed=lGet('v5_closed_'+(APP.user?.id||'_')+'_'+todayDate)==='1';
     var cv=document.getElementById('log-closed-view');
     var lf=document.getElementById('l-daily-form');
     var cb=document.getElementById('close-log-btn');
@@ -5897,7 +5907,7 @@ function setupStep2Next() {
   /* 암호화 저장 */
   var enc = CryptoJS.AES.encrypt(token, pw).toString();
   GH.encToken = enc; GH.token = token; GH.writeMode = true; SETUP.tokenPw = pw;
-  lSet('v5_enc_token', enc);
+  lSet('v5_enc_token_'+(APP.user?.id||'default'),enc);lSet('v5_enc_token',enc);
   err.textContent = '';
   setupGoStep(3);
 }
@@ -6039,7 +6049,7 @@ async function autoLoginCheck(){
     var u=users.find(x=>x.id===uid);
     if(!u){showScreen('login');fetchAndRenderUserChips();return;}
     APP.user=u;
-    GH.encToken=lGet('v5_enc_token')||null;
+    GH.encToken=lGet('v5_enc_token_'+(uid||'default'))||lGet('v5_enc_token')||null;
     /* writeToken 처리 */
     if(!GH.encToken&&u.writeToken){GH.token=u.writeToken;GH.writeMode=true;GH.needEncryptWarning=true;}
     sessionStorage.setItem('v5_uid',uid); /* 세션도 동기화 */
