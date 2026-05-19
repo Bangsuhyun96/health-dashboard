@@ -561,6 +561,17 @@
       "carb": 10,
       "fat": 11,
       "verified": true
+    },
+    {
+      "id": "food_1779177965543",
+      "name": "GS25 들기름 묵은지 참치 김밥",
+      "category": "탄수",
+      "unit": "1개 (260g)",
+      "kcal": 357,
+      "prot": 10,
+      "carb": 50,
+      "fat": 13,
+      "verified": true
     }
   ]
 }
