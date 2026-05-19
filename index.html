@@ -2192,9 +2192,20 @@ async function loadUserProfile(u){
 /* ─── 로그아웃 ─── */
 function doLogout(){
   sessionStorage.removeItem('v5_uid');
-  localStorage.removeItem('v5_last_uid'); /* L-4 */
+  localStorage.removeItem('v5_last_uid');
   APP.user=null;APP.profile=null;APP.apiKey=null;
-  GH.token=null;GH.writeMode=false;GH.sha={};
+  GH.token=null;GH.writeMode=false;GH.encToken=null;GH.sha={};
+  /* 설정 입력 필드 초기화 */
+  ['cfg-password','cfg-password2','cfg-unlock-pw','cfg-raw-token',
+   'cfg-api-key','cfg-api-pw','cfg-api-pw2','cfg-api-unlock-pw',
+   'create-write-pw','login-id','login-pw'].forEach(id=>{
+    var el=document.getElementById(id);if(el)el.value='';
+  });
+  /* 결과 메시지 초기화 */
+  ['encrypt-result','unlock-result','api-key-result','write-mode-msg',
+   'login-err','create-msg'].forEach(id=>{
+    var el=document.getElementById(id);if(el)el.textContent='';
+  });
   showScreen('login');
   fetchAndRenderUserChips();
 }
@@ -6357,16 +6368,18 @@ async function loadAccountMgmt(){
 }
 
 async function toggleUserVisibility(userId,hidden){
-  if(!GH.writeMode){showSyncBar('쓰기 모드를 먼저 활성화해주세요','#e57373');return;}
+  if(!GH.writeMode||!GH.token){
+    showSyncBar('⚙️ 설정 탭에서 쓰기 모드를 먼저 활성화해주세요','#ef9f27');
+    return;
+  }
   try{
-    var {users,sha}=await fetchUsers();
+    var {users}=await fetchUsers();
     var u=users.find(x=>x.id===userId);
-    if(!u)return;
+    if(!u){showSyncBar('사용자를 찾을 수 없습니다','#e57373');return;}
     u.hidden=hidden;
     await ghPut('data/user.json',{users,updatedAt:new Date().toISOString()});
-    showToast(hidden?`👁 ${u.name} 계정을 숨겼습니다`:`✅ ${u.name} 계정을 표시합니다`);
-    loadAccountMgmt();
-    /* 로그인 화면 칩 갱신 */
+    showToast(hidden?'👁 '+u.name+' 계정을 숨겼습니다':'✅ '+u.name+' 계정을 표시합니다');
+    await loadAccountMgmt();
     fetchAndRenderUserChips();
   }catch(e){showSyncBar('저장 실패: '+e.message,'#e57373');}
 }
