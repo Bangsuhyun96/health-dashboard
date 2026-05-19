@@ -526,6 +526,15 @@ body.app-ready #theme-toggle{display:flex;}
 .timeline-nut-row{display:flex;gap:8px;font-size:10px;color:#888;}
 .timeline-nut-val{font-weight:700;color:var(--text-primary,#555);}
 .timeline-edit-hint{font-size:9px;color:#7b72e9;font-weight:600;margin-top:4px;text-align:right;}
+
+/* ─── 기록내역 카드 슬라이드 상세 ─── */
+.log-detail-slide{max-height:0;overflow:hidden;transition:max-height .3s ease;background:var(--surface-2,#f9f9f9);border-radius:0 0 10px 10px;margin-top:0;}
+.log-detail-slide.open{max-height:600px;}
+.log-detail-inner{padding:12px 14px;border-top:1px solid var(--border,#e8e8e8);}
+.log-detail-ex{font-size:11px;padding:4px 0;border-bottom:1px solid var(--border,#f0f0f0);line-height:1.5;}
+.log-detail-ex:last-child{border-bottom:none;}
+.log-detail-nut{display:flex;gap:10px;flex-wrap:wrap;margin-top:8px;padding-top:8px;border-top:1px solid var(--border,#f0f0f0);}
+.log-detail-nut span{font-size:11px;color:var(--text-secondary,#666);}
 /* ─── 홈화면 ─── */
 .home-wrap{padding:4px 0 20px;}
 .home-greeting{font-size:18px;font-weight:800;color:var(--text-primary,#1a1a1a);margin-bottom:2px;}
@@ -4527,26 +4536,32 @@ function renderLogHistory(){
   }
 
   /* 카드 렌더 */
+  var uid=APP.user?.id||'_';
   el.innerHTML=viewLogs.map(l=>{
+    var isClosed=lGet('v5_closed_'+uid+'_'+l.date)==='1';
     var tags=(l.exTypes||[]).map(t=>({weight:'웨이트',climbing:'클라이밍',bike:'바이크',rehab:'재활',rest:'휴식'}[t]||t))
       .map(t=>`<span class="log-tag" style="background:#f0f4ff;color:#185fa5;border-color:#b0bfee">${t}</span>`).join('');
     var exStr=l.exercises?.filter(e=>e.name).map(e=>`${e.name}${e.sets?.length?' '+e.sets.length+'세트':''}`).join(' · ')||'';
-    var foodStr=l.foods?.length?(l.foods.slice(0,3).join(', ')+(l.foods.length>3?' 외 '+(l.foods.length-3)+'개':'')):'';
     var nutStr=l.nutrition?`<span class="log-nut-item">🍽 ${l.nutrition.kcal}kcal · 단백질 ${l.nutrition.prot}g</span>`:'';
     var ankleColor=(l.ankle||0)===0?'#1d9e75':(l.ankle||0)<=3?'#ef9f27':'#e57373';
-    return`<div class="log-card" onclick="viewLogDetail('${l.date}')" style="cursor:pointer">
-      <div class="log-card-head">
-        <span class="log-date-lbl">${l.date}</span>
+    var statusBadge=isClosed?'<span style="font-size:9px;background:#e6fdf2;color:#1d9e75;padding:2px 6px;border-radius:6px;font-weight:700">✅ 마감</span>':'';
+    return`<div class="log-card" style="cursor:pointer;padding-bottom:0" onclick="toggleLogDetail('${l.date}',this)">
+      <div class="log-card-head" style="padding-bottom:10px">
+        <div style="display:flex;align-items:center;gap:6px">
+          <span class="log-date-lbl">${l.date}</span>
+          ${statusBadge}
+        </div>
         <div style="display:flex;gap:6px;align-items:center">
-          <span style="font-size:10px;color:#a0a0a0">↗ 상세</span>
-          <button class="log-del" onclick="event.stopPropagation();deleteLog('${l.date}')">삭제</button>
+          <span style="font-size:10px;color:#a0a0a0" id="log-arrow-${l.date}">▼</span>
+          ${!isClosed?`<button class="log-del" onclick="event.stopPropagation();deleteLog('${l.date}')">삭제</button>`:''}
         </div>
       </div>
-      <div class="log-tags">${tags}</div>
-      ${exStr?`<div style="font-size:10px;color:#185fa5;margin-bottom:3px">🏋️ ${exStr}</div>`:''}
-      ${foodStr?`<div style="font-size:10px;color:#555;margin-bottom:3px">🥗 ${foodStr}</div>`:''}
-      <div class="log-nut">${nutStr}<span class="log-nut-item">💤 ${l.sleep||7}h</span><span class="log-nut-item" style="color:${ankleColor}">🦶 ${l.ankle||0}/10</span><span class="log-nut-item">💧 ${((l.water||2500)/1000).toFixed(1)}L</span></div>
-      ${l.memo?`<div style="font-size:10px;color:#888;margin-top:3px">${l.memo}</div>`:''}
+      <div class="log-tags" style="padding-bottom:10px">${tags}</div>
+      ${exStr?`<div style="font-size:10px;color:#185fa5;margin-bottom:10px">🏋️ ${exStr}</div>`:''}
+      <div class="log-nut" style="padding-bottom:10px">${nutStr}<span class="log-nut-item">💤 ${l.sleep||7}h</span><span class="log-nut-item" style="color:${ankleColor}">🦶 ${l.ankle||0}/10</span><span class="log-nut-item">💧 ${((l.water||2500)/1000).toFixed(1)}L</span></div>
+      <div class="log-detail-slide" id="log-detail-${l.date}">
+        <div class="log-detail-inner" id="log-detail-inner-${l.date}"></div>
+      </div>
     </div>`;
   }).join('');
 }
@@ -5575,6 +5590,49 @@ function showToast(msg){
   clearTimeout(t._timer);t._timer=setTimeout(()=>{t.style.opacity='0';t.style.transition='opacity .5s';setTimeout(()=>{t.style.display='none';t.style.opacity='1';t.style.transition='';},500);},2500);
 }
 
+/* ─── 기록내역 카드 슬라이드 토글 ─── */
+function toggleLogDetail(date, cardEl){
+  var slide=document.getElementById('log-detail-'+date);
+  var inner=document.getElementById('log-detail-inner-'+date);
+  var arrow=document.getElementById('log-arrow-'+date);
+  if(!slide||!inner)return;
+
+  var isOpen=slide.classList.contains('open');
+  /* 다른 열린 것 닫기 */
+  document.querySelectorAll('.log-detail-slide.open').forEach(s=>{
+    s.classList.remove('open');
+    var otherDate=s.id.replace('log-detail-','');
+    var otherArrow=document.getElementById('log-arrow-'+otherDate);
+    if(otherArrow)otherArrow.textContent='▼';
+  });
+
+  if(isOpen){arrow.textContent='▼';return;}
+
+  /* 상세 내용 생성 */
+  var uid=APP.user?.id||'_';
+  var isClosed=lGet('v5_closed_'+uid+'_'+date)==='1';
+  var log=getStore('logs').find(l=>l.date===date);
+  if(!log){slide.classList.add('open');inner.innerHTML='<div style="color:#bbb;font-size:12px">기록 없음</div>';arrow.textContent='▲';return;}
+
+  var exLines=(log.exercises||[]).filter(e=>e.name&&e.sets?.length).map(e=>{
+    var best=e.sets.reduce((m,s)=>parseFloat(s.kg||0)>parseFloat(m.kg||0)?s:m,e.sets[0]);
+    var setsStr=e.sets.map((s,i)=>`${i+1}세트 ${s.kg?s.kg+'kg':''}${s.reps?' × '+s.reps:''}`).join(' · ');
+    return`<div class="log-detail-ex"><b style="color:#185fa5">${e.name}</b> ${e.sets.length}세트${best?.kg?' · 최대 '+best.kg+'kg':''}<br><span style="color:#aaa;font-size:10px">${setsStr}</span></div>`;
+  }).join('');
+  var nutHtml=log.nutrition?`<div class="log-detail-nut">
+    <span>🍗 단백질 <b>${log.nutrition.prot||0}g</b></span>
+    <span>🔥 칼로리 <b>${log.nutrition.kcal||0}</b></span>
+    <span>탄수 <b>${log.nutrition.carb||0}g</b></span>
+    <span>지방 <b>${log.nutrition.fat||0}g</b></span>
+  </div>`:'';
+  var memo=log.memo?`<div style="font-size:11px;color:#888;margin-top:8px">📝 ${log.memo}</div>`:'';
+  var editBtn=!isClosed?`<button onclick="goTodayRecord('${date}')" style="font-family:inherit;font-size:11px;font-weight:700;padding:7px 14px;border:none;border-radius:8px;background:#7b72e9;color:#fff;cursor:pointer;margin-top:10px;width:100%">✏️ 기록하기에서 수정</button>`
+    :`<div style="margin-top:10px;padding:7px 12px;background:#e6fdf2;border-radius:8px;font-size:11px;color:#1d9e75;text-align:center;font-weight:700">✅ 마감된 기록 — 수정 불가</div>`;
+
+  inner.innerHTML=(exLines||'')+nutHtml+memo+editBtn;
+  slide.classList.add('open');
+  arrow.textContent='▲';
+}
 /* ─── 기록내역 상세보기 (기록하기 탭 이동 없이) ─── */
 function viewLogDetail(date){
   var uid=APP.user?.id||'_';
