@@ -5626,8 +5626,7 @@ function toggleLogDetail(date, cardEl){
     <span>지방 <b>${log.nutrition.fat||0}g</b></span>
   </div>`:'';
   var memo=log.memo?`<div style="font-size:11px;color:#888;margin-top:8px">📝 ${log.memo}</div>`:'';
-  var editBtn=!isClosed?`<button onclick="goTodayRecord('${date}')" style="font-family:inherit;font-size:11px;font-weight:700;padding:7px 14px;border:none;border-radius:8px;background:#7b72e9;color:#fff;cursor:pointer;margin-top:10px;width:100%">✏️ 기록하기에서 수정</button>`
-    :`<div style="margin-top:10px;padding:7px 12px;background:#e6fdf2;border-radius:8px;font-size:11px;color:#1d9e75;text-align:center;font-weight:700">✅ 마감된 기록 — 수정 불가</div>`;
+  var editBtn=!isClosed?`<button onclick="goTodayRecord('${date}')" style="font-family:inherit;font-size:11px;font-weight:700;padding:7px 14px;border:none;border-radius:8px;background:#7b72e9;color:#fff;cursor:pointer;margin-top:10px;width:100%">✏️ 기록하기에서 수정</button>`:'';
 
   inner.innerHTML=(exLines||'')+nutHtml+memo+editBtn;
   slide.classList.add('open');
