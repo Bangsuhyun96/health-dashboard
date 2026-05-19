@@ -5501,18 +5501,16 @@ function showToast(msg){
 
 function goTodayRecord(date){
   var targetDate=date||new Date().toISOString().slice(0,10);
-  var today=new Date().toISOString().slice(0,10);
   /* 오늘탭으로 전환 */
   var catBtn=document.querySelector('.cat-tab-today');if(catBtn)setCat('today',catBtn);
-  /* 기록하기 서브탭 직접 활성화 (setPage 우회 — initLogTab 중복 방지) */
+  /* 기록하기 서브탭 직접 활성화 */
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('on'));
   var dp=document.getElementById('l-daily');if(dp)dp.classList.add('on');
   document.querySelectorAll('#sub-today .sub-tab').forEach(b=>b.classList.remove('on-today'));
-  var allSubs=Array.from(document.querySelectorAll('#sub-today .sub-tab'));
-  var dailyBtn=allSubs.find(b=>b.getAttribute('onclick')?.includes('l-daily'));
+  var dailyBtn=Array.from(document.querySelectorAll('#sub-today .sub-tab')).find(b=>b.getAttribute('onclick')?.includes('l-daily'));
   if(dailyBtn)dailyBtn.classList.add('on-today');
+  requestWakeLock();
 
-  /* 메모리 초기화 후 해당 날짜 기록 로드 */
   resetDailyLog();
   var uid=APP.user?.id||'_';
   var isClosed=lGet('v5_closed_'+uid+'_'+targetDate)==='1';
@@ -5523,15 +5521,17 @@ function goTodayRecord(date){
   if(isClosed){
     if(lf)lf.style.display='none';
     if(cb)cb.style.display='none';
+    if(cv)cv.style.display='block';
     renderClosedView(targetDate);
+    /* 마감 상태에선 initLogTab 렌더 불필요 — 목록류만 갱신 */
+    renderLogHistory();
   }else{
     if(cv)cv.style.display='none';
     if(lf)lf.style.display='';
     if(cb)cb.style.display='';
-    /* 해당 날짜 기록 로드 */
     setTimeout(()=>loadLogToDaily(targetDate),50);
+    initLogTab();
   }
-  initLogTab();
 }
 function renderHome(){
   var p=APP.profile||{};
@@ -5756,18 +5756,18 @@ function setPage(pageId,btn,cat){
     var lf=document.getElementById('l-daily-form');
     var cb=document.getElementById('close-log-btn');
     if(isClosed){
-      /* 마감 상태 — 폼 숨기고 요약 뷰 */
       if(lf)lf.style.display='none';
       if(cb)cb.style.display='none';
+      if(cv)cv.style.display='block';
       renderClosedView(today);
+      renderLogHistory();
     }else{
-      /* 정상 — 메모리 초기화 + 오늘 기록 로드 + 폼 표시 */
       if(cv)cv.style.display='none';
       if(lf)lf.style.display='';
       if(cb)cb.style.display='';
       loadTodayToMemory();
+      initLogTab();
     }
-    initLogTab();
   }
   else{releaseWakeLock();}
   if(pageId==='l-inbody'){
