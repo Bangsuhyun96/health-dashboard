@@ -5464,22 +5464,6 @@ function setCat(cat,btn){
   /* 탭별 초기화 */
   if(cat==='home'){renderHome();}
   if(cat==='today'){
-    var _today=new Date().toISOString().slice(0,10);
-    var _uid=APP.user?.id||'_';
-    var _isClosed=lGet('v5_closed_'+_uid+'_'+_today)==='1';
-    var _cv=document.getElementById('log-closed-view');
-    var _lf=document.getElementById('l-daily-form');
-    var _cb=document.getElementById('close-log-btn');
-    if(_isClosed){
-      if(_lf)_lf.style.display='none';
-      if(_cb)_cb.style.display='none';
-      if(_cv){_cv.style.display='block';renderClosedView(_today);}
-    }else{
-      if(_cv)_cv.style.display='none';
-      if(_lf)_lf.style.display='';
-      if(_cb)_cb.style.display='';
-      loadTodayToMemory();
-    }
     initLogTab();
   }
   if(cat==='train'){renderExDBList();renderInbodyHistory();renderLiftHistory();}
