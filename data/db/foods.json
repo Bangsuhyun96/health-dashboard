@@ -550,6 +550,17 @@
       "carb": 4,
       "fat": 20,
       "verified": true
+    },
+    {
+      "id": "food_1779149537158",
+      "name": "매버릭치킨스테이크",
+      "category": "단백질",
+      "unit": "200g",
+      "kcal": 230,
+      "prot": 20,
+      "carb": 10,
+      "fat": 11,
+      "verified": true
     }
   ]
 }
