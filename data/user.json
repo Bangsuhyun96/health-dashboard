@@ -11,20 +11,7 @@
       "weight": 66.1,
       "createdAt": "2026-05-14",
       "onboardingDone": true
-    },
-    {
-      "id": "user5261",
-      "name": "테스터 / 비밀번호 : 1234",
-      "passwordHash": "5004eb5098dce516b1ef55641106dd2a43fc44d2b2b627e132450b25619fe1b4",
-      "avatar": "🏃",
-      "age": 22,
-      "gender": "male",
-      "height": 150,
-      "weight": 55,
-      "createdAt": "2026-05-18",
-      "onboardingDone": false,
-      "hidden": true
     }
   ],
-  "updatedAt": "2026-05-19T02:01:25.085Z"
+  "updatedAt": "2026-05-19T02:14:29.027Z"
 }
