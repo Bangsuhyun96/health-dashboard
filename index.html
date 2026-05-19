@@ -2216,6 +2216,12 @@ function doLogout(){
   /* 설정 UI 상태 초기화 */
   var unlockRes=document.getElementById('unlock-result');
   if(unlockRes)unlockRes.textContent='';
+  /* 탭 상태 초기화 — 홈탭으로 */
+  document.querySelectorAll('.cat-tab').forEach(b=>b.classList.remove('on'));
+  var homeTab=document.querySelector('.cat-tab-home');if(homeTab)homeTab.classList.add('on');
+  document.querySelectorAll('.sub-tabs').forEach(s=>s.style.display='none');
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('on'));
+  var homePage=document.getElementById('h-home');if(homePage)homePage.classList.add('on');
   showScreen('login');
   fetchAndRenderUserChips();
 }
@@ -6395,33 +6401,33 @@ async function toggleUserVisibility(userId,hidden){
 }
 
 async function deleteUserAccount(userId,userName){
-  if(!GH.writeMode){showSyncBar('쓰기 모드를 먼저 활성화해주세요','#e57373');return;}
-  if(!confirm(`"${userName}" 계정을 삭제할까요?\n\n⚠️ 해당 계정의 모든 기록/인바디/프로필 데이터가 GitHub에서 삭제됩니다.\n이 작업은 되돌릴 수 없습니다.`))return;
+  if(!GH.writeMode||!GH.token){showSyncBar('쓰기 모드를 먼저 활성화해주세요','#e57373');return;}
+  if(!confirm('"'+userName+'" 계정을 삭제할까요?\n\n⚠️ 해당 계정의 모든 기록/인바디/프로필 데이터가 GitHub에서 삭제됩니다.\n이 작업은 되돌릴 수 없습니다.'))return;
 
+  showSyncBar('삭제 중...','#185fa5');
   try{
-    /* 1. user.json에서 제거 */
-    var {users}=await fetchUsers();
-    var filtered=users.filter(u=>u.id!==userId);
-    await ghPut('data/user.json',{users:filtered,updatedAt:new Date().toISOString()});
-
-    /* 2. 해당 유저 데이터 파일 삭제 시도 (없어도 계속) */
+    /* 1. 파일 삭제 먼저 (순차 실행 — SHA 충돌 방지) */
     var paths=[
       'data/users/'+userId+'/profile.json',
       'data/users/'+userId+'/inbody.json',
       'data/users/'+userId+'/lifts.json',
     ];
-    /* 월별 로그는 SHA 조회 후 삭제 — 간단히 최근 12개월만 */
     var now=new Date();
     for(var m=0;m<12;m++){
       var d=new Date(now.getFullYear(),now.getMonth()-m,1);
       paths.push('data/users/'+userId+'/logs/'+d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'.json');
     }
-    for(var path of paths){
+    for(var i=0;i<paths.length;i++){
       try{
-        var sha=await ghGetSha(path);
-        if(sha)await ghDelete(path,sha);
-      }catch(e){}
+        var sha=await ghGetSha(paths[i]);
+        if(sha)await ghDelete(paths[i],sha);
+      }catch(e){/* 없는 파일은 무시 */}
     }
+
+    /* 2. user.json에서 제거 (마지막에 — SHA 충돌 방지) */
+    var {users}=await fetchUsers();
+    var filtered=users.filter(u=>u.id!==userId);
+    await ghPut('data/user.json',{users:filtered,updatedAt:new Date().toISOString()});
 
     showToast('🗑 '+userName+' 계정이 삭제됐습니다');
     loadAccountMgmt();
