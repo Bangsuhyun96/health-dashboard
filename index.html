@@ -4534,7 +4534,7 @@ function renderLogHistory(){
     var foodStr=l.foods?.length?(l.foods.slice(0,3).join(', ')+(l.foods.length>3?' 외 '+(l.foods.length-3)+'개':'')):'';
     var nutStr=l.nutrition?`<span class="log-nut-item">🍽 ${l.nutrition.kcal}kcal · 단백질 ${l.nutrition.prot}g</span>`:'';
     var ankleColor=(l.ankle||0)===0?'#1d9e75':(l.ankle||0)<=3?'#ef9f27':'#e57373';
-    return`<div class="log-card" onclick="loadLogToDaily('${l.date}')" style="cursor:pointer">
+    return`<div class="log-card" onclick="viewLogDetail('${l.date}')" style="cursor:pointer">
       <div class="log-card-head">
         <span class="log-date-lbl">${l.date}</span>
         <div style="display:flex;gap:6px;align-items:center">
@@ -5575,6 +5575,58 @@ function showToast(msg){
   clearTimeout(t._timer);t._timer=setTimeout(()=>{t.style.opacity='0';t.style.transition='opacity .5s';setTimeout(()=>{t.style.display='none';t.style.opacity='1';t.style.transition='';},500);},2500);
 }
 
+/* ─── 기록내역 상세보기 (기록하기 탭 이동 없이) ─── */
+function viewLogDetail(date){
+  var uid=APP.user?.id||'_';
+  var isClosed=lGet('v5_closed_'+uid+'_'+date)==='1';
+  var log=getStore('logs').find(l=>l.date===date);
+  if(!log)return;
+
+  var d=new Date(date);
+  var days=['일','월','화','수','목','금','토'];
+  var dateLabel=`${d.getMonth()+1}월 ${d.getDate()}일 (${days[d.getDay()]})`;
+  var typeLabel={weight:'웨이트 💪',climbing:'클라이밍 🧗',bike:'바이크 🚴',rest:'휴식 😴',rehab:'재활 🩺'};
+  var typeBg={weight:'#f0f4ff',climbing:'#e6fdf2',bike:'#fff7e6',rest:'#f5f5f5',rehab:'#f3f0ff'};
+  var typeColor={weight:'#185fa5',climbing:'#1d9e75',bike:'#ef9f27',rest:'#aaa',rehab:'#7b72e9'};
+
+  var tags=(log.exTypes||[]).map(t=>`<span style="font-size:10px;font-weight:700;padding:3px 8px;border-radius:10px;background:${typeBg[t]||'#f5f5f5'};color:${typeColor[t]||'#888'}">${typeLabel[t]||t}</span>`).join(' ');
+  var exLines=(log.exercises||[]).filter(e=>e.name&&e.sets?.length).map(e=>{
+    var best=e.sets.reduce((m,s)=>parseFloat(s.kg||0)>parseFloat(m.kg||0)?s:m,e.sets[0]);
+    var setsStr=e.sets.map((s,i)=>`${i+1}세트 ${s.kg?s.kg+'kg':''}${s.reps?' × '+s.reps:''}`).join(' · ');
+    return`<div style="padding:5px 0;border-bottom:1px solid #f5f5f5;font-size:12px"><b style="color:#185fa5">${e.name}</b> ${e.sets.length}세트${best?.kg?' · 최대 '+best.kg+'kg':''}<br><span style="color:#888;font-size:10px">${setsStr}</span></div>`;
+  }).join('');
+  var nutHtml=log.nutrition?`<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;padding-top:8px;border-top:1px solid #f0f0f0">
+    <span style="font-size:11px">🍗 단백질 <b>${log.nutrition.prot||0}g</b></span>
+    <span style="font-size:11px">🔥 칼로리 <b>${log.nutrition.kcal||0}</b></span>
+    <span style="font-size:11px">탄수 <b>${log.nutrition.carb||0}g</b></span>
+    <span style="font-size:11px">지방 <b>${log.nutrition.fat||0}g</b></span>
+  </div>`:'';
+
+  /* 기존 detailEl 활용 또는 모달 */
+  var existing=document.getElementById('log-detail-modal');
+  if(existing)existing.remove();
+  var modal=document.createElement('div');
+  modal.id='log-detail-modal';
+  modal.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9990;display:flex;align-items:flex-end;justify-content:center';
+  modal.onclick=function(e){if(e.target===modal)modal.remove();};
+  modal.innerHTML=`<div style="background:var(--surface,#fff);border-radius:16px 16px 0 0;padding:20px;width:100%;max-width:480px;max-height:80vh;overflow-y:auto">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+      <div style="font-size:14px;font-weight:800;color:var(--text-primary,#1a1a1a)">📅 ${dateLabel} ${isClosed?'<span style="font-size:10px;background:#e6fdf2;color:#1d9e75;padding:2px 8px;border-radius:10px;font-weight:700">✅ 마감</span>':''}</div>
+      <button onclick="document.getElementById('log-detail-modal').remove()" style="background:none;border:none;font-size:20px;cursor:pointer;color:#888;padding:0">×</button>
+    </div>
+    <div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:10px">${tags}</div>
+    ${exLines?`<div style="margin-bottom:8px">${exLines}</div>`:''}
+    ${nutHtml}
+    ${log.memo?`<div style="font-size:11px;color:#888;margin-top:8px;padding-top:8px;border-top:1px solid #f0f0f0">📝 ${log.memo}</div>`:''}
+    <div style="display:flex;gap:8px;margin-top:14px">
+      <button onclick="document.getElementById('log-detail-modal').remove();goTodayRecord('${date}')" 
+        style="flex:1;font-family:inherit;font-size:13px;font-weight:700;padding:11px;border:none;border-radius:10px;background:#7b72e9;color:#fff;cursor:pointer">
+        ${isClosed?'🔓 수정하기':'✏️ 기록하기에서 수정'}
+      </button>
+    </div>
+  </div>`;
+  document.body.appendChild(modal);
+}
 function goTodayRecord(date){
   var targetDate=date||new Date().toISOString().slice(0,10);
   /* 오늘탭으로 전환 */
