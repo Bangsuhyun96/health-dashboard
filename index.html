@@ -5501,37 +5501,37 @@ function showToast(msg){
 
 function goTodayRecord(date){
   var targetDate=date||new Date().toISOString().slice(0,10);
-  /* 오늘탭 → 기록하기 서브탭으로 이동 */
-  var catBtn=document.querySelector('.cat-tab-today');
-  if(catBtn)setCat('today',catBtn);
-  var allSubs=document.querySelectorAll('#sub-today .sub-tab');
-  var dailyBtn=Array.from(allSubs).find(b=>b.getAttribute('onclick')?.includes('l-daily'));
-  if(dailyBtn){
-    /* setPage 호출 없이 직접 페이지 전환 (마감 체크는 아래에서) */
-    document.querySelectorAll('.page').forEach(p=>p.classList.remove('on'));
-    var dp=document.getElementById('l-daily');if(dp)dp.classList.add('on');
-    subBtns=Array.from(document.querySelectorAll('#sub-today .sub-tab'));
-    subBtns.forEach(b=>b.classList.remove('on-today'));
-    if(dailyBtn)dailyBtn.classList.add('on-today');
+  var today=new Date().toISOString().slice(0,10);
+  /* 오늘탭으로 전환 */
+  var catBtn=document.querySelector('.cat-tab-today');if(catBtn)setCat('today',catBtn);
+  /* 기록하기 서브탭 직접 활성화 (setPage 우회 — initLogTab 중복 방지) */
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('on'));
+  var dp=document.getElementById('l-daily');if(dp)dp.classList.add('on');
+  document.querySelectorAll('#sub-today .sub-tab').forEach(b=>b.classList.remove('on-today'));
+  var allSubs=Array.from(document.querySelectorAll('#sub-today .sub-tab'));
+  var dailyBtn=allSubs.find(b=>b.getAttribute('onclick')?.includes('l-daily'));
+  if(dailyBtn)dailyBtn.classList.add('on-today');
+
+  /* 메모리 초기화 후 해당 날짜 기록 로드 */
+  resetDailyLog();
+  var uid=APP.user?.id||'_';
+  var isClosed=lGet('v5_closed_'+uid+'_'+targetDate)==='1';
+  var cv=document.getElementById('log-closed-view');
+  var lf=document.getElementById('l-daily-form');
+  var cb=document.getElementById('close-log-btn');
+
+  if(isClosed){
+    if(lf)lf.style.display='none';
+    if(cb)cb.style.display='none';
+    renderClosedView(targetDate);
+  }else{
+    if(cv)cv.style.display='none';
+    if(lf)lf.style.display='';
+    if(cb)cb.style.display='';
+    /* 해당 날짜 기록 로드 */
+    setTimeout(()=>loadLogToDaily(targetDate),50);
   }
-  /* 해당 날짜 기록 로드 */
-  setTimeout(()=>{
-    loadLogToDaily(targetDate);
-    /* 해당 날짜 마감 여부 확인 */
-    var isClosed=lGet('v5_closed_'+(APP.user?.id||'_')+'_'+targetDate)==='1';
-    var cv=document.getElementById('log-closed-view');
-    var lf=document.getElementById('l-daily-form');
-    var cb=document.getElementById('close-log-btn');
-    if(isClosed){
-      if(lf)lf.style.display='none';
-      if(cb)cb.style.display='none';
-      renderClosedView(targetDate);
-    }else{
-      if(cv)cv.style.display='none';
-      if(lf)lf.style.display='';
-      if(cb)cb.style.display='';
-    }
-  },100);
+  initLogTab();
 }
 function renderHome(){
   var p=APP.profile||{};
@@ -5748,22 +5748,26 @@ function setPage(pageId,btn,cat){
   if(pageId==='e-st'){var p=APP.profile||{};renderCurrentState(p);}
   if(pageId==='e-up'){var p=APP.profile||{};renderUpperBody(p);renderLiftGraph('벤치프레스',document.querySelector('#lift-graph-btns .filter-btn.on'));}
   if(pageId==='l-daily'){
-    initLogTab();requestWakeLock();
-    /* 마감 여부: 현재 log-date 기준 (goTodayRecord에서 날짜 세팅 후 별도 확인하므로 여기선 오늘만) */
-    var todayDate=new Date().toISOString().slice(0,10);
-    var isClosed=lGet('v5_closed_'+(APP.user?.id||'_')+'_'+todayDate)==='1';
+    requestWakeLock();
+    var today=new Date().toISOString().slice(0,10);
+    var uid=APP.user?.id||'_';
+    var isClosed=lGet('v5_closed_'+uid+'_'+today)==='1';
     var cv=document.getElementById('log-closed-view');
     var lf=document.getElementById('l-daily-form');
     var cb=document.getElementById('close-log-btn');
     if(isClosed){
+      /* 마감 상태 — 폼 숨기고 요약 뷰 */
       if(lf)lf.style.display='none';
       if(cb)cb.style.display='none';
-      renderClosedView(todayDate);
+      renderClosedView(today);
     }else{
+      /* 정상 — 메모리 초기화 + 오늘 기록 로드 + 폼 표시 */
       if(cv)cv.style.display='none';
       if(lf)lf.style.display='';
       if(cb)cb.style.display='';
+      loadTodayToMemory();
     }
+    initLogTab();
   }
   else{releaseWakeLock();}
   if(pageId==='l-inbody'){
@@ -5779,63 +5783,23 @@ function setPage(pageId,btn,cat){
   }
 }
 function initLogTab(){
-  /* 날짜는 이미 세팅된 경우(goTodayRecord) 유지, 아니면 오늘로 */
-  var dateEl=document.getElementById('log-date');
-  var today=new Date().toISOString().slice(0,10);
-  var currentDate=dateEl?.value||'';
-
-  /* goTodayRecord로 진입한 경우(과거날짜)가 아니면 항상 오늘 기준으로 초기화 */
-  if(!currentDate||currentDate===today){
-    setToday();
-    /* 메모리 초기화 */
-    resetDailyLog();
-    /* 오늘 기록이 있으면 로드 */
-    var logs=getStore('logs');
-    var todayLog=logs.find(l=>l.date===today);
-    if(todayLog){
-      /* 조용히 로드 — 화면 전환 없이 메모리만 복원 */
-      selectedExTypes=[...(todayLog.exTypes||[])];
-      document.querySelectorAll('#ex-type-btns .type-btn').forEach(b=>
-        b.classList.toggle('on',selectedExTypes.includes(b.getAttribute('data-val'))));
-      var hasWeight=selectedExTypes.includes('weight');
-      var hasCardio=selectedExTypes.includes('climbing')||selectedExTypes.includes('bike');
-      var ww=document.getElementById('weight-log-wrap');if(ww)ww.style.display=hasWeight?'block':'none';
-      var cw=document.getElementById('cardio-time-wrap');if(cw)cw.style.display=hasCardio?'block':'none';
-      exerciseBlocks=(todayLog.exercises||[]).filter(e=>e.name).map((e,i)=>({
-        id:'ex_loaded_'+i,name:e.name,exId:e.exId||'',sets:(e.sets||[{kg:'',reps:''}])
-      }));
-      foodEntries=(todayLog.foods||[]).map((f,i)=>({id:'food_loaded_'+i,text:f}));
-      /* 기타 필드 */
-      var sleepEl=document.getElementById('log-sleep');if(sleepEl)sleepEl.value=todayLog.sleep||7;
-      var waterEl=document.getElementById('log-water');if(waterEl)waterEl.value=todayLog.water||1800;
-      var memoEl=document.getElementById('log-memo');if(memoEl)memoEl.value=todayLog.memo||'';
-      var ankleEl=document.getElementById('log-ankle');if(ankleEl)ankleEl.value=todayLog.ankle||0;
-      if(todayLog.climbingMin){var ce=document.getElementById('cardio-climbing');if(ce)ce.value=todayLog.climbingMin;}
-      if(todayLog.bikeMin){var be=document.getElementById('cardio-bike');if(be)be.value=todayLog.bikeMin;}
-    }
-  }
-
+  /* 순수 초기화 — 날짜/마감/데이터 로드는 호출부에서 처리 */
   initSuppChecks();ensureExDatalist();ensureFoodDatalist();
   renderExerciseBlocks();renderFoodEntries();
   renderLogHistory();renderInbodyHistory();renderLiftHistory();
   renderExDBList();renderFoodDBList();
   updateSyncStatusUI();updateWaterComment();
-  /* L-2: 오늘 기록 여부 안내 배너 */
   var todayStr=new Date().toISOString().slice(0,10);
-  var logs=getStore('logs');
-  var hasTodayLog=logs.some(l=>l.date===todayStr);
+  var hasTodayLog=getStore('logs').some(l=>l.date===todayStr);
   var banner=document.getElementById('daily-record-banner');
   if(banner){
     if(hasTodayLog){
       banner.style.display='block';
       banner.innerHTML='<span style="color:#0a5c46;font-size:12px;font-weight:600">✓ 오늘 기록이 있어요. 수정하면 덮어씌워집니다.</span>';
       banner.style.background='#e6fdf2';banner.style.border='1.5px solid #1d9e75';
-    }else{
-      banner.style.display='none';
-    }
+    }else{banner.style.display='none';}
   }
   showTodayBanner();
-  /* 마지막 pull 시간 표시 */
   var uid=APP.user?.id;
   var ps=document.getElementById('push-status');
   if(ps&&uid){
@@ -5843,6 +5807,32 @@ function initLogTab(){
     if(last)ps.textContent='마지막 동기화: '+new Date(last).toLocaleString('ko');
     else ps.textContent='아직 동기화 안 됨 — ⬇ 불러오기로 GitHub 데이터를 가져오세요';
   }
+}
+
+/* 오늘 기록을 메모리에 로드 (기록하기 탭 직접 진입 시) */
+function loadTodayToMemory(){
+  var today=new Date().toISOString().slice(0,10);
+  resetDailyLog();setToday();
+  var todayLog=getStore('logs').find(l=>l.date===today);
+  if(!todayLog)return;
+  selectedExTypes=[...(todayLog.exTypes||[])];
+  document.querySelectorAll('#ex-type-btns .type-btn').forEach(b=>
+    b.classList.toggle('on',selectedExTypes.includes(b.getAttribute('data-val'))));
+  var hasWeight=selectedExTypes.includes('weight');
+  var hasCardio=selectedExTypes.includes('climbing')||selectedExTypes.includes('bike');
+  var ww=document.getElementById('weight-log-wrap');if(ww)ww.style.display=hasWeight?'block':'none';
+  var cw=document.getElementById('cardio-time-wrap');if(cw)cw.style.display=hasCardio?'block':'none';
+  exerciseBlocks=(todayLog.exercises||[]).filter(e=>e.name).map((e,i)=>({
+    id:'ex_loaded_'+i,name:e.name,exId:e.exId||'',sets:(e.sets||[{kg:'',reps:''}])
+  }));
+  foodEntries=(todayLog.foods||[]).map((f,i)=>({id:'food_loaded_'+i,text:f}));
+  var sl=document.getElementById('log-sleep');if(sl)sl.value=todayLog.sleep||7;
+  var wl=document.getElementById('log-water');if(wl)wl.value=todayLog.water||1800;
+  var ml=document.getElementById('log-memo');if(ml)ml.value=todayLog.memo||'';
+  var al=document.getElementById('log-ankle');if(al)al.value=todayLog.ankle||0;
+  if(todayLog.climbingMin){var ce=document.getElementById('cardio-climbing');if(ce)ce.value=todayLog.climbingMin;}
+  if(todayLog.bikeMin){var be=document.getElementById('cardio-bike');if(be)be.value=todayLog.bikeMin;}
+  renderExerciseBlocks();renderFoodEntries();
 }
 
 /* ─── 자동 로그인 체크 ─── */
