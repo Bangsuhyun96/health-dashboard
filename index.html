@@ -1277,7 +1277,7 @@ body:not(.light-mode) .home-ai::before{background:#0e0e14;}
 <!-- 일일기록 -->
 <div id="l-daily" class="page">
 <div id="daily-record-banner" style="display:none;padding:10px 14px;border-radius:10px;margin-bottom:10px;"></div>
-<div id="l-daily-form">
+<div id="l-daily-form" style="display:none">
 
 <!-- ① 날짜 + 초기화 -->
 <div class="card">
@@ -1827,15 +1827,30 @@ body:not(.light-mode) .home-ai::before{background:#0e0e14;}
 <!-- 링크 -->
  <div id="l-link" class="page">
   <div class="card">
-    <div class="ctitle">관련 링크</div>
-    <div id="e-tr-c">
-      <div class="row">
-        <span class="rk">몬헌 TU4.5</span>
-        <span class="rv"><a href="https://docs.google.com/spreadsheets/d/16ek7bFxO44iQuc9spl8BC8iqtctB4Sy9AwAaAwj3LPc/edit?ouid=117825129676522391493&usp=sheets_home&ths=true">MHWS:TU4 equip guide</a></span>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+      <div class="ctitle" style="margin:0;border:none;padding:0">🔗 관련 링크</div>
+      <button onclick="openLinkModal()" style="font-family:inherit;font-size:11px;font-weight:700;padding:5px 12px;border:1.5px solid #7b72e9;border-radius:8px;background:#f3f0ff;color:#7b72e9;cursor:pointer">+ 추가</button>
+    </div>
+    <div id="link-list"></div>
+    <div style="font-size:10px;color:#bbb;margin-top:8px">클릭하면 새 탭으로 열립니다</div>
+  </div>
+
+  <!-- 링크 추가/수정 모달 -->
+  <div id="link-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:999;align-items:center;justify-content:center">
+    <div style="background:var(--surface,#fff);border-radius:16px;padding:20px;width:calc(100% - 40px);max-width:360px">
+      <div style="font-size:14px;font-weight:700;margin-bottom:14px;color:var(--text-primary,#1a1a1a)" id="link-modal-title">링크 추가</div>
+      <input type="hidden" id="link-edit-idx" value="-1">
+      <div style="margin-bottom:10px">
+        <div style="font-size:10px;color:#888;margin-bottom:4px">타이틀</div>
+        <input id="link-title-input" type="text" placeholder="예: 몬헌 장비 가이드" style="font-family:inherit;font-size:13px;padding:9px 12px;border:1.5px solid #ddd;border-radius:8px;width:100%;box-sizing:border-box;outline:none">
       </div>
-      <div class="row">
-        <span class="rk">브롤컵 d-3</span>
-        <span class="rv"><a href="https://bangsuhyun96.github.io/health-dashboard/sample/brawl/stat-dashboard.html">브롤컵 d-3</a></span>
+      <div style="margin-bottom:16px">
+        <div style="font-size:10px;color:#888;margin-bottom:4px">URL</div>
+        <input id="link-url-input" type="url" placeholder="https://" style="font-family:inherit;font-size:13px;padding:9px 12px;border:1.5px solid #ddd;border-radius:8px;width:100%;box-sizing:border-box;outline:none">
+      </div>
+      <div style="display:flex;gap:8px">
+        <button onclick="closeLinkModal()" style="font-family:inherit;font-size:12px;font-weight:600;padding:10px;border:1.5px solid #ddd;border-radius:10px;background:var(--surface-2,#f5f5f5);color:#888;cursor:pointer;flex:1">취소</button>
+        <button onclick="saveLink()" style="font-family:inherit;font-size:12px;font-weight:700;padding:10px;border:none;border-radius:10px;background:#7b72e9;color:#fff;cursor:pointer;flex:2">저장</button>
       </div>
     </div>
   </div>
@@ -1874,6 +1889,67 @@ function openExVideo(name){
   window.open('https://www.youtube.com/results?search_query='+encodeURIComponent(name+' 운동 자세 방법'),'_blank');
 }
 
+/* ─── 링크 관리 ─── */
+var DEFAULT_LINKS=[
+  {title:'몬헌 TU4.5',url:'https://docs.google.com/spreadsheets/d/16ek7bFxO44iQuc9spl8BC8iqtctB4Sy9AwAaAwj3LPc/edit'},
+  {title:'브롤컵 d-3',url:'https://bangsuhyun96.github.io/health-dashboard/sample/brawl/stat-dashboard.html'},
+];
+function getLinks(){return lGet(uk('links'))||DEFAULT_LINKS;}
+function saveLinks(arr){lSet(uk('links'),arr);}
+function renderLinkList(){
+  var el=document.getElementById('link-list');if(!el)return;
+  var links=getLinks();
+  if(!links.length){el.innerHTML='<div style="text-align:center;color:#bbb;font-size:12px;padding:16px">링크가 없습니다. + 추가 버튼을 눌러 추가하세요.</div>';return;}
+  el.innerHTML=links.map((l,i)=>`
+    <div style="display:flex;align-items:center;gap:8px;padding:10px 0;border-bottom:1px solid var(--border,#f0f0f0)">
+      <div style="flex:1;min-width:0;cursor:pointer" onclick="window.open('${l.url}','_blank')">
+        <div style="font-size:13px;font-weight:700;color:#7b72e9;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${l.title}</div>
+        <div style="font-size:10px;color:#bbb;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${l.url}</div>
+      </div>
+      <div style="display:flex;gap:4px;flex-shrink:0">
+        <button onclick="openLinkModal(${i})" style="font-family:inherit;font-size:10px;padding:3px 8px;border:1.5px solid #ddd;border-radius:6px;background:var(--surface-2,#f5f5f5);color:#555;cursor:pointer">수정</button>
+        <button onclick="deleteLink(${i})" style="font-family:inherit;font-size:10px;padding:3px 8px;border:1.5px solid #e57373;border-radius:6px;background:#fdecea;color:#c0392b;cursor:pointer">삭제</button>
+      </div>
+    </div>`).join('');
+}
+function openLinkModal(idx){
+  var modal=document.getElementById('link-modal');if(!modal)return;
+  var titleEl=document.getElementById('link-title-input');
+  var urlEl=document.getElementById('link-url-input');
+  var idxEl=document.getElementById('link-edit-idx');
+  var modalTitle=document.getElementById('link-modal-title');
+  if(idx!==undefined&&idx>=0){
+    var links=getLinks();var l=links[idx];
+    titleEl.value=l.title||'';urlEl.value=l.url||'';
+    idxEl.value=idx;modalTitle.textContent='링크 수정';
+  }else{
+    titleEl.value='';urlEl.value='';
+    idxEl.value=-1;modalTitle.textContent='링크 추가';
+  }
+  modal.style.display='flex';
+  setTimeout(()=>titleEl.focus(),100);
+}
+function closeLinkModal(){
+  var modal=document.getElementById('link-modal');if(modal)modal.style.display='none';
+}
+function saveLink(){
+  var title=(document.getElementById('link-title-input').value||'').trim();
+  var url=(document.getElementById('link-url-input').value||'').trim();
+  if(!title||!url){showToast('타이틀과 URL을 모두 입력해주세요');return;}
+  if(!url.startsWith('http'))url='https://'+url;
+  var links=getLinks();
+  var idx=parseInt(document.getElementById('link-edit-idx').value);
+  if(idx>=0)links[idx]={title,url};
+  else links.push({title,url});
+  saveLinks(links);
+  closeLinkModal();renderLinkList();
+  showToast('링크가 저장됐습니다 🔗');
+}
+function deleteLink(idx){
+  if(!confirm('이 링크를 삭제할까요?'))return;
+  var links=getLinks();links.splice(idx,1);
+  saveLinks(links);renderLinkList();
+}
 function toggleTheme(){
   var isLight=document.body.classList.toggle('light-mode');
   var btn=document.getElementById('theme-toggle');
@@ -2571,16 +2647,12 @@ function initApp(){
       /* 첫 접속 — 로딩 보여주고 pull 완료 후 렌더 */
       showAppLoading('GitHub에서 데이터 불러오는 중...');
       pullFromGitHub(false).then(()=>{
-        var _today=new Date().toISOString().slice(0,10);
-        if(!lGet('v5_closed_'+(APP.user?.id||'_')+'_'+_today))loadTodayToMemory();
         initLogTab();renderHome();hideAppLoading();
       }).catch(()=>{
         initLogTab();renderHome();hideAppLoading();
       });
     }else{
       /* 로컬 데이터 있음 → 즉시 렌더 후 백그라운드 pull */
-      var _today2=new Date().toISOString().slice(0,10);
-      if(!lGet('v5_closed_'+(APP.user?.id||'_')+'_'+_today2))loadTodayToMemory();
       initLogTab();
       renderHome();
       setTimeout(()=>{
@@ -2593,8 +2665,6 @@ function initApp(){
     }
   }else{
     /* pull 불필요 — 즉시 렌더 */
-    var _today3=new Date().toISOString().slice(0,10);
-    if(!lGet('v5_closed_'+(APP.user?.id||'_')+'_'+_today3))loadTodayToMemory();
     initLogTab();
     renderHome();
   }
@@ -5392,10 +5462,22 @@ function setCat(cat,btn){
   /* 탭별 초기화 */
   if(cat==='home'){renderHome();}
   if(cat==='today'){
-    var today=new Date().toISOString().slice(0,10);
-    var uid=APP.user?.id||'_';
-    var isClosed=lGet('v5_closed_'+uid+'_'+today)==='1';
-    if(!isClosed)loadTodayToMemory();
+    var _today=new Date().toISOString().slice(0,10);
+    var _uid=APP.user?.id||'_';
+    var _isClosed=lGet('v5_closed_'+_uid+'_'+_today)==='1';
+    var _cv=document.getElementById('log-closed-view');
+    var _lf=document.getElementById('l-daily-form');
+    var _cb=document.getElementById('close-log-btn');
+    if(_isClosed){
+      if(_lf)_lf.style.display='none';
+      if(_cb)_cb.style.display='none';
+      if(_cv){_cv.style.display='block';renderClosedView(_today);}
+    }else{
+      if(_cv)_cv.style.display='none';
+      if(_lf)_lf.style.display='';
+      if(_cb)_cb.style.display='';
+      loadTodayToMemory();
+    }
     initLogTab();
   }
   if(cat==='train'){renderExDBList();renderInbodyHistory();renderLiftHistory();}
@@ -5747,6 +5829,7 @@ function setPage(pageId,btn,cat){
   });
   btn.classList.add('on-'+cat);
   /* 탭별 렌더 연결 */
+  if(pageId==='l-link'){renderLinkList();}
   if(pageId==='d-sp'){renderSuppPage();}
   if(pageId==='l-sync'){setTimeout(loadAccountMgmt,300);}
   if(pageId==='l-exdb')renderExDBList();
@@ -5791,51 +5874,33 @@ function setPage(pageId,btn,cat){
   }
 }
 function initLogTab(){
-  /* 마감 여부 체크 — 어디서 호출되든 항상 오늘 날짜 기준 */
+  /* 렌더만 — 폼/마감 뷰 show/hide는 setPage/goTodayRecord/setCat에서 처리 */
   var today=new Date().toISOString().slice(0,10);
   var uid=APP.user?.id||'_';
-  var isClosed=lGet('v5_closed_'+uid+'_'+today)==='1';
-  var cv=document.getElementById('log-closed-view');
+  /* l-daily가 열려있을 때만 폼 관련 렌더 */
   var lf=document.getElementById('l-daily-form');
-  var cb=document.getElementById('close-log-btn');
-
-  if(isClosed){
-    /* 마감 상태 — 폼 완전 숨기고 요약 뷰만 */
-    if(lf)lf.style.display='none';
-    if(cb)cb.style.display='none';
-    if(cv){cv.style.display='block';renderClosedView(today);}
-    /* 목록 갱신만 */
-    renderLogHistory();renderInbodyHistory();renderLiftHistory();
-    updateSyncStatusUI();
-    var ps=document.getElementById('push-status');
-    if(ps&&uid){var last=lGet('v5_last_pull_'+uid);if(last)ps.textContent='마지막 동기화: '+new Date(last).toLocaleString('ko');}
-    return; /* 폼 렌더 스킵 */
+  if(lf&&lf.style.display!=='none'){
+    initSuppChecks();ensureExDatalist();ensureFoodDatalist();
+    renderExerciseBlocks();renderFoodEntries();
+    var hasTodayLog=getStore('logs').some(l=>l.date===today);
+    var banner=document.getElementById('daily-record-banner');
+    if(banner){
+      if(hasTodayLog){
+        banner.style.display='block';
+        banner.innerHTML='<span style="color:#0a5c46;font-size:12px;font-weight:600">✓ 오늘 기록이 있어요. 수정하면 덮어씌워집니다.</span>';
+        banner.style.background='#e6fdf2';banner.style.border='1.5px solid #1d9e75';
+      }else{banner.style.display='none';}
+    }
+    updateWaterComment();showTodayBanner();
   }
-
-  /* 정상 — 폼 표시 */
-  if(cv)cv.style.display='none';
-  if(lf)lf.style.display='';
-  if(cb)cb.style.display='';
-  initSuppChecks();ensureExDatalist();ensureFoodDatalist();
-  renderExerciseBlocks();renderFoodEntries();
   renderLogHistory();renderInbodyHistory();renderLiftHistory();
   renderExDBList();renderFoodDBList();
-  updateSyncStatusUI();updateWaterComment();
-  var hasTodayLog=getStore('logs').some(l=>l.date===today);
-  var banner=document.getElementById('daily-record-banner');
-  if(banner){
-    if(hasTodayLog){
-      banner.style.display='block';
-      banner.innerHTML='<span style="color:#0a5c46;font-size:12px;font-weight:600">✓ 오늘 기록이 있어요. 수정하면 덮어씌워집니다.</span>';
-      banner.style.background='#e6fdf2';banner.style.border='1.5px solid #1d9e75';
-    }else{banner.style.display='none';}
-  }
-  showTodayBanner();
-  var ps2=document.getElementById('push-status');
-  if(ps2&&uid){
-    var last2=lGet('v5_last_pull_'+uid);
-    if(last2)ps2.textContent='마지막 동기화: '+new Date(last2).toLocaleString('ko');
-    else ps2.textContent='아직 동기화 안 됨 — ⬇ 불러오기로 GitHub 데이터를 가져오세요';
+  updateSyncStatusUI();
+  var ps=document.getElementById('push-status');
+  if(ps&&uid){
+    var last=lGet('v5_last_pull_'+uid);
+    if(last)ps.textContent='마지막 동기화: '+new Date(last).toLocaleString('ko');
+    else ps.textContent='아직 동기화 안 됨 — ⬇ 불러오기로 GitHub 데이터를 가져오세요';
   }
 }
 
