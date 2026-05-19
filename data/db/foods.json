@@ -572,6 +572,17 @@
       "carb": 50,
       "fat": 13,
       "verified": true
+    },
+    {
+      "id": "food_1779178093091",
+      "name": "버섯 크림 오무",
+      "category": "탄수",
+      "unit": "1인분",
+      "kcal": 708,
+      "prot": 11.7,
+      "carb": 113.2,
+      "fat": 23.2,
+      "verified": true
     }
   ]
 }
