@@ -1087,17 +1087,15 @@ body:not(.light-mode) .home-ai::before{background:#0e0e14;}
   <button class="sub-tab" onclick="setPage('l-lift',this,'train')">중량추적</button>
 </div>
 <div class="sub-tabs" id="sub-stat" style="display:none">
-  <button class="sub-tab on-stat" onclick="setPage('d-tl',this,'stat')">식단플랜</button>
-  <button style="display:none;" class="sub-tab" onclick="setPage('e-tr',this,'stat')">트렌드</button>
-  <button style="display:none;" class="sub-tab" onclick="setPage('e-st',this,'stat')">현재상태</button>
-  <button style="display:none;" class="sub-tab" onclick="setPage('e-up',this,'stat')">중량현황</button>
+  <button class="sub-tab on-stat" onclick="setPage('e-tr',this,'stat')">트렌드</button>
+  <button class="sub-tab" onclick="setPage('e-st',this,'stat')">현재상태</button>
+  <button class="sub-tab" onclick="setPage('e-up',this,'stat')">중량현황</button>
+  <button class="sub-tab" onclick="setPage('d-tl',this,'stat')">식단플랜</button>
   <button class="sub-tab" onclick="setPage('d-pr',this,'stat')">🛒 식재료</button>
   <button class="sub-tab" onclick="setPage('d-sp',this,'stat')">💊 영양제</button>
-  <button style="display:none;" class="sub-tab" onclick="setPage('d-gp',this,'stat')">결핍해결</button>
-  <button style="display:none;" class="sub-tab" onclick="setPage('d-rs',this,'stat')">휴식일</button>
-  <button class="sub-tab" onclick="setPage('l-sync',this,'stat')">⚙️ 설정</button>
-  <button class="sub-tab" onclick="setPage('l-link',this,'stat')">링크</button>
+  <button class="sub-tab" onclick="setPage('l-link',this,'stat')">🔗 링크</button>
   <button class="sub-tab" onclick="setPage('d-ai',this,'stat')" style="background:linear-gradient(135deg,#7b72e9,#a78bfa);color:#fff;border-color:transparent;font-weight:700">🤖 AI</button>
+  <button class="sub-tab" onclick="setPage('l-sync',this,'stat')">⚙️ 설정</button>
 </div>
 
 <!-- ======== 식단 탭들 ======== -->
@@ -5453,7 +5451,7 @@ function setCat(cat,btn){
   /* 모든 페이지 숨기기 */
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('on'));
   /* 첫 페이지 보이기 */
-  var firstPages={home:'h-home',today:'l-hist',train:'l-exdb',stat:'d-tl',diet:'d-tl',ex:'e-wk',rehab:'r-dx',log:'l-hist'};
+  var firstPages={home:'h-home',today:'l-hist',train:'l-exdb',stat:'e-tr',diet:'d-tl',ex:'e-wk',rehab:'r-dx',log:'l-hist'};
   var fp=document.getElementById(firstPages[cat]);if(fp)fp.classList.add('on');
   /* 첫 중분류 버튼 활성화 */
   var subBtns=document.querySelectorAll('#sub-'+cat+' .sub-tab');
@@ -5840,9 +5838,11 @@ function setPage(pageId,btn,cat){
   if(pageId==='e-up'){var p=APP.profile||{};renderUpperBody(p);renderLiftGraph('벤치프레스',document.querySelector('#lift-graph-btns .filter-btn.on'));}
   if(pageId==='l-daily'){
     requestWakeLock();
-    var today=new Date().toISOString().slice(0,10);
+    /* 마감 체크: log-date 값 기준 (과거 날짜 수정 중일 수 있음) */
+    var dateEl=document.getElementById('log-date');
+    var checkDate=(dateEl&&dateEl.value)||new Date().toISOString().slice(0,10);
     var uid=APP.user?.id||'_';
-    var isClosed=lGet('v5_closed_'+uid+'_'+today)==='1';
+    var isClosed=lGet('v5_closed_'+uid+'_'+checkDate)==='1';
     var cv=document.getElementById('log-closed-view');
     var lf=document.getElementById('l-daily-form');
     var cb=document.getElementById('close-log-btn');
@@ -5850,7 +5850,7 @@ function setPage(pageId,btn,cat){
       if(lf)lf.style.display='none';
       if(cb)cb.style.display='none';
       if(cv)cv.style.display='block';
-      renderClosedView(today);
+      renderClosedView(checkDate);
       renderLogHistory();
     }else{
       if(cv)cv.style.display='none';
