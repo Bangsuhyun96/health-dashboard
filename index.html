@@ -1077,7 +1077,7 @@ body:not(.light-mode) .home-ai::before{background:#0e0e14;}
 <div class="sub-tabs" id="sub-home" style="display:none"></div>
 <div class="sub-tabs" id="sub-today" style="display:none">
   <button class="sub-tab on-today" onclick="setPage('l-hist',this,'today')">기록내역</button>
-  <button class="sub-tab" onclick="var _d=document.getElementById('log-date');if(_d)_d.value='';setPage('l-daily',this,'today')">기록하기</button>
+  <button class="sub-tab" onclick="setPage('l-daily',this,'today')">기록하기</button>
   <button class="sub-tab" onclick="setPage('e-wk',this,'today')">오늘루틴</button>
 </div>
 <div class="sub-tabs" id="sub-train" style="display:none">
@@ -5842,10 +5842,11 @@ function setPage(pageId,btn,cat){
   if(pageId==='e-up'){var p=APP.profile||{};renderUpperBody(p);renderLiftGraph('벤치프레스',document.querySelector('#lift-graph-btns .filter-btn.on'));}
   if(pageId==='l-daily'){
     requestWakeLock();
-    /* 마감 체크: log-date 값 기준, 비어있으면 오늘 */
-    var dateEl=document.getElementById('log-date');
+    /* 마감 체크: 항상 오늘 날짜 기준 (과거 날짜는 goTodayRecord에서 별도 처리) */
     var todayStr=new Date().toISOString().slice(0,10);
-    var checkDate=(dateEl&&dateEl.value)?dateEl.value:todayStr;
+    var dateEl=document.getElementById('log-date');
+    if(dateEl)dateEl.value=''; /* 오늘 기준으로 초기화 */
+    var checkDate=todayStr;
     var uid=APP.user?.id||'_';
     var isClosed=lGet('v5_closed_'+uid+'_'+checkDate)==='1';
     var cv=document.getElementById('log-closed-view');
@@ -6435,7 +6436,6 @@ function toggleAiType(btn){
   var target=document.getElementById(map[val]);if(target)target.style.display='block';
 }
 function startTodayWorkout(){
-  var _de=document.getElementById('log-date');if(_de)_de.value='';
   var catBtn=document.querySelector('.cat-tab-today');if(catBtn)setCat('today',catBtn);
   var allSubs=document.querySelectorAll('#sub-today .sub-tab');
   var dailyBtn=Array.from(allSubs).find(b=>b.getAttribute('onclick')?.includes('l-daily'));
