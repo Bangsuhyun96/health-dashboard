@@ -2571,16 +2571,16 @@ function initApp(){
       /* 첫 접속 — 로딩 보여주고 pull 완료 후 렌더 */
       showAppLoading('GitHub에서 데이터 불러오는 중...');
       pullFromGitHub(false).then(()=>{
-        initLogTab();
-        renderHome();
-        hideAppLoading();
+        var _today=new Date().toISOString().slice(0,10);
+        if(!lGet('v5_closed_'+(APP.user?.id||'_')+'_'+_today))loadTodayToMemory();
+        initLogTab();renderHome();hideAppLoading();
       }).catch(()=>{
-        initLogTab();
-        renderHome();
-        hideAppLoading();
+        initLogTab();renderHome();hideAppLoading();
       });
     }else{
       /* 로컬 데이터 있음 → 즉시 렌더 후 백그라운드 pull */
+      var _today2=new Date().toISOString().slice(0,10);
+      if(!lGet('v5_closed_'+(APP.user?.id||'_')+'_'+_today2))loadTodayToMemory();
       initLogTab();
       renderHome();
       setTimeout(()=>{
@@ -2593,6 +2593,8 @@ function initApp(){
     }
   }else{
     /* pull 불필요 — 즉시 렌더 */
+    var _today3=new Date().toISOString().slice(0,10);
+    if(!lGet('v5_closed_'+(APP.user?.id||'_')+'_'+_today3))loadTodayToMemory();
     initLogTab();
     renderHome();
   }
@@ -5389,7 +5391,13 @@ function setCat(cat,btn){
   if(subBtns[0])subBtns[0].classList.add('on-'+cat);
   /* 탭별 초기화 */
   if(cat==='home'){renderHome();}
-  if(cat==='today'){initLogTab();}
+  if(cat==='today'){
+    var today=new Date().toISOString().slice(0,10);
+    var uid=APP.user?.id||'_';
+    var isClosed=lGet('v5_closed_'+uid+'_'+today)==='1';
+    if(!isClosed)loadTodayToMemory();
+    initLogTab();
+  }
   if(cat==='train'){renderExDBList();renderInbodyHistory();renderLiftHistory();}
   if(cat==='stat'){var p=APP.profile||{};renderTrend(p);renderCurrentState(p);}
 }
@@ -5783,14 +5791,37 @@ function setPage(pageId,btn,cat){
   }
 }
 function initLogTab(){
-  /* 순수 초기화 — 날짜/마감/데이터 로드는 호출부에서 처리 */
+  /* 마감 여부 체크 — 어디서 호출되든 항상 오늘 날짜 기준 */
+  var today=new Date().toISOString().slice(0,10);
+  var uid=APP.user?.id||'_';
+  var isClosed=lGet('v5_closed_'+uid+'_'+today)==='1';
+  var cv=document.getElementById('log-closed-view');
+  var lf=document.getElementById('l-daily-form');
+  var cb=document.getElementById('close-log-btn');
+
+  if(isClosed){
+    /* 마감 상태 — 폼 완전 숨기고 요약 뷰만 */
+    if(lf)lf.style.display='none';
+    if(cb)cb.style.display='none';
+    if(cv){cv.style.display='block';renderClosedView(today);}
+    /* 목록 갱신만 */
+    renderLogHistory();renderInbodyHistory();renderLiftHistory();
+    updateSyncStatusUI();
+    var ps=document.getElementById('push-status');
+    if(ps&&uid){var last=lGet('v5_last_pull_'+uid);if(last)ps.textContent='마지막 동기화: '+new Date(last).toLocaleString('ko');}
+    return; /* 폼 렌더 스킵 */
+  }
+
+  /* 정상 — 폼 표시 */
+  if(cv)cv.style.display='none';
+  if(lf)lf.style.display='';
+  if(cb)cb.style.display='';
   initSuppChecks();ensureExDatalist();ensureFoodDatalist();
   renderExerciseBlocks();renderFoodEntries();
   renderLogHistory();renderInbodyHistory();renderLiftHistory();
   renderExDBList();renderFoodDBList();
   updateSyncStatusUI();updateWaterComment();
-  var todayStr=new Date().toISOString().slice(0,10);
-  var hasTodayLog=getStore('logs').some(l=>l.date===todayStr);
+  var hasTodayLog=getStore('logs').some(l=>l.date===today);
   var banner=document.getElementById('daily-record-banner');
   if(banner){
     if(hasTodayLog){
@@ -5800,12 +5831,11 @@ function initLogTab(){
     }else{banner.style.display='none';}
   }
   showTodayBanner();
-  var uid=APP.user?.id;
-  var ps=document.getElementById('push-status');
-  if(ps&&uid){
-    var last=lGet('v5_last_pull_'+uid);
-    if(last)ps.textContent='마지막 동기화: '+new Date(last).toLocaleString('ko');
-    else ps.textContent='아직 동기화 안 됨 — ⬇ 불러오기로 GitHub 데이터를 가져오세요';
+  var ps2=document.getElementById('push-status');
+  if(ps2&&uid){
+    var last2=lGet('v5_last_pull_'+uid);
+    if(last2)ps2.textContent='마지막 동기화: '+new Date(last2).toLocaleString('ko');
+    else ps2.textContent='아직 동기화 안 됨 — ⬇ 불러오기로 GitHub 데이터를 가져오세요';
   }
 }
 
