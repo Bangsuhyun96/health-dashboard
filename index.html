@@ -5361,12 +5361,9 @@ function setCat(cat,btn){
 /* ─── 마감 기능 ─── */
 function closeLog(){
   syncBlockData();
-  /* 먼저 저장 */
-  saveLog();
-  /* 마감 날짜 기록 */
   var date=document.getElementById('log-date')?.value||new Date().toISOString().slice(0,10);
+  saveLog();
   lSet('v5_closed_'+date,'1');
-  /* 요약 뷰 렌더 */
   renderClosedView(date);
 }
 
@@ -5466,14 +5463,38 @@ function showToast(msg){
 }
 
 function goTodayRecord(date){
+  var targetDate=date||new Date().toISOString().slice(0,10);
   /* 오늘탭 → 기록하기 서브탭으로 이동 */
   var catBtn=document.querySelector('.cat-tab-today');
   if(catBtn)setCat('today',catBtn);
   var allSubs=document.querySelectorAll('#sub-today .sub-tab');
   var dailyBtn=Array.from(allSubs).find(b=>b.getAttribute('onclick')?.includes('l-daily'));
-  if(dailyBtn)setPage('l-daily',dailyBtn,'today');
+  if(dailyBtn){
+    /* setPage 호출 없이 직접 페이지 전환 (마감 체크는 아래에서) */
+    document.querySelectorAll('.page').forEach(p=>p.classList.remove('on'));
+    var dp=document.getElementById('l-daily');if(dp)dp.classList.add('on');
+    subBtns=Array.from(document.querySelectorAll('#sub-today .sub-tab'));
+    subBtns.forEach(b=>b.classList.remove('on-today'));
+    if(dailyBtn)dailyBtn.classList.add('on-today');
+  }
   /* 해당 날짜 기록 로드 */
-  setTimeout(()=>loadLogToDaily(date||new Date().toISOString().slice(0,10)),100);
+  setTimeout(()=>{
+    loadLogToDaily(targetDate);
+    /* 해당 날짜 마감 여부 확인 */
+    var isClosed=lGet('v5_closed_'+targetDate)==='1';
+    var cv=document.getElementById('log-closed-view');
+    var lf=document.getElementById('l-daily-form');
+    var cb=document.getElementById('close-log-btn');
+    if(isClosed){
+      if(lf)lf.style.display='none';
+      if(cb)cb.style.display='none';
+      renderClosedView(targetDate);
+    }else{
+      if(cv)cv.style.display='none';
+      if(lf)lf.style.display='';
+      if(cb)cb.style.display='';
+    }
+  },100);
 }
 function renderHome(){
   var p=APP.profile||{};
@@ -5690,17 +5711,20 @@ function setPage(pageId,btn,cat){
   if(pageId==='e-up'){var p=APP.profile||{};renderUpperBody(p);renderLiftGraph('벤치프레스',document.querySelector('#lift-graph-btns .filter-btn.on'));}
   if(pageId==='l-daily'){
     initLogTab();requestWakeLock();
-    /* 마감 여부 확인 */
+    /* 마감 여부: 현재 log-date 기준 (goTodayRecord에서 날짜 세팅 후 별도 확인하므로 여기선 오늘만) */
     var todayDate=new Date().toISOString().slice(0,10);
     var isClosed=lGet('v5_closed_'+todayDate)==='1';
+    var cv=document.getElementById('log-closed-view');
+    var lf=document.getElementById('l-daily-form');
+    var cb=document.getElementById('close-log-btn');
     if(isClosed){
-      var lf=document.getElementById('l-daily-form');if(lf)lf.style.display='none';
-      var cb=document.getElementById('close-log-btn');if(cb)cb.style.display='none';
+      if(lf)lf.style.display='none';
+      if(cb)cb.style.display='none';
       renderClosedView(todayDate);
     }else{
-      var cv=document.getElementById('log-closed-view');if(cv)cv.style.display='none';
-      var lf2=document.getElementById('l-daily-form');if(lf2)lf2.style.display='';
-      var cb2=document.getElementById('close-log-btn');if(cb2)cb2.style.display='';
+      if(cv)cv.style.display='none';
+      if(lf)lf.style.display='';
+      if(cb)cb.style.display='';
     }
   }
   else{releaseWakeLock();}
