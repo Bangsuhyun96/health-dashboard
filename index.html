@@ -5782,7 +5782,39 @@ function initLogTab(){
   /* 날짜는 이미 세팅된 경우(goTodayRecord) 유지, 아니면 오늘로 */
   var dateEl=document.getElementById('log-date');
   var today=new Date().toISOString().slice(0,10);
-  if(!dateEl||!dateEl.value)setToday();
+  var currentDate=dateEl?.value||'';
+
+  /* goTodayRecord로 진입한 경우(과거날짜)가 아니면 항상 오늘 기준으로 초기화 */
+  if(!currentDate||currentDate===today){
+    setToday();
+    /* 메모리 초기화 */
+    resetDailyLog();
+    /* 오늘 기록이 있으면 로드 */
+    var logs=getStore('logs');
+    var todayLog=logs.find(l=>l.date===today);
+    if(todayLog){
+      /* 조용히 로드 — 화면 전환 없이 메모리만 복원 */
+      selectedExTypes=[...(todayLog.exTypes||[])];
+      document.querySelectorAll('#ex-type-btns .type-btn').forEach(b=>
+        b.classList.toggle('on',selectedExTypes.includes(b.getAttribute('data-val'))));
+      var hasWeight=selectedExTypes.includes('weight');
+      var hasCardio=selectedExTypes.includes('climbing')||selectedExTypes.includes('bike');
+      var ww=document.getElementById('weight-log-wrap');if(ww)ww.style.display=hasWeight?'block':'none';
+      var cw=document.getElementById('cardio-time-wrap');if(cw)cw.style.display=hasCardio?'block':'none';
+      exerciseBlocks=(todayLog.exercises||[]).filter(e=>e.name).map((e,i)=>({
+        id:'ex_loaded_'+i,name:e.name,exId:e.exId||'',sets:(e.sets||[{kg:'',reps:''}])
+      }));
+      foodEntries=(todayLog.foods||[]).map((f,i)=>({id:'food_loaded_'+i,text:f}));
+      /* 기타 필드 */
+      var sleepEl=document.getElementById('log-sleep');if(sleepEl)sleepEl.value=todayLog.sleep||7;
+      var waterEl=document.getElementById('log-water');if(waterEl)waterEl.value=todayLog.water||1800;
+      var memoEl=document.getElementById('log-memo');if(memoEl)memoEl.value=todayLog.memo||'';
+      var ankleEl=document.getElementById('log-ankle');if(ankleEl)ankleEl.value=todayLog.ankle||0;
+      if(todayLog.climbingMin){var ce=document.getElementById('cardio-climbing');if(ce)ce.value=todayLog.climbingMin;}
+      if(todayLog.bikeMin){var be=document.getElementById('cardio-bike');if(be)be.value=todayLog.bikeMin;}
+    }
+  }
+
   initSuppChecks();ensureExDatalist();ensureFoodDatalist();
   renderExerciseBlocks();renderFoodEntries();
   renderLogHistory();renderInbodyHistory();renderLiftHistory();
@@ -6317,18 +6349,16 @@ function startTodayWorkout(){
   var allSubs=document.querySelectorAll('#sub-today .sub-tab');
   var dailyBtn=Array.from(allSubs).find(b=>b.getAttribute('onclick')?.includes('l-daily'));
   if(dailyBtn)setPage('l-daily',dailyBtn,'today');
-  setTimeout(()=>{
-    var dateEl=document.getElementById('log-date');
-    var today=new Date().toISOString().slice(0,10);
-    /* 이전 날짜 기록이 남아있으면 오늘 날짜로 리셋 */
-    if(dateEl&&dateEl.value&&dateEl.value!==today){
-      resetDailyLog();setToday();
-    }
-    /* 마감 뷰 닫기 */
-    var cv=document.getElementById('log-closed-view');if(cv)cv.style.display='none';
-    var lf=document.getElementById('l-daily-form');if(lf)lf.style.display='';
-    var cb=document.getElementById('close-log-btn');if(cb)cb.style.display='';
-  },150);
+  /* 마감 뷰 닫기 (오늘 날짜 기준으로 setPage에서 이미 처리되지만 명시적으로) */
+  var today=new Date().toISOString().slice(0,10);
+  var isClosed=lGet('v5_closed_'+(APP.user?.id||'_')+'_'+today)==='1';
+  if(!isClosed){
+    setTimeout(()=>{
+      var cv=document.getElementById('log-closed-view');if(cv)cv.style.display='none';
+      var lf=document.getElementById('l-daily-form');if(lf)lf.style.display='';
+      var cb=document.getElementById('close-log-btn');if(cb)cb.style.display='';
+    },150);
+  }
 }
 function loadTodayRoutineToBlocks(){
   var p=APP.profile||{};var plan=p.plan||{};
