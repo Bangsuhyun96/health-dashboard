@@ -1026,12 +1026,9 @@ body:not(.light-mode) .home-ai::before{background:#0e0e14;}
         <div class="profile-col-sub" id="hdr-sub"></div>
       </div>
     </div>
-    <div style="display:flex;align-items:center;gap:6px">
-      <div class="profile-score-box" id="hdr-score-box" style="display:none">
-        <div class="profile-score-val" id="hdr-score">-</div>
-        <div class="profile-score-lbl">InBody</div>
-      </div>
+    <div style="display:flex;align-items:center;gap:8px">
       <button class="profile-toggle" id="profile-toggle-btn" onclick="toggleProfile()">▼ 펼치기</button>
+      <button class="logout-btn" onclick="doLogout()" style="margin:0">🚪</button>
     </div>
   </div>
   <div class="profile-expand" id="profile-expand">
@@ -1049,7 +1046,6 @@ body:not(.light-mode) .home-ai::before{background:#0e0e14;}
     <div class="stat-grid" id="hdr-stats"></div>
   </div>
 </div>
-<div class="logout-row"><button class="logout-btn" onclick="doLogout()">🚪 로그아웃</button></div>
 
 <!-- 대분류 탭 -->
 <div class="cat-tabs">
@@ -2623,14 +2619,8 @@ function updateProfileFromInbody(){
   if(!latest)return;
   var p=APP.profile||{};
   /* 헤더 score */
-  var sb=document.getElementById('hdr-score-box');
-  var sc=document.getElementById('hdr-score');
   var sc2=document.getElementById('hdr-score2');
-  if(latest.score){
-    if(sb)sb.style.display='';
-    if(sc)sc.textContent=latest.score;
-    if(sc2)sc2.textContent=latest.score;
-  }
+  if(latest.score&&sc2)sc2.textContent=latest.score;
   /* 헤더 stats (체중/근육/체지방/기초대사) */
   var stats='';
   var w=latest.weight||p.weight;var m=latest.muscle||p.muscle;
@@ -2661,9 +2651,6 @@ function renderProfileHeader(){
   if(p.goal?.type){var gt={bulk:'벌크업',diet:'다이어트',maintain:'유지',rehab:'재활'};subParts.push(gt[p.goal.type]||p.goal.type);}
   if(p.injuries?.length&&!p.injuries.includes('none'))subParts.push(p.injuries.join('·')+'부상 회복');
   document.getElementById('hdr-sub').textContent=subParts.join(' · ')||'대시보드';
-  var sb=document.getElementById('hdr-score-box');
-  if(score){sb.style.display='';document.getElementById('hdr-score').textContent=score;}
-  else sb.style.display='none';
 
   /* 펼쳐진 상태 */
   var nameStr=[];
@@ -3455,23 +3442,34 @@ function renderSuppPage(){
   var p=APP.profile||{};
   var supps=p.supplements?.map(s=>typeof s==='string'?{name:s,time:'',note:''}:s)||[
     {name:'비타민 D3+K2',time:'아침식사직후',note:'칼슘 흡수·골밀도·면역. 지용성이라 식사 후 복용'},
-    {name:'오메가3',time:'아침식사직후',note:'항염·혈행·회복. EPA+DHA 기준 1g/일'},
-    {name:'크레아틴 5g',time:'자유',note:'근력·회복·수분 보충. 물 +500ml 추가 필수'},
-    {name:'락토핏 코어맥스',time:'공복',note:'장 건강·면역. 유산균은 공복에 생존율 높음'},
-    {name:'마그네슘 글리시네이트',time:'취침전',note:'수면질·근육이완. 식사 후 복용 시 위장 자극 감소'},
-    {name:'루테인 지아잔틴 아스타잔틴',time:'식사직후',note:'눈 황반·블루라이트 차단·항산화. 지용성이라 식사 후 필수'},
+    {name:'오메가3',time:'아침식사직후',note:'항염·혈행·회복. EPA+DHA 기준 1g/일. 지용성이라 식사 후 복용'},
+    {name:'루테인 지아잔틴 아스타잔틴',time:'점심식사직후',note:'눈 황반·블루라이트 차단·항산화. 지용성이라 식사 직후 필수'},
+    {name:'락토핏 코어맥스',time:'오후3시',note:'장 건강·면역. 식간(공복)에 유산균 생존율 높음'},
+    {name:'크레아틴 5g',time:'자유',note:'근력·회복·ATP 재합성. 물 +500ml 추가 필수. 매일 꾸준히'},
+    {name:'마그네슘 글리시네이트',time:'취침전',note:'수면질·근육이완·ATP 생산. 취침 30~60분 전. 과량 시 설사 주의'},
   ];
-  var timeGroups={'아침식사직후':[],'공복':[],'자유':[],'식사직후':[],'취침전':[],'기타':[]};
+
+  var timeGroups={'아침식사직후':[],'점심식사직후':[],'오후3시':[],'자유':[],'취침전':[],'기타':[]};
   supps.forEach(s=>{var g=timeGroups[s.time]||timeGroups['기타'];g.push(s);});
-  var timeLabels={'아침식사직후':'🌅 아침 식사 직후','공복':'⏰ 공복 (기상 직후)','자유':'🕐 시간 자유','식사직후':'🍽 식사 직후','취침전':'🌙 취침 전','기타':'기타'};
+
+  var timeLabels={
+    '아침식사직후':'🌅 아침 식사 직후',
+    '점심식사직후':'☀️ 점심 식사 직후',
+    '오후3시':'🕒 오후 3시 (식간)',
+    '자유':'🕐 시간 자유',
+    '취침전':'🌙 취침 30~60분 전',
+    '기타':'기타'
+  };
+
   var html='';
   Object.entries(timeGroups).forEach(([time,items])=>{
     if(!items.length)return;
-    html+=`<div style="margin-bottom:12px"><div style="font-size:10px;font-weight:700;color:#888;margin-bottom:6px">${timeLabels[time]}</div>`;
+    html+=`<div style="margin-bottom:14px">
+      <div style="font-size:10px;font-weight:700;color:#888;letter-spacing:.4px;margin-bottom:6px">${timeLabels[time]}</div>`;
     items.forEach(s=>{
-      html+=`<div style="padding:8px 10px;background:#f9f9f9;border-radius:10px;margin-bottom:5px">
-        <div style="font-size:12px;font-weight:700;color:#1a1a1a">${s.name}</div>
-        ${s.note?`<div style="font-size:10px;color:#888;margin-top:2px">${s.note}</div>`:''}
+      html+=`<div style="padding:10px 12px;background:var(--surface-2,#f9f9f9);border-radius:10px;margin-bottom:6px;border:1.5px solid var(--border,#f0f0f0)">
+        <div style="font-size:12px;font-weight:700;color:var(--text-primary,#1a1a1a)">${s.name}</div>
+        ${s.note?`<div style="font-size:10px;color:#888;margin-top:3px;line-height:1.5">${s.note}</div>`:''}
       </div>`;
     });
     html+='</div>';
@@ -6128,10 +6126,12 @@ function initSuppChecks(){
   var el=document.getElementById('supp-checks');if(!el)return;
   var p=APP.profile||{};
   var supps=p.supplements?.map(s=>typeof s==='string'?{name:s,time:''}:s)||[
-    {name:'비타민 D3+K2',time:'아침식사직후'},{name:'오메가3',time:'아침식사직후'},
-    {name:'크레아틴 5g',time:'자유'},{name:'락토핏 코어맥스',time:'공복'},
+    {name:'비타민 D3+K2',time:'아침식사직후'},
+    {name:'오메가3',time:'아침식사직후'},
+    {name:'루테인 지아잔틴 아스타잔틴',time:'점심식사직후'},
+    {name:'락토핏 코어맥스',time:'오후3시'},
+    {name:'크레아틴 5g',time:'자유'},
     {name:'마그네슘 글리시네이트',time:'취침전'},
-    {name:'루테인 지아잔틴 아스타잔틴',time:'식사직후'},
   ];
   var prev={};el.querySelectorAll('input[type=checkbox]').forEach((cb,i)=>{prev[i]=cb.checked;});
   el.innerHTML=supps.map((s,i)=>`<div class="supp-check"><input type="checkbox" id="sc-${i}" ${prev[i]===false?'':'checked'}><label for="sc-${i}">${s.name}${s.time?` <span style="font-size:9px;color:#888">(${s.time})</span>`:''}</label></div>`).join('');
