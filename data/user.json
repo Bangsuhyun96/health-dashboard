@@ -22,7 +22,9 @@
       "height": 150,
       "weight": 55,
       "createdAt": "2026-05-18",
-      "onboardingDone": false
+      "onboardingDone": false,
+      "hidden": true
     }
-  ]
+  ],
+  "updatedAt": "2026-05-19T01:56:53.744Z"
 }
