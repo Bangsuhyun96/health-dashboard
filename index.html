@@ -528,13 +528,9 @@ body.app-ready #theme-toggle{display:flex;}
 .timeline-edit-hint{font-size:9px;color:#7b72e9;font-weight:600;margin-top:4px;text-align:right;}
 
 /* ─── 기록내역 카드 슬라이드 상세 ─── */
-.log-detail-slide{max-height:0;overflow:hidden;transition:max-height .3s ease;background:var(--surface-2,#f9f9f9);border-radius:0 0 10px 10px;margin-top:0;}
-.log-detail-slide.open{max-height:600px;}
-.log-detail-inner{padding:12px 14px;border-top:1px solid var(--border,#e8e8e8);}
-.log-detail-ex{font-size:11px;padding:4px 0;border-bottom:1px solid var(--border,#f0f0f0);line-height:1.5;}
-.log-detail-ex:last-child{border-bottom:none;}
-.log-detail-nut{display:flex;gap:10px;flex-wrap:wrap;margin-top:8px;padding-top:8px;border-top:1px solid var(--border,#f0f0f0);}
-.log-detail-nut span{font-size:11px;color:var(--text-secondary,#666);}
+.log-detail-slide{max-height:0;overflow:hidden;transition:max-height .3s ease;background:var(--surface,#fff);border-radius:0 0 12px 12px;border-top:1.5px solid var(--border,#e8e8e8);}
+.log-detail-slide.open{max-height:800px;}
+.log-detail-inner{padding:12px 14px 14px;}
 /* ─── 홈화면 ─── */
 .home-wrap{padding:4px 0 20px;}
 .home-greeting{font-size:18px;font-weight:800;color:var(--text-primary,#1a1a1a);margin-bottom:2px;}
@@ -5615,41 +5611,39 @@ function toggleLogDetail(date, cardEl){
   if(!log){slide.classList.add('open');inner.innerHTML='<div style="color:#bbb;font-size:12px">기록 없음</div>';arrow.textContent='▲';return;}
 
   /* 운동 카드 */
-  var exItems=(log.exercises||[]).filter(e=>e.name&&e.sets?.length).map(e=>{
+  var exArr=(log.exercises||[]).filter(e=>e.name&&e.sets?.length);
+  var exItems=exArr.map((e,ei)=>{
     var best=e.sets.reduce((m,s)=>parseFloat(s.kg||0)>parseFloat(m.kg||0)?s:m,e.sets[0]);
     var setsStr=e.sets.map((s,i)=>`${i+1}세트 ${s.kg?s.kg+'kg':''}${s.reps?' × '+s.reps:''}`).join(' · ');
-    return`<div style="padding:7px 0;border-bottom:0.5px solid var(--border,#f0f0f0)">
+    var isLast=ei===exArr.length-1;
+    return`<div style="padding:7px 0${isLast?'':';border-bottom:1px solid var(--border,#f0f0f0)'}">
       <div style="font-size:12px;font-weight:700;color:#185fa5;margin-bottom:2px">${e.name} <span style="font-size:11px;font-weight:400;color:var(--text-secondary,#888)">${e.sets.length}세트${best?.kg?' · 최대 '+best.kg+'kg':''}</span></div>
       <div style="font-size:10px;color:var(--text-secondary,#aaa);line-height:1.7">${setsStr}</div>
     </div>`;
   }).join('');
-  var exHtml=exItems?`<div style="background:var(--surface,#fff);border:1px solid var(--border,#e8e8e8);border-radius:10px;padding:4px 12px;margin-bottom:8px">${exItems}</div>`:'';
-  /* 마지막 border-bottom 제거 */
-  exHtml=exHtml.replace(/border-bottom:0\.5px solid var\(--border,#f0f0f0\)">\s*$/, '" style="padding:7px 0">');
+  var exHtml=exItems?`<div style="border:1.5px solid var(--border,#e8e8e8);border-radius:10px;padding:0 12px;margin-bottom:10px">${exItems}</div>`:'';
 
   /* 영양 그리드 */
   var nutHtml='';
   if(log.nutrition){
     var n=log.nutrition;
-    nutHtml=`<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:6px;margin-bottom:8px">
-      <div style="background:var(--surface-2,#f5f5f7);border-radius:8px;padding:8px 10px"><div style="font-size:10px;color:var(--text-secondary,#888);margin-bottom:2px">단백질</div><div style="font-size:16px;font-weight:700;color:#1d9e75">${n.prot||0}g</div></div>
-      <div style="background:var(--surface-2,#f5f5f7);border-radius:8px;padding:8px 10px"><div style="font-size:10px;color:var(--text-secondary,#888);margin-bottom:2px">칼로리</div><div style="font-size:16px;font-weight:700;color:#e57373">${n.kcal||0}</div></div>
-      <div style="background:var(--surface-2,#f5f5f7);border-radius:8px;padding:8px 10px"><div style="font-size:10px;color:var(--text-secondary,#888);margin-bottom:2px">탄수화물</div><div style="font-size:16px;font-weight:700;color:#ef9f27">${n.carb||0}g</div></div>
-      <div style="background:var(--surface-2,#f5f5f7);border-radius:8px;padding:8px 10px"><div style="font-size:10px;color:var(--text-secondary,#888);margin-bottom:2px">지방</div><div style="font-size:16px;font-weight:700;color:var(--text-primary,#555)">${n.fat||0}g</div></div>
+    var nc='border:1.5px solid var(--border,#e8e8e8);border-radius:8px;padding:8px 10px';
+    nutHtml=`<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:6px;margin-bottom:10px">
+      <div style="${nc}"><div style="font-size:10px;color:var(--text-secondary,#888);margin-bottom:2px">단백질</div><div style="font-size:16px;font-weight:700;color:#1d9e75">${n.prot||0}g</div></div>
+      <div style="${nc}"><div style="font-size:10px;color:var(--text-secondary,#888);margin-bottom:2px">칼로리</div><div style="font-size:16px;font-weight:700;color:#e57373">${n.kcal||0}</div></div>
+      <div style="${nc}"><div style="font-size:10px;color:var(--text-secondary,#888);margin-bottom:2px">탄수화물</div><div style="font-size:16px;font-weight:700;color:#ef9f27">${n.carb||0}g</div></div>
+      <div style="${nc}"><div style="font-size:10px;color:var(--text-secondary,#888);margin-bottom:2px">지방</div><div style="font-size:16px;font-weight:700;color:var(--text-primary,#555)">${n.fat||0}g</div></div>
     </div>`;
   }
 
   /* 수면/수분 행 */
-  var metaHtml=`<div style="display:flex;gap:6px;margin-bottom:8px">
-    <div style="background:var(--surface-2,#f5f5f7);border-radius:8px;padding:7px 10px;flex:1;display:flex;align-items:center;gap:6px">
-      <span style="font-size:14px">💤</span><span style="font-size:11px;color:var(--text-secondary,#888)">수면</span><span style="font-size:13px;font-weight:700;margin-left:auto">${log.sleep||7}h</span>
-    </div>
-    <div style="background:var(--surface-2,#f5f5f7);border-radius:8px;padding:7px 10px;flex:1;display:flex;align-items:center;gap:6px">
-      <span style="font-size:14px">💧</span><span style="font-size:11px;color:var(--text-secondary,#888)">수분</span><span style="font-size:13px;font-weight:700;margin-left:auto">${((log.water||1800)/1000).toFixed(1)}L</span>
-    </div>
+  var mb='border:1.5px solid var(--border,#e8e8e8);border-radius:8px;padding:7px 10px;flex:1;display:flex;align-items:center;gap:6px';
+  var metaHtml=`<div style="display:flex;gap:6px;margin-bottom:10px">
+    <div style="${mb}"><span style="font-size:14px">💤</span><span style="font-size:11px;color:var(--text-secondary,#888)">수면</span><span style="font-size:13px;font-weight:700;margin-left:auto">${log.sleep||7}h</span></div>
+    <div style="${mb}"><span style="font-size:14px">💧</span><span style="font-size:11px;color:var(--text-secondary,#888)">수분</span><span style="font-size:13px;font-weight:700;margin-left:auto">${((log.water||1800)/1000).toFixed(1)}L</span></div>
   </div>`;
 
-  var memo=log.memo?`<div style="font-size:11px;color:#888;margin-bottom:8px;padding:7px 10px;background:var(--surface-2,#f5f5f7);border-radius:8px">📝 ${log.memo}</div>`:'';
+  var memo=log.memo?`<div style="font-size:11px;color:var(--text-secondary,#888);margin-bottom:10px;padding:7px 10px;border:1.5px solid var(--border,#e8e8e8);border-radius:8px">📝 ${log.memo}</div>`:'';
 
   var copyText=`📅 ${date} ${(log.exTypes||[]).map(t=>({weight:'💪 웨이트',climbing:'🧗 클라이밍',bike:'🚴 바이크',rest:'😴 휴식',rehab:'🩺 재활'}[t]||t)).join(' ')}\n`;
   (log.exercises||[]).filter(e=>e.name&&e.sets?.length).forEach(e=>{
