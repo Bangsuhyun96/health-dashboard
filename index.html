@@ -2652,7 +2652,6 @@ function initApp(){
   renderDiet();renderExercise();renderRehab();loadSyncConfig();
   applyHiddenTabs();
   showTodayBanner();
-  setTimeout(tryAutoWriteMode,500);
 
   var uid=APP.user?.id;
   var lastPull=lGet('v5_last_pull_'+uid)||0;
@@ -4793,6 +4792,7 @@ function loadLogToDaily(date){
 
 /* 인바디 */
 function saveInbody(){
+  if(GH.encToken&&!GH.writeMode){requireWriteMode(()=>saveInbody());return;}
   var date=document.getElementById('ib-date').value;
   if(!date){alert('날짜를 선택해주세요');return;}
   var entry={date,weight:parseFloat(document.getElementById('ib-weight').value)||null,muscle:parseFloat(document.getElementById('ib-muscle').value)||null,fat:parseFloat(document.getElementById('ib-fat').value)||null,score:parseInt(document.getElementById('ib-score').value)||null,bmr:parseInt(document.getElementById('ib-bmr').value)||null};
@@ -5373,7 +5373,10 @@ async function pushInbodyLifts(){
   }
 }
 async function pushToGitHub(){
-  if(!GH.writeMode||!GH.token){showSyncBar('쓰기 모드가 필요합니다','#e57373');return;}
+  if(!GH.writeMode||!GH.token){
+    requireWriteMode(()=>pushToGitHub());
+    return;
+  }
   var uid=APP.user?.id;if(!uid)return;
   var ps=document.getElementById('push-status');
   var res=document.getElementById('sync-action-result');
@@ -5651,9 +5654,15 @@ function tryAutoWriteMode(){
   }
 }
 
+/* 쓰기 권한 필요한 작업 전 호출 — 이미 활성화면 바로 실행 */
+function requireWriteMode(callback){
+  if(GH.writeMode&&GH.token){callback();return;}
+  showWriteUnlockModal(callback);
+}
 function showWriteUnlockModal(callback){
   var existing=document.getElementById('write-unlock-modal');
   if(existing)existing.remove();
+  window._writeCallback=callback||null;
   var modal=document.createElement('div');
   modal.id='write-unlock-modal';
   modal.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9998;display:flex;align-items:center;justify-content:center;padding:16px';
@@ -5685,6 +5694,7 @@ function doAutoUnlock(){
         document.getElementById('write-unlock-modal')?.remove();
         updateSyncStatusUI();
         showToast('✓ 쓰기 모드 활성화');
+        if(typeof _writeCallback==='function'){_writeCallback();_writeCallback=null;}
         return;
       }
     }catch(e){}
@@ -5694,7 +5704,9 @@ function doAutoUnlock(){
   if(pw.indexOf('ghp_')>=0||pw.indexOf('github_pat_')>=0){
     GH.token=pw;GH.writeMode=true;
     document.getElementById('write-unlock-modal')?.remove();
-    updateSyncStatusUI();showToast('✓ 쓰기 모드 활성화');return;
+    updateSyncStatusUI();showToast('✓ 쓰기 모드 활성화');
+    if(typeof _writeCallback==='function'){_writeCallback();_writeCallback=null;}
+    return;
   }
   if(msg)msg.textContent='토큰이 없어요. 설정 탭에서 먼저 암호화 저장을 해주세요';
 }
@@ -6640,6 +6652,7 @@ function openAddExerciseModal(id){
 }
 function closeExDBModal(){document.getElementById('exdb-modal').style.display='none';}
 function saveExDBItem(){
+  if(GH.encToken&&!GH.writeMode){requireWriteMode(()=>saveExDBItem());return;}
   var name=document.getElementById('exdb-m-name').value.trim();if(!name)return alert('종목명을 입력해주세요');
   var id=document.getElementById('exdb-m-id').value||'ex_'+Date.now();
   var item={id,name,category:document.getElementById('exdb-m-cat').value,defaultSets:parseInt(document.getElementById('exdb-m-sets').value)||3,defaultReps:document.getElementById('exdb-m-reps').value||'10',met:parseFloat(document.getElementById('exdb-m-met').value)||5.0,tips:document.getElementById('exdb-m-tips').value};
@@ -6681,6 +6694,7 @@ function openAddFoodModal(id){
 }
 function closeFoodDBModal(){document.getElementById('fooddb-modal').style.display='none';}
 function saveFoodDBItem(){
+  if(GH.encToken&&!GH.writeMode){requireWriteMode(()=>saveFoodDBItem());return;}
   var name=document.getElementById('fdb-m-name').value.trim();if(!name)return alert('식품명을 입력해주세요');
   var id=document.getElementById('fdb-m-id').value||'food_'+Date.now();
   var item={id,name,category:document.getElementById('fdb-m-cat').value,unit:document.getElementById('fdb-m-unit').value,kcal:parseFloat(document.getElementById('fdb-m-kcal').value)||0,prot:parseFloat(document.getElementById('fdb-m-prot').value)||0,carb:parseFloat(document.getElementById('fdb-m-carb').value)||0,fat:parseFloat(document.getElementById('fdb-m-fat').value)||0,verified:true};
