@@ -2990,12 +2990,41 @@ function renderBangTimeline(){
     {t:'22:00',ti:'영양제 3차',s:'마그네슘 글리시네이트 200~400mg (취침 30~60분 전)',p:[{l:'~5 kcal',c:'pk'}]},
   ];
   var el=document.getElementById('tl-c');if(!el)return;
-  var h='';
-  for(var i=0;i<TL.length;i++){
-    var r=TL[i],ph='';
-    for(var j=0;j<r.p.length;j++)ph+=`<span class="pill ${r.p[j].c}">${r.p[j].l}</span>`;
-    h+=`<div class="tl-row"><div class="tl-time">${r.t}</div><div class="tl-body"><div class="tl-t">${r.ti}</div><div class="tl-s">${r.s}</div><div class="pills">${ph}</div></div></div>`;
-  }
+  var dow=new Date().getDay();
+  var dayType=dow===2||dow===4?'climbing':dow===0||dow===6?'rest':'weight';
+  var isNattoDay=dow===1||dow===4; /* 월·목 */
+
+  var wTL=[
+    {t:'07:00',ti:'아침',s:'오트밀 50g + 두유 190ml · 바나나 1개',note:'전자레인지 2분. 저GI 복합탄수+단백질 확보.',p:[{l:'450kcal',c:'pk'},{l:'단백질 12g',c:'pp'},{l:'탄수 68g',c:'pc'}]},
+    {t:'07:10\n식후',ti:'영양제 1차',s:'비타민 D3+K2 · 오메가3 2캡슐',note:'지용성 — 식사 직후 필수.',p:[{l:'지용성 식후',c:'pw'}]},
+    {t:'12:30',ti:'점심 (직장)',s:'자유 — 단백질 최소 20g 목표',note:'탄수 위주 OK. 밥+단백질 반찬 기본.',p:[{l:'600~700kcal',c:'pk'},{l:'단백질 20~30g',c:'pp'}]},
+    {t:'18:30',ti:'귀가 후 간식',s:'계란 2개 · 방울토마토 5~7개',note:'전자레인지 스크램블 2분. 운동 전 단백질 확보.',p:[{l:'200kcal',c:'pk'},{l:'단백질 13g',c:'pp'}]},
+    {t:'19:00~\n20:00',ti:'웨이트 운동',s:'물 500~700ml — 세트 사이마다',note:'크레아틴 복용 시 +500ml.',p:[{l:'0kcal',c:'pw'}]},
+    {t:'20:00',ti:'운동 후 식사 ⚡',s:'훈제 닭가슴살 1개 · 햇반 현미 1개 · 채소(양배추·파프리카·방울토마토)'+(isNattoDay?' · 낫토 1팩':''),note:'운동 후 60분 내 탄수+단백질. 전자레인지 3분.'+(isNattoDay?' 🫘낫토 오늘!':''),p:[{l:'600kcal',c:'pk'},{l:'단백질 40g'+(isNattoDay?'+8g':''),c:'pp'},{l:'탄수 80g',c:'pc'}]},
+    {t:'22:00',ti:'야식',s:'프로틴 1스쿱 (물 300ml) · 모듬 견과 30g',note:'수면 중 근합성 지속. 견과 불포화지방.',p:[{l:'350kcal',c:'pk'},{l:'단백질 28g',c:'pp'}]},
+    {t:'취침 전',ti:'영양제 2차',s:'마그네슘 50mg (3일 1회) · 크레아틴 5g',note:'마그네슘 소량 — 장 부담 방지. 크레아틴 매일.',p:[{l:'취침 30분 전',c:'pw'}]},
+  ];
+  var cTL=[
+    {t:'07:00',ti:'아침',s:'오트밀 50g + 두유 190ml · 바나나 1개',note:'전자레인지 2분.',p:[{l:'450kcal',c:'pk'},{l:'단백질 12g',c:'pp'}]},
+    {t:'07:10',ti:'영양제 1차',s:'비타민 D3+K2 · 오메가3',note:'지용성 — 식후 필수.',p:[{l:'식후 필수',c:'pw'}]},
+    {t:'12:30',ti:'점심 (직장)',s:'자유',note:'클라이밍 날 탄수 조금 줄여도 됨.',p:[{l:'600~700kcal',c:'pk'},{l:'단백질 20g',c:'pp'}]},
+    {t:'19:00',ti:'운동 전 식사 ⚡',s:'훈제 닭가슴살 1개 · 햇반 현미 1개 · 채소'+(isNattoDay?' · 낫토 1팩':''),note:'운동 1시간 전. 소화 부담 없게 채소 소량.'+(isNattoDay?' 🫘낫토 오늘!':''),p:[{l:'580kcal',c:'pk'},{l:'단백질 38g'+(isNattoDay?'+8g':''),c:'pp'},{l:'탄수 75g',c:'pc'}]},
+    {t:'20:00~\n21:30',ti:'클라이밍',s:'물 600~800ml',note:'전완 펌핑 소모 큼. 수분 충분히.',p:[{l:'0kcal',c:'pw'}]},
+    {t:'22:00',ti:'귀가 후',s:'프로틴 1스쿱 (물) · 계란 1개 · 방울토마토',note:'22시 이후 탄수 최소화.',p:[{l:'280kcal',c:'pk'},{l:'단백질 31g',c:'pp'}]},
+  ];
+  var rTL=[
+    {t:'07:00~\n08:00',ti:'아침 (여유)',s:'오트밀 50g + 두유 · 계란 2개 · 바나나',note:'휴식일 아침은 여유있게.',p:[{l:'550kcal',c:'pk'},{l:'단백질 25g',c:'pp'}]},
+    {t:'점심',ti:'점심',s:'치팅 허용 — 단 폭식 금지',note:'주 1회 치팅은 렙틴 회복에 유리.',p:[{l:'자유',c:'pw'}]},
+    {t:'19:00',ti:'저녁',s:'훈제 닭가슴살 1개 · 햇반 현미 1개 · 채소',note:'탄수 운동일 대비 15~20% 축소.',p:[{l:'550kcal',c:'pk'},{l:'단백질 38g',c:'pp'}]},
+    {t:'21:00',ti:'야식 (선택)',s:'견과 30g or 프로틴 1스쿱',note:'배고프면만.',p:[{l:'180kcal',c:'pk'}]},
+  ];
+  var TL=dayType==='climbing'?cTL:dayType==='rest'?rTL:wTL;
+  var dayLabel={weight:'💪 웨이트 운동일',climbing:'🧗 클라이밍일',rest:'😴 휴식일'}[dayType];
+  var h=`<div style="font-size:11px;font-weight:600;color:#888;margin-bottom:10px">${dayLabel}${isNattoDay?' · 🫘 낫토의 날':''}</div>`;
+  TL.forEach(r=>{
+    var ph=r.p.map(x=>`<span class="pill ${x.c}">${x.l}</span>`).join('');
+    h+=`<div class="tl-row"><div class="tl-time">${r.t}</div><div class="tl-body"><div class="tl-t">${r.ti}</div><div class="tl-s">${r.s}</div><div style="font-size:10px;color:#888;margin:3px 0">${r.note}</div><div class="pills">${ph}</div></div></div>`;
+  });
   el.innerHTML=h;
 }
 
@@ -3106,27 +3135,28 @@ function renderWaterDataFull(p,totalMl){
 
 function renderPriceDataFull(p){
   var fp=[
-    {i:'계란 7개 (아침 3개 + 스낵 2개 + 취침 전 2개)',n:'30구 기준',p:'1,400원'},
-    {i:'닭가슴살 200g',n:'냉동 팩',p:'1,500원'},
-    {i:'현미밥 250g',n:'현미 기준 (즉석밥 대비 절반 가격)',p:'300원'},
-    {i:'오트밀 50g + 해바라기씨 10g',n:'1kg 구매',p:'250원'},
-    {i:'바나나 2개 (아침 1 + 운동후 1)',n:'한 송이 구매',p:'600원'},
-    {i:'고구마 100g',n:'kg당 2,000원',p:'200원'},
-    {i:'그릭요거트 100g',n:'오이코스 or 남양',p:'700원'},
-    {i:'스테비아 방울토마토 5~7개',n:'팩 기준',p:'600원'},
-    {i:'파프리카 반개',n:'낱개 구매',p:'500원'},
-    {i:'두유 200ml (칼슘강화)',n:'정식품 or 베지밀',p:'300원'},
+    {i:'훈제 닭가슴살 1개 (100~130g)',n:'쿠팡 로켓 — 하림 or 자체브랜드',p:'1,000~1,300원'},
+    {i:'햇반 현미 1개 (210g)',n:'CJ 현미밥 12개입 기준',p:'1,000원'},
+    {i:'오트밀 50g',n:'롤드오트 1kg 기준',p:'150원'},
+    {i:'두유 190ml (칼슘강화)',n:'정식품 — 24개입 기준',p:'280원'},
+    {i:'바나나 1개',n:'한 송이 구매 기준',p:'300원'},
+    {i:'계란 2개 (간식용)',n:'30구 기준',p:'400원'},
+    {i:'방울토마토 5~7개',n:'스테비아 팩 기준',p:'400원'},
+    {i:'파프리카 1/4개',n:'낱개 구매',p:'250원'},
+    {i:'양배추 1/8통',n:'통 기준 일할',p:'150원'},
+    {i:'시금치 30g',n:'봉지 기준 일할',p:'80원'},
+    {i:'모듬 견과 30g',n:'대용량 구매 기준',p:'400원'},
     {i:'웨이 프로틴 30g',n:'1kg 기준 분말',p:'700원'},
-    {i:'모듬 견과 1봉 (30g)',n:'편의점 or 대용량',p:'500원'},
-    {i:'시금치 50g',n:'봉지 기준 일할',p:'100원'},
-    {i:'올리브오일 1.5큰술',n:'1L 구매 기준',p:'150원'},
+    {i:'낫토 1팩 (주 2회, 일할)',n:'풀무원 12개입',p:'290원'},
+    {i:'올리브오일 소량',n:'1L 구매 기준',p:'100원'},
   ];
   var sp=[
-    {i:'마그네슘 글리시네이트',n:'나우푸드 240캡슐',p:'15,000원/월'},
-    {i:'락토핏 코어맥스',n:'50포',p:'20,000원/월'},
-    {i:'알티지 오메가3',n:'닥터린 60캡슐',p:'15,000원/월'},
     {i:'비타민 D3+K2',n:'아이허브 복합',p:'8,000원/월'},
+    {i:'알티지 오메가3',n:'닥터린 60캡슐',p:'15,000원/월'},
+    {i:'락토핏 코어맥스',n:'50포',p:'20,000원/월'},
     {i:'크레아틴 모노하이드레이트',n:'5g×30일',p:'5,000원/월'},
+    {i:'마그네슘 글리시네이트 50mg',n:'3일 1회 — 나우푸드',p:'5,000원/월'},
+    {i:'루테인 지아잔틴 아스타잔틴',n:'아이허브',p:'10,000원/월'},
   ];
   var fill=(id,arr)=>{
     var el=document.getElementById(id);if(!el)return;
@@ -3134,11 +3164,11 @@ function renderPriceDataFull(p){
   };
   fill('fp-c',fp);fill('spc-c',sp);
   var ft=document.getElementById('fp-tot');
-  if(ft)ft.innerHTML='<span style="font-size:13px;font-weight:700">일일 식재료 소계</span><span style="font-size:16px;font-weight:700;color:#7b72e9">7,800~9,300원</span>';
+  if(ft)ft.innerHTML='<span style="font-size:13px;font-weight:700">일일 식재료 소계</span><span style="font-size:16px;font-weight:700;color:#7b72e9">5,500~6,000원</span>';
   var st=document.getElementById('spc-tot');
-  if(st)st.innerHTML='<div><div style="font-size:13px;font-weight:700">월 소계</div><div style="font-size:10px;color:#888">5종 영양제</div></div><span style="font-size:16px;font-weight:700;color:#1d9e75">63,000원</span>';
+  if(st)st.innerHTML='<div><div style="font-size:13px;font-weight:700">월 소계</div><div style="font-size:10px;color:#888">6종 영양제</div></div><span style="font-size:16px;font-weight:700;color:#1d9e75">63,000원</span>';
   var mc=document.getElementById('pr-monthly');
-  if(mc)mc.innerHTML='<div class="ctitle">월 총합 예상</div><div style="display:flex;gap:8px;margin-bottom:10px"><div style="flex:1"><div style="font-size:10px;color:#888;margin-bottom:2px">식재료 × 30일</div><div style="font-size:14px;font-weight:700">234,000~279,000원</div></div><div style="flex:1"><div style="font-size:10px;color:#888;margin-bottom:2px">영양제 월</div><div style="font-size:14px;font-weight:700">63,000원</div></div></div><div class="tot"><span style="font-size:13px;font-weight:700">월 총합</span><span style="font-size:20px;font-weight:700;color:#7b72e9">297,000~342,000원</span></div>';
+  if(mc)mc.innerHTML='<div class="ctitle">월 총합 예상</div><div style="display:flex;gap:8px;margin-bottom:10px"><div style="flex:1"><div style="font-size:10px;color:#888;margin-bottom:2px">식재료 × 30일</div><div style="font-size:14px;font-weight:700">165,000~180,000원</div></div><div style="flex:1"><div style="font-size:10px;color:#888;margin-bottom:2px">영양제 월</div><div style="font-size:14px;font-weight:700">63,000원</div></div></div><div class="tot"><span style="font-size:13px;font-weight:700">월 총합</span><span style="font-size:20px;font-weight:700;color:#7b72e9">228,000~243,000원</span></div>';
 }
 
 function renderGapDataFull(p){
