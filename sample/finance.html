@@ -34,7 +34,7 @@
   --radius-md:12px;
   --radius-lg:16px;
 }
-body{font-family:-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;font-size:14px;background:var(--bg);color:var(--text);min-height:100vh;padding:20px 16px 60px;}
+body{font-family:-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;font-size:14px;background:var(--bg);color:var(--text);min-height:100vh;padding:20px 16px 60px;max-width:640px;margin:0 auto;}
 
 /* 헤더 */
 .page-header{margin-bottom:20px;}
@@ -152,11 +152,20 @@ const content = {
     <div class="tl">월별 재무 현황</div>
     <div class="g2">
       <div class="mc"><div class="ml">월 수입 (실수령)</div><div class="mv" style="color:var(--green)">—만원</div><div class="ms">세후 기준</div></div>
-      <div class="mc"><div class="ml">고정 납입 합계</div><div class="mv" style="color:var(--accent)">150만원</div><div class="ms">청약+연금+IRP</div></div>
-      <div class="mc"><div class="ml">생활비 예산</div><div class="mv">—만원</div><div class="ms">월 평균</div></div>
-      <div class="mc"><div class="ml">연간 세금 환급</div><div class="mv" style="color:var(--green)">+215만원</div><div class="ms">4개 상품 합산</div></div>
+      <div class="mc"><div class="ml">고정 납입 합계</div><div class="mv" style="color:var(--accent)">70만원</div><div class="ms">청약 25만 (준비중)</div></div>
+      <div class="mc"><div class="ml">고정 지출 합계</div><div class="mv">122만원</div><div class="ms">주거+보험+운동+구독+식비</div></div>
+      <div class="mc"><div class="ml">가처분 소득</div><div class="mv" style="color:var(--blue)">약 178만원</div><div class="ms">고정지출 제외</div></div>
     </div>
 
+    <div class="tl">단계별 재무 플랜</div>
+    <div class="card">
+      <div class="ch"><i class="ti ti-stairs"></i> 3단계 로드맵</div>
+      <ul class="step-list">
+        <li><div class="snum red">1단계</div><div><strong>비상금 완성 (2~3개월)</strong><br><span style="color:var(--text-2)">파킹통장에 월 100만원 이체 → 600만원 달성. 이 기간엔 투자 없음. 청약만 25만원 시작.</span></div></li>
+        <li><div class="snum" style="background:var(--orange-bg);color:var(--orange)">2단계</div><div><strong>절세 상품 풀가동 (비상금 완성 직후)</strong><br><span style="color:var(--text-2)">청약 25만 + 연금저축 30만 + IRP 15만 = 월 70만원 납입. 연간 절세 효과 약 134만원.</span></div></li>
+        <li><div class="snum green">3단계</div><div><strong>안정화 후 추가 투자 (6개월 후)</strong><br><span style="color:var(--text-2)">연금저축 내 S&P500 ETF. 여유분으로 ISA 계좌 고려. 파킹통장 이자 복리 활용.</span></div></li>
+      </ul>
+    </div>
     <div class="tl">자산 배분 현황</div>
     <div class="card">
       <div class="ch"><i class="ti ti-chart-pie"></i> 자산 카테고리별 배분</div>
@@ -179,11 +188,11 @@ const content = {
     <div class="card">
       <div class="ch"><i class="ti ti-list-check"></i> 월간 필수 확인</div>
       <ul class="step-list">
-        <li><div class="snum green">✓</div><div><strong>주택드림 청약 자동이체 확인</strong><br><span style="color:var(--text-2)">월 25만원 — 납입일 확인</span></div></li>
-        <li><div class="snum green">✓</div><div><strong>연금저축펀드 납입 확인</strong><br><span style="color:var(--text-2)">월 50만원 — ETF 잔고 확인</span></div></li>
-        <li><div class="snum green">✓</div><div><strong>IRP 납입 확인</strong><br><span style="color:var(--text-2)">월 25만원 — 연간 300만원 목표</span></div></li>
-        <li><div class="snum">!</div><div><strong>파킹통장 잔고 확인</strong><br><span style="color:var(--text-2)">목표: 비상금 600~900만원 유지</span></div></li>
-        <li><div class="snum">!</div><div><strong>카드 지출 내역 점검</strong><br><span style="color:var(--text-2)">예산 초과 항목 확인 및 조정</span></div></li>
+        <li><div class="snum red">1</div><div><strong>파킹통장 개설 — 비상금 600만원 목표</strong><br><span style="color:var(--text-2)">현재 300만원 보유 → 월 100만원 이체 → 3개월 후 완성. 토스뱅크 or 저축은행 금리 비교</span></div></li>
+        <li><div class="snum red">2</div><div><strong>주택드림 청약 즉시 가입</strong><br><span style="color:var(--text-2)">월 25만원 · 가입 기간이 가점 직결 · 지금 바로 시작 필요. 30세 무주택 최적 시점</span></div></li>
+        <li><div class="snum">3</div><div><strong>비상금 완성 후 — 연금저축펀드 가입</strong><br><span style="color:var(--text-2)">월 30만원 · S&P500 ETF 담기 · 세액공제 연 59만원</span></div></li>
+        <li><div class="snum">4</div><div><strong>비상금 완성 후 — IRP 가입</strong><br><span style="color:var(--text-2)">월 15만원 · 추가 세액공제 연 30만원</span></div></li>
+        <li><div class="snum">!</div><div><strong>월 지출 내역 점검</strong><br><span style="color:var(--text-2)">고정지출 122만원 외 변동지출 확인. 가처분 178만원 초과 지출 방지</span></div></li>
       </ul>
     </div>`,
 
@@ -222,12 +231,12 @@ const content = {
     <div class="tl">연간 세금 혜택 합산</div>
     <div class="sim">
       <div style="font-size:11px;color:var(--text-2);margin-bottom:10px">4개 상품 합산 연간 실질 혜택</div>
-      <div class="sim-r"><span>주택드림 청약 (월 25만원)</span><span>+52만원</span></div>
-      <div class="sim-r"><span>연금저축 세액공제 (월 50만원)</span><span>+99만원</span></div>
-      <div class="sim-r"><span>IRP 추가 세액공제 (월 25만원)</span><span>+49.5만원</span></div>
-      <div class="sim-r"><span>파킹통장 추가 이자</span><span>+15만원</span></div>
-      <div class="sim-t"><span>연간 합산 실질 혜택</span><span style="color:var(--green)">약 215만원</span></div>
-      <div style="font-size:11px;color:var(--text-2);margin-top:8px">= 월 약 17.9만원 자동 이익</div>
+      <div class="sim-r"><span>주택드림 청약 (월 25만원)</span><span>+45만원</span></div>
+      <div class="sim-r"><span>연금저축 세액공제 (월 30만원)</span><span>+59만원</span></div>
+      <div class="sim-r"><span>IRP 추가 세액공제 (월 15만원)</span><span>+30만원</span></div>
+      <div class="sim-r"><span>파킹통장 이자 (600만원 기준)</span><span>+약 15만원</span></div>
+      <div class="sim-t"><span>연간 합산 실질 혜택</span><span style="color:var(--green)">약 149만원</span></div>
+      <div style="font-size:11px;color:var(--text-2);margin-top:8px">= 월 약 12.4만원 자동 이익</div>
     </div>`,
 
   pension: `
@@ -258,24 +267,24 @@ const content = {
     <div class="tl">월 지출 예산 계획</div>
     <div class="card">
       <div class="ch"><i class="ti ti-wallet"></i> 카테고리별 예산</div>
-      <div class="row"><span class="rl">식비</span><span class="rv">—만원 <small>외식 포함</small></span></div>
-      <div class="row"><span class="rl">교통</span><span class="rv">—만원 <small>대중교통·주유</small></span></div>
-      <div class="row"><span class="rl">통신</span><span class="rv">—만원 <small>핸드폰·인터넷</small></span></div>
-      <div class="row"><span class="rl">건강/운동</span><span class="rv">—만원 <small>헬스장·클라이밍</small></span></div>
-      <div class="row"><span class="rl">구독 서비스</span><span class="rv">—만원 <small>넷플릭스·유튜브 등</small></span></div>
-      <div class="row"><span class="rl">여가/취미</span><span class="rv">—만원</span></div>
-      <div class="row"><span class="rl">기타 생활비</span><span class="rv">—만원</span></div>
+      <div class="row"><span class="rl">주거 (월세+공과금)</span><span class="rv">700,000원</span></div>
+      <div class="row"><span class="rl">보험</span><span class="rv">127,000원 <small>2개</small></span></div>
+      <div class="row"><span class="rl">운동</span><span class="rv">130,000원 <small>헬스 3만 + 클라이밍 10만</small></span></div>
+      <div class="row"><span class="rl">식비 (점심 제외)</span><span class="rv">230,000원 <small>식단 플랜 기준</small></span></div>
+      <div class="row"><span class="rl">구독 서비스</span><span class="rv">35,000원 <small>플로·넷플·티빙</small></span></div>
+      <div class="row"><span class="rl">통신비</span><span class="rv">0원 <small>무료 요금제</small></span></div>
+      <div class="row"><span class="rl">고정 지출 합계</span><span class="rv" style="color:var(--accent);font-weight:800">1,222,000원</span></div>
+      <div class="row"><span class="rl">가처분 소득</span><span class="rv" style="color:var(--green);font-weight:800">약 1,778,000원</span></div>
       <div class="tip">⚠️ 위 항목들을 실제 지출로 업데이트하세요. 카드 내역을 월말에 카테고리별로 집계하면 됩니다.</div>
     </div>
 
     <div class="tl">구독 서비스 목록</div>
     <div class="card">
       <div class="ch"><i class="ti ti-credit-card"></i> 정기 결제 목록</div>
-      <div class="row"><span class="rl">유튜브 프리미엄</span><span class="rv">—원/월</span></div>
-      <div class="row"><span class="rl">넷플릭스</span><span class="rv">—원/월</span></div>
-      <div class="row"><span class="rl">ChatGPT Plus</span><span class="rv">—원/월</span></div>
-      <div class="row"><span class="rl">Claude Pro</span><span class="rv">—원/월</span></div>
-      <div class="row"><span class="rl">기타</span><span class="rv">—원/월</span></div>
+      <div class="row"><span class="rl">플로 (음악)</span><span class="rv">약 8,000원/월</span></div>
+      <div class="row"><span class="rl">넷플릭스</span><span class="rv">약 17,000원/월</span></div>
+      <div class="row"><span class="rl">티빙</span><span class="rv">약 10,900원/월</span></div>
+      <div class="row"><span class="rl">합계</span><span class="rv" style="font-weight:800">약 35,900원/월</span></div>
       <div class="ok">✅ 분기마다 구독 서비스를 검토해서 사용하지 않는 항목을 정리하세요.</div>
     </div>
 
