@@ -6325,6 +6325,9 @@ function setPage(pageId,btn,cat){
   });
   btn.classList.add('on-'+cat);
   /* 탭별 렌더 연결 */
+  if(pageId==='d-tl'){renderDiet();}
+  if(pageId==='d-pr'){var _p=APP.profile||{};renderPriceDataFull(_p);}
+  if(pageId==='d-ai'){if(typeof renderAiTab==='function')renderAiTab();}
   if(pageId==='l-link'){renderLinkList();}
   if(pageId==='d-sp'){renderSuppPage();}
   if(pageId==='l-sync'){setTimeout(()=>{loadAccountMgmt();renderTabMgmt();},300);}
