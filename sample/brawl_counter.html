@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<title>브롤스타즈 카운터 — 2026.05.13</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --bg:#f5f5f7;--surface:#fff;--surface-2:#f0f0f5;
+  --border:#e5e5ea;--text:#1a1a1a;--text-2:#6e6e73;--text-3:#aeaeb2;
+  --accent:#7b72e9;--accent-bg:#f3f0ff;--accent-border:#d4c8ff;
+  --green:#1d9e75;--green-bg:#e6fdf2;
+  --red:#e02020;--red-bg:#fdecea;
+  --orange:#d4720a;--orange-bg:#fff7e6;
+  --blue:#185fa5;--blue-bg:#dceefb;
+  --radius-sm:8px;--radius-md:12px;--radius-lg:16px;
+}
+body{font-family:-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;font-size:14px;background:var(--bg);color:var(--text);min-height:100vh;padding:16px 16px 60px;max-width:640px;margin:0 auto;}
+
+/* 헤더 */
+.page-header{margin-bottom:16px;}
+.page-title{font-size:20px;font-weight:800;letter-spacing:-.5px;margin-bottom:3px;}
+.page-sub{font-size:11px;color:var(--text-2);}
+
+/* 검색 */
+.search-wrap{position:sticky;top:0;z-index:100;background:var(--bg);padding:8px 0 10px;}
+.search-box{width:100%;font-family:inherit;font-size:14px;padding:10px 14px 10px 36px;border:1.5px solid var(--border);border-radius:var(--radius-md);background:var(--surface);outline:none;transition:border-color .15s;}
+.search-box:focus{border-color:var(--accent);}
+.search-icon{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--text-3);font-size:15px;}
+.search-wrap-inner{position:relative;}
+
+/* 필터 탭 */
+.filter-row{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px;}
+.filter-btn{padding:5px 12px;font-size:11px;font-weight:600;cursor:pointer;border-radius:99px;border:1.5px solid var(--border);color:var(--text-2);background:var(--surface);transition:all .15s;font-family:inherit;white-space:nowrap;}
+.filter-btn.on{background:var(--accent-bg);color:var(--accent);border-color:var(--accent-border);}
+
+/* 카운터 카드 */
+.card{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--radius-lg);padding:14px;margin-bottom:8px;transition:border-color .15s;}
+.card:hover{border-color:var(--accent-border);}
+.card-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;cursor:pointer;}
+.brawler-name{font-size:14px;font-weight:800;color:var(--text);}
+.role-badge{font-size:10px;font-weight:700;padding:2px 8px;border-radius:99px;}
+.counter-list{display:flex;flex-wrap:wrap;gap:5px;}
+.counter-chip{font-size:11px;font-weight:600;padding:3px 9px;border-radius:99px;background:var(--red-bg);color:var(--red);border:1.5px solid #f5b8b8;cursor:pointer;transition:all .15s;}
+.counter-chip:hover{background:var(--red);color:#fff;}
+.counter-chip.special{background:var(--orange-bg);color:var(--orange);border-color:#fdd8a0;}
+.count-badge{font-size:10px;color:var(--text-3);margin-top:6px;}
+
+/* 없음 */
+.empty{text-align:center;color:var(--text-3);padding:40px 0;font-size:13px;}
+
+/* 역할별 색상 */
+.role-탱커{background:#dceefb;color:#185fa5;}
+.role-전사{background:#e6fdf2;color:#1d9e75;}
+.role-저격수{background:#f3f0ff;color:#7b72e9;}
+.role-투척수{background:#fff7e6;color:#d4720a;}
+.role-암살자{background:#fdecea;color:#e02020;}
+.role-서포터{background:#f0f4ff;color:#185fa5;}
+.role-컨트롤러{background:#e6fdf2;color:#0a5c46;}
+.role-피해딜러{background:#fff3e0;color:#e65100;}
+.role-기타{background:var(--surface-2);color:var(--text-2);}
+
+/* 역할 필터 색상 */
+.filter-btn[data-role="탱커"].on{background:#dceefb;color:#185fa5;border-color:#9ecef5;}
+.filter-btn[data-role="전사"].on{background:#e6fdf2;color:#1d9e75;border-color:#a3e9cc;}
+.filter-btn[data-role="저격수"].on{background:#f3f0ff;color:#7b72e9;border-color:#d4c8ff;}
+.filter-btn[data-role="투척수"].on{background:#fff7e6;color:#d4720a;border-color:#fdd8a0;}
+.filter-btn[data-role="암살자"].on{background:#fdecea;color:#e02020;border-color:#f5b8b8;}
+.filter-btn[data-role="서포터"].on{background:#f0f4ff;color:#185fa5;border-color:#b0bfee;}
+.filter-btn[data-role="컨트롤러"].on{background:#e6fdf2;color:#0a5c46;border-color:#a3e9cc;}
+
+/* 강조 */
+mark{background:var(--accent-bg);color:var(--accent);border-radius:3px;padding:0 2px;}
+</style>
+</head>
+<body>
+
+<div class="page-header">
+  <div class="page-title">🎮 브롤스타즈 카운터</div>
+  <div class="page-sub">2026.05.13 ver · 파워리그 마스터 + 경쟁 프로 의견 기반</div>
+</div>
+
+<div class="search-wrap">
+  <div class="search-wrap-inner">
+    <span class="search-icon">🔍</span>
+    <input class="search-box" type="text" id="search" placeholder="브롤러 이름 검색..." oninput="render()">
+  </div>
+</div>
+
+<div class="filter-row" id="filter-row"></div>
+<div id="list"></div>
+
+<script>
+const DATA = [
+  {name:'쉘리',role:'전사',counters:['찰리','타라','스튜','앰버','스파이크','크로우']},
+  {name:'니타',role:'전사',counters:['발리','주주 등 모든 스로어','앰버','그리프','엠즈']},
+  {name:'콜트',role:'저격수',counters:['파이퍼','벨 등 저격수','지지']},
+  {name:'불',role:'탱커',counters:['코델리우스','니타','오티스','그리프','루','미플']},
+  {name:'브록',role:'저격수',counters:['맥스','재용','파이퍼','나니','카제']},
+  {name:'엘프리모',role:'탱커',counters:['콜레트','코델리우스','그리프','클랜시 등 모든 탱킬러']},
+  {name:'발리',role:'투척수',counters:['모티스','에드거 등 모든 암살자','다이너']},
+  {name:'포코',role:'서포터',counters:['엠즈','모티스','켄지','에드거','샘']},
+  {name:'로사',role:'탱커',counters:['프랭크','엘프리모','불','쉘리','앰버']},
+  {name:'제시',role:'컨트롤러',counters:['발리','베리 등 모든 스로어','칼','스퀴크']},
+  {name:'다이너마이크',role:'투척수',counters:['모티스','에드거 등 모든 암살자']},
+  {name:'틱',role:'투척수',counters:['에드거','모티스 등 모든 암살자','그롬']},
+  {name:'8비트',role:'피해딜러',counters:['벨','파이퍼','맨디','스퀴크','페니','피어스']},
+  {name:'리코',role:'피해딜러',counters:['스튜','브록','주주','발리','콜트']},
+  {name:'데릴',role:'전사',counters:['코델리우스','R-T','그리프','불','오티스','루']},
+  {name:'페니',role:'투척수',counters:['칼','베리','스퀴크','켄지','브록','벨']},
+  {name:'칼',role:'전사',counters:['버즈','미나','스튜','콜레트','비비','코델리우스']},
+  {name:'재키',role:'탱커',counters:['프랭크','불','엘프리모','콜레트','그리프','더그']},
+  {name:'거스',role:'서포터',counters:['바이런','이브','파이퍼','데릴']},
+  {name:'보',role:'컨트롤러',counters:['모티스 등 모든 암살자','재용','맥스','스튜','레온']},
+  {name:'엠즈',role:'컨트롤러',counters:['모티스','에드거 등 모든 암살자','앰버','자넷']},
+  {name:'스튜',role:'암살자',counters:['러프스','포코','찰리','팸','타라','스파이크']},
+  {name:'파이퍼',role:'저격수',counters:['나니','R-T','카제','맥스']},
+  {name:'팸',role:'서포터',counters:['루','제시','8비트','루미','바이런','스퀴크']},
+  {name:'프랭크',role:'탱커',counters:['시리우스','콜레트','엘프리모','불','루미','체스터']},
+  {name:'비비',role:'전사',counters:['불','엘프리모','루미','크로우','버즈','쉘리']},
+  {name:'비',role:'저격수',counters:['미스터P','파이퍼','바이런','스프라우트','보','찰리']},
+  {name:'나니',role:'저격수',counters:['진','재용','맥스','틱','미나']},
+  {name:'에드거',role:'암살자',counters:['불','코델리우스','스튜(제로드래그 스파)','게일','오티스']},
+  {name:'그리프',role:'피해딜러',counters:['스튜','미나','비','피어스','콜트','모']},
+  {name:'그롬',role:'투척수',counters:['모티스','에드거 등 모든 암살자','비비']},
+  {name:'보니',role:'저격수',counters:['찰리','메이지','파이퍼','알티','콜레트']},
+  {name:'게일',role:'컨트롤러',counters:['벨','바이런 등 모든 초원거리류 캐릭','스튜','앰버','주주','지기']},
+  {name:'콜레트',role:'피해딜러',counters:['주주 등 모든 스로어','크로우','찰리','거스','러프스']},
+  {name:'벨',role:'저격수',counters:['파이퍼','바이런','나니','보니']},
+  {name:'애쉬',role:'탱커',counters:['불','프랭크','앰버','콜레트 외 탱킬러']},
+  {name:'롤라',role:'피해딜러',counters:['벨','페니','칼','루미','지지']},
+  {name:'샘',role:'전사',counters:['코델리우스','불','니타','그리프','프랭크']},
+  {name:'맨디',role:'저격수',counters:['나니','파이퍼','맥스','재용','틱']},
+  {name:'메이지',role:'피해딜러',counters:['찰리','타라','러프스','스튜','미나','주주']},
+  {name:'행크',role:'탱커',counters:['발리','다이너 등 모든 스로어','프랭크','불','드라코','비비']},
+  {name:'펄',role:'피해딜러',counters:['R-T','진','스튜','롤라','8비트']},
+  {name:'래리&로리',role:'전사',counters:["에드거","카제 등 빠르게 잡을수있는 모든 암살자","발리","다이너마이크"]},
+  {name:'안젤로',role:'저격수',counters:['미스터P','맥스','재용','나니','이브']},
+  {name:'베리',role:'투척수',counters:['모티스 등 모든 암살자','발리','크로우']},
+  {name:'셰이드',role:'암살자',counters:['행크','더그','재키','프랭크','루']},
+  {name:'미플',role:'서포터',counters:['찰리','러프스','브록','애쉬','켄지','페니','시리우스']},
+  {name:'트렁크',role:'탱커',counters:['프랭크','드라코','불','엘프리모','루']},
+  {name:'모티스',role:'암살자',counters:['불','쉘리','체스터','오티스','게일']},
+  {name:'타라',role:'컨트롤러',counters:['앰버','샌디','자넷','버스터','페니','주주']},
+  {name:'진',role:'컨트롤러',counters:['벨','미스터P','찰리','지지','8비트']},
+  {name:'맥스',role:'서포터',counters:['크로우','롤라','스튜','거스','미플']},
+  {name:'미스터P',role:'컨트롤러',counters:['모티스','에드거 등 모든 암살자','데릴']},
+  {name:'스프라우트',role:'투척수',counters:['모티스','에드거 등 모든 암살자','틱','그롬']},
+  {name:'바이런',role:'서포터',counters:['파이퍼','미스터P','모티스','릴리','알리']},
+  {name:'스퀴크',role:'투척수',counters:['에드거','모티스 등 모든 암살자','칼','데릴']},
+  {name:'루',role:'컨트롤러',counters:['바이런','포코','보','비','지지']},
+  {name:'러프스',role:'서포터',counters:['모티스','에드거','켄지','칼','스퀴크','알리']},
+  {name:'버즈',role:'암살자',counters:['불','서지','코델리우스','미나','찰리']},
+  {name:'팽',role:'암살자',counters:['찰리','타라','드라코','오티스']},
+  {name:'이브',role:'피해딜러',counters:['페니','재용','자넷','브록','벨']},
+  {name:'자넷',role:'피해딜러',counters:['칼','프랭크','보니','모티스','거스']},
+  {name:'오티스',role:'컨트롤러',counters:['스튜','콜트','러프스','포코','래리&로리','주주','알리']},
+  {name:'버스터',role:'탱커',counters:['불','데릴','비비 등 모든탱커','켄지','주주','니타']},
+  {name:'그레이',role:'서포터',counters:['찰리','미스터P','거스','바이런','재용','맥스']},
+  {name:'R-T',role:'탱커',counters:['맥스','재용','레온','거스']},
+  {name:'윌로우',role:'컨트롤러',counters:['발리','래리','주주','다이너','그리프','스튜']},
+  {name:'더그',role:'서포터',counters:['코델리우스','루미','프랭크','크로우','그리프','불']},
+  {name:'척',role:'암살자',counters:['코델리우스','불','멜로디(하이스트)','콜레트']},
+  {name:'찰리',role:'컨트롤러',counters:['앰버','자넷','루미','지기','주주']},
+  {name:'미코',role:'암살자',counters:['R-T','프랭크','불','더그','팽','스튜']},
+  {name:'멜로디',role:'컨트롤러',counters:['앰버','코델리우스','버스터','크로우','벨(장전금지 스파)']},
+  {name:'릴리',role:'암살자',counters:['코델리우스','불','R-T','드라코','트렁크']},
+  {name:'클랜시',role:'탱커',counters:['찰리','타라','비','바이런','주주','래리&로리','페니']},
+  {name:'모',role:'전사',counters:['스튜','체스터','러프스','지지','버스터','모티스','미플']},
+  {name:'주주',role:'투척수',counters:['모티스','에드거','발리','다이너','오픈맵의 경우 브록']},
+  {name:'올리',role:'탱커',counters:['포코','코델리우스','버스터','에드거','찰리','콜레트']},
+  {name:'핑크스',role:'컨트롤러',counters:['크로우','지기','팸','미플','엠즈','찰리']},
+  {name:'루미',role:'서포터',counters:['발리','주주 등 모든 스로어','모티스','에드거','릴리','카제','브록','크로우']},
+  {name:'재용',role:'암살자',counters:['크로우','보니','벨','데릴','메그']},
+  {name:'알리',role:'탱커',counters:['불','트렁크','더그','프랭크','체스터','애쉬']},
+  {name:'미나',role:'저격수',counters:['크로우','찰리','미플','코델리우스','모티스','트렁크']},
+  {name:'지기',role:'컨트롤러',counters:['에드거','모티스 등 모든 암살자','틱']},
+  {name:'지지',role:'탱커',counters:['행크','불','프랭크','더그','서지']},
+  {name:'글로이',role:'피해딜러',counters:['크로우','벨','켄지','주주','찰리']},
+  {name:'나지아',role:'암살자',counters:['모티스','비비','에드거','포코','켄지','러프스']},
+  {name:'데미안',role:'탱커',counters:['오티스','엘프리모','에드거','콜레트']},
+  {name:'스파이크',role:'피해딜러',counters:['발리','지기','주주 등 모든 스로어','칼']},
+  {name:'크로우',role:'암살자',counters:['찰리','롤라','러프스','스파이크','미플','페니','바이런']},
+  {name:'레온',role:'암살자',counters:['크로우','자넷','진','미나','찰리','러프스','체스터']},
+  {name:'샌디',role:'서포터',counters:['니타','드라코','엠즈','켄지','발리','주주']},
+  {name:'앰버',role:'피해딜러',counters:['바이런','크로우','모티스','롤라']},
+  {name:'메그',role:'탱커',counters:['롤라','비','콜레트','찰리']},
+  {name:'서지',role:'피해딜러',counters:['찰리','러프스','발리','주주','타라']},
+  {name:'체스터',role:'피해딜러',counters:['찰리','스튜','타라','러프스','루미','미나','엠즈','벽깔사람이 없는경우 모든 스로어']},
+  {name:'코델리우스',role:'탱커',counters:['프랭크','스튜','샌디','서지','게일']},
+  {name:'키트',role:'서포터',counters:['프랭크','릴리','코델리우스','행크','더그','재키']},
+  {name:'드라코',role:'탱커',counters:['프랭크','코델리우스','크로우','애쉬','루']},
+  {name:'켄지',role:'전사',counters:['드라코','프랭크','코델리우스','핑크스','애쉬']},
+  {name:'피어스',role:'피해딜러',counters:['스파이크','찰리','파이퍼','러프스','나니']},
+  {name:'카제',role:'암살자',counters:['타라','체스터','크로우','켄지','샌디','핑크스']},
+  {name:'시리우스',role:'피해딜러',counters:['발리','주주 등 모든 스로어','에드거','모티스','페니','루미']},
+  {name:'볼트',role:'기타',counters:['???']},
+  {name:'스타노바',role:'기타',counters:['???']},
+];
+
+const ROLES=['전체','탱커','전사','저격수','투척수','암살자','서포터','컨트롤러','피해딜러','기타'];
+let currentRole='전체';
+
+// 필터 버튼 생성
+const fr=document.getElementById('filter-row');
+ROLES.forEach(r=>{
+  const b=document.createElement('button');
+  b.className='filter-btn'+(r==='전체'?' on':'');
+  b.setAttribute('data-role',r);
+  b.textContent=r;
+  b.onclick=()=>{
+    currentRole=r;
+    document.querySelectorAll('.filter-btn').forEach(x=>x.classList.remove('on'));
+    b.classList.add('on');
+    render();
+  };
+  fr.appendChild(b);
+});
+
+function highlight(text,q){
+  if(!q)return text;
+  const re=new RegExp('('+q.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+')','gi');
+  return text.replace(re,'<mark>$1</mark>');
+}
+
+function render(){
+  const q=document.getElementById('search').value.trim();
+  const el=document.getElementById('list');
+  let filtered=DATA;
+
+  if(currentRole!=='전체') filtered=filtered.filter(d=>d.role===currentRole);
+  if(q){
+    filtered=filtered.filter(d=>
+      d.name.includes(q)||d.counters.some(c=>c.includes(q))
+    );
+  }
+
+  if(!filtered.length){
+    el.innerHTML='<div class="empty">🔍 검색 결과가 없습니다</div>';
+    return;
+  }
+
+  el.innerHTML=filtered.map(d=>{
+    const chips=d.counters.map((c,i)=>`<span class="counter-chip${i===0?' special':''}" onclick="searchCounter('${c.replace(/[^가-힣a-zA-Z0-9&]/g,'').substring(0,4)}')">${q?highlight(c,q):c}</span>`).join('');
+    return`<div class="card">
+      <div class="card-head">
+        <span class="brawler-name">${q?highlight(d.name,q):d.name}</span>
+        <span class="role-badge role-${d.role}">${d.role}</span>
+      </div>
+      <div class="counter-list">${chips}</div>
+      <div class="count-badge">카운터 ${d.counters.length}개 · 첫 번째가 가장 강한 카운터</div>
+    </div>`;
+  }).join('');
+}
+
+function searchCounter(name){
+  document.getElementById('search').value=name;
+  currentRole='전체';
+  document.querySelectorAll('.filter-btn').forEach(x=>x.classList.remove('on'));
+  document.querySelector('.filter-btn[data-role="전체"]').classList.add('on');
+  render();
+}
+
+render();
+</script>
+</body>
+</html>
