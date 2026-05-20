@@ -1073,7 +1073,7 @@ body:not(.light-mode) .home-ai::before{background:#0e0e14;}
 <!-- 대분류 탭 -->
 <div class="cat-tabs">
   <button class="cat-tab cat-tab-home on" onclick="setCat('home',this)">🏠 홈</button>
-  <button class="cat-tab cat-tab-today" onclick="setCat('today',this)">📋 오늘</button>
+  <button class="cat-tab cat-tab-today" onclick="setCat('today',this)">📋 기록</button>
   <button class="cat-tab cat-tab-train" onclick="setCat('train',this)">💪 운동</button>
   <button class="cat-tab cat-tab-stat" onclick="setCat('stat',this)">📊 분석</button>
 </div>
@@ -1092,14 +1092,14 @@ body:not(.light-mode) .home-ai::before{background:#0e0e14;}
   <button class="sub-tab" onclick="setPage('l-lift',this,'train')">중량추적</button>
 </div>
 <div class="sub-tabs" id="sub-stat" style="display:none">
-  <button class="sub-tab on-stat" onclick="setPage('e-tr',this,'stat')">트렌드</button>
-  <button class="sub-tab" onclick="setPage('e-st',this,'stat')">현재상태</button>
-  <button class="sub-tab" onclick="setPage('e-up',this,'stat')">중량현황</button>
-  <button class="sub-tab" onclick="setPage('d-tl',this,'stat')">식단플랜</button>
-  <button class="sub-tab" onclick="setPage('d-pr',this,'stat')">🛒 식재료</button>
-  <button class="sub-tab" onclick="setPage('d-sp',this,'stat')">💊 영양제</button>
-  <button class="sub-tab" onclick="setPage('l-link',this,'stat')">🔗 링크</button>
-  <button class="sub-tab" onclick="setPage('d-ai',this,'stat')" style="background:linear-gradient(135deg,#7b72e9,#a78bfa);color:#fff;border-color:transparent;font-weight:700">🤖 AI</button>
+  <button class="sub-tab on-stat" data-tab-id="e-tr" onclick="setPage('e-tr',this,'stat')">트렌드</button>
+  <button class="sub-tab" data-tab-id="e-st" onclick="setPage('e-st',this,'stat')">현재상태</button>
+  <button class="sub-tab" data-tab-id="e-up" onclick="setPage('e-up',this,'stat')">중량현황</button>
+  <button class="sub-tab" data-tab-id="d-tl" onclick="setPage('d-tl',this,'stat')">식단플랜</button>
+  <button class="sub-tab" data-tab-id="d-pr" onclick="setPage('d-pr',this,'stat')">🛒 식재료</button>
+  <button class="sub-tab" data-tab-id="d-sp" onclick="setPage('d-sp',this,'stat')">💊 영양제</button>
+  <button class="sub-tab" data-tab-id="l-link" onclick="setPage('l-link',this,'stat')">🔗 링크</button>
+  <button class="sub-tab" data-tab-id="d-ai" onclick="setPage('d-ai',this,'stat')" style="background:linear-gradient(135deg,#7b72e9,#a78bfa);color:#fff;border-color:transparent;font-weight:700">🤖 AI</button>
   <button class="sub-tab" onclick="setPage('l-sync',this,'stat')">⚙️ 설정</button>
 </div>
 
@@ -1850,6 +1850,13 @@ body:not(.light-mode) .home-ai::before{background:#0e0e14;}
   </div>
 </div>
 <div class="card"><div class="ctitle">초기 설정 가이드</div><div id="setup-guide"></div></div>
+
+<!-- 탭 관리 카드 -->
+<div class="card">
+  <div class="ctitle">🗂 분석 탭 관리</div>
+  <div style="font-size:11px;color:#888;margin-bottom:12px">숨긴 탭은 분석 메뉴에서 사라집니다. 첫 번째 표시된 탭이 기본 탭이 됩니다.</div>
+  <div id="tab-mgmt-list"></div>
+</div>
 
 <!-- 계정 관리 카드 -->
 <div class="card">
@@ -2639,8 +2646,10 @@ function initApp(){
   /* 날짜 필드 초기화 — 이전 세션 날짜 잔존 방지 */
   var dateEl=document.getElementById('log-date');if(dateEl)dateEl.value='';
   renderProfileHeader();
+  applyHiddenTabs();
   loadDB().then(()=>{renderExDBList();renderFoodDBList();renderExerciseBlocks();});
   renderDiet();renderExercise();renderRehab();loadSyncConfig();
+  applyHiddenTabs();
   showTodayBanner();
 
   var uid=APP.user?.id;
@@ -5466,7 +5475,7 @@ function setCat(cat,btn){
   /* 모든 페이지 숨기기 */
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('on'));
   /* 첫 페이지 보이기 */
-  var firstPages={home:'h-home',today:'l-hist',train:'l-exdb',stat:'e-tr',diet:'d-tl',ex:'e-wk',rehab:'r-dx',log:'l-hist'};
+  var firstPages={home:'h-home',today:'l-hist',train:'l-exdb',stat:window._statFirstPage||'e-tr',diet:'d-tl',ex:'e-wk',rehab:'r-dx',log:'l-hist'};
   var fp=document.getElementById(firstPages[cat]);if(fp)fp.classList.add('on');
   /* 첫 중분류 버튼 활성화 */
   var subBtns=document.querySelectorAll('#sub-'+cat+' .sub-tab');
@@ -5478,7 +5487,16 @@ function setCat(cat,btn){
     initLogTab();
   }
   if(cat==='train'){renderExDBList();renderInbodyHistory();renderLiftHistory();}
-  if(cat==='stat'){var p=APP.profile||{};renderTrend(p);renderCurrentState(p);}
+  if(cat==='stat'){
+    var p=APP.profile||{};
+    var _fp=window._statFirstPage||'e-tr';
+    if(_fp==='e-tr')renderTrend(p);
+    else if(_fp==='e-st')renderCurrentState(p);
+    else if(_fp==='e-up'){renderUpperBody(p);renderLiftGraph('벤치프레스',document.querySelector('#lift-graph-btns .filter-btn.on'));}
+    else if(_fp==='d-tl')renderDiet();
+    else if(_fp==='d-sp')renderSuppPage();
+    else if(_fp==='l-link')renderLinkList();
+  }
 }
 /* ─── 홈화면 렌더 ─── */
 /* ─── 홈/기록내역에서 기록하기 탭으로 이동 ─── */
@@ -5616,31 +5634,29 @@ function toggleLogDetail(date, cardEl){
     var best=e.sets.reduce((m,s)=>parseFloat(s.kg||0)>parseFloat(m.kg||0)?s:m,e.sets[0]);
     var setsStr=e.sets.map((s,i)=>`${i+1}세트 ${s.kg?s.kg+'kg':''}${s.reps?' × '+s.reps:''}`).join(' · ');
     var isLast=ei===exArr.length-1;
-    return`<div style="padding:7px 0${isLast?'':';border-bottom:1px solid var(--border,#f0f0f0)'}">
-      <div style="font-size:12px;font-weight:700;color:#185fa5;margin-bottom:2px">${e.name} <span style="font-size:11px;font-weight:400;color:var(--text-secondary,#888)">${e.sets.length}세트${best?.kg?' · 최대 '+best.kg+'kg':''}</span></div>
-      <div style="font-size:10px;color:var(--text-secondary,#aaa);line-height:1.7">${setsStr}</div>
+    return`<div style="padding:8px 10px;margin-bottom:${isLast?'0':'6px'};background:#f0f4ff;border-radius:8px">
+      <div style="font-size:12px;font-weight:700;color:#185fa5;margin-bottom:2px">${e.name} <span style="font-size:11px;font-weight:400;color:#4a7bc4">${e.sets.length}세트${best?.kg?' · 최대 '+best.kg+'kg':''}</span></div>
+      <div style="font-size:10px;color:#6b8fc9;line-height:1.7">${setsStr}</div>
     </div>`;
   }).join('');
-  var exHtml=exItems?`<div style="border:1.5px solid var(--border,#e8e8e8);border-radius:10px;padding:0 12px;margin-bottom:10px">${exItems}</div>`:'';
+  var exHtml=exItems?`<div style="margin-bottom:10px">${exItems}</div>`:'';
 
   /* 영양 그리드 */
   var nutHtml='';
   if(log.nutrition){
     var n=log.nutrition;
-    var nc='border:1.5px solid var(--border,#e8e8e8);border-radius:8px;padding:8px 10px';
     nutHtml=`<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:6px;margin-bottom:10px">
-      <div style="${nc}"><div style="font-size:10px;color:var(--text-secondary,#888);margin-bottom:2px">단백질</div><div style="font-size:16px;font-weight:700;color:#1d9e75">${n.prot||0}g</div></div>
-      <div style="${nc}"><div style="font-size:10px;color:var(--text-secondary,#888);margin-bottom:2px">칼로리</div><div style="font-size:16px;font-weight:700;color:#e57373">${n.kcal||0}</div></div>
-      <div style="${nc}"><div style="font-size:10px;color:var(--text-secondary,#888);margin-bottom:2px">탄수화물</div><div style="font-size:16px;font-weight:700;color:#ef9f27">${n.carb||0}g</div></div>
-      <div style="${nc}"><div style="font-size:10px;color:var(--text-secondary,#888);margin-bottom:2px">지방</div><div style="font-size:16px;font-weight:700;color:var(--text-primary,#555)">${n.fat||0}g</div></div>
+      <div style="background:#e6fdf2;border-radius:8px;padding:8px 10px"><div style="font-size:10px;color:#0a5c46;margin-bottom:2px">단백질</div><div style="font-size:16px;font-weight:700;color:#1d9e75">${n.prot||0}g</div></div>
+      <div style="background:#fdecea;border-radius:8px;padding:8px 10px"><div style="font-size:10px;color:#9b3030;margin-bottom:2px">칼로리</div><div style="font-size:16px;font-weight:700;color:#e57373">${n.kcal||0}</div></div>
+      <div style="background:#fff7e6;border-radius:8px;padding:8px 10px"><div style="font-size:10px;color:#7a4f00;margin-bottom:2px">탄수화물</div><div style="font-size:16px;font-weight:700;color:#d4720a">${n.carb||0}g</div></div>
+      <div style="background:#f3f0ff;border-radius:8px;padding:8px 10px"><div style="font-size:10px;color:#4a3a9e;margin-bottom:2px">지방</div><div style="font-size:16px;font-weight:700;color:#7b72e9">${n.fat||0}g</div></div>
     </div>`;
   }
 
   /* 수면/수분 행 */
-  var mb='border:1.5px solid var(--border,#e8e8e8);border-radius:8px;padding:7px 10px;flex:1;display:flex;align-items:center;gap:6px';
   var metaHtml=`<div style="display:flex;gap:6px;margin-bottom:10px">
-    <div style="${mb}"><span style="font-size:14px">💤</span><span style="font-size:11px;color:var(--text-secondary,#888)">수면</span><span style="font-size:13px;font-weight:700;margin-left:auto">${log.sleep||7}h</span></div>
-    <div style="${mb}"><span style="font-size:14px">💧</span><span style="font-size:11px;color:var(--text-secondary,#888)">수분</span><span style="font-size:13px;font-weight:700;margin-left:auto">${((log.water||1800)/1000).toFixed(1)}L</span></div>
+    <div style="background:#f0f4ff;border-radius:8px;padding:7px 10px;flex:1;display:flex;align-items:center;gap:6px"><span style="font-size:14px">💤</span><span style="font-size:11px;color:#4a7bc4">수면</span><span style="font-size:13px;font-weight:700;color:#185fa5;margin-left:auto">${log.sleep||7}h</span></div>
+    <div style="background:#dceefb;border-radius:8px;padding:7px 10px;flex:1;display:flex;align-items:center;gap:6px"><span style="font-size:14px">💧</span><span style="font-size:11px;color:#0c5c8a">수분</span><span style="font-size:13px;font-weight:700;color:#185fa5;margin-left:auto">${((log.water||1800)/1000).toFixed(1)}L</span></div>
   </div>`;
 
   var memo=log.memo?`<div style="font-size:11px;color:var(--text-secondary,#888);margin-bottom:10px;padding:7px 10px;border:1.5px solid var(--border,#e8e8e8);border-radius:8px">📝 ${log.memo}</div>`:'';
@@ -5956,7 +5972,7 @@ function setPage(pageId,btn,cat){
   /* 탭별 렌더 연결 */
   if(pageId==='l-link'){renderLinkList();}
   if(pageId==='d-sp'){renderSuppPage();}
-  if(pageId==='l-sync'){setTimeout(loadAccountMgmt,300);}
+  if(pageId==='l-sync'){setTimeout(()=>{loadAccountMgmt();renderTabMgmt();},300);}
   if(pageId==='l-exdb')renderExDBList();
   if(pageId==='l-fooddb')renderFoodDBList();
   if(pageId==='e-wk')renderWeeklyRoutineTodayFirst();
@@ -6706,6 +6722,82 @@ async function ghDelete(path,sha){
   });
   if(!r.ok)throw new Error('HTTP '+r.status);
 }
+/* ─── 분석 탭 관리 ─── */
+var STAT_TAB_DEFS=[
+  {id:'e-tr',label:'트렌드'},
+  {id:'e-st',label:'현재상태'},
+  {id:'e-up',label:'중량현황'},
+  {id:'d-tl',label:'식단플랜'},
+  {id:'d-pr',label:'🛒 식재료'},
+  {id:'d-sp',label:'💊 영양제'},
+  {id:'l-link',label:'🔗 링크'},
+  {id:'d-ai',label:'🤖 AI'},
+  {id:'l-sync',label:'⚙️ 설정'},
+];
+function getHiddenTabs(){return lGet(uk('hidden_stat_tabs'))||['e-tr','e-st','e-up'];}
+function saveHiddenTabs(arr){lSet(uk('hidden_stat_tabs'),arr);}
+
+function renderTabMgmt(){
+  var el=document.getElementById('tab-mgmt-list');if(!el)return;
+  var hidden=getHiddenTabs();
+  el.innerHTML=STAT_TAB_DEFS.map(t=>{
+    var isHidden=hidden.includes(t.id);
+    var isLast=t.id==='l-sync'; /* 설정은 항상 표시 */
+    return`<div style="display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--border,#f0f0f0)">
+      <div style="flex:1;font-size:12px;font-weight:600;color:var(--text-primary,#1a1a1a)">${t.label}</div>
+      ${isLast
+        ?'<span style="font-size:10px;color:#bbb">항상 표시</span>'
+        :`<button onclick="toggleStatTab('${t.id}')" style="font-family:inherit;font-size:11px;font-weight:700;padding:4px 12px;border-radius:8px;cursor:pointer;border:1.5px solid ${isHidden?'#ddd':'#1d9e75'};background:${isHidden?'#f5f5f5':'#e6fdf2'};color:${isHidden?'#888':'#0a5c46'}">
+          ${isHidden?'숨김':'표시'}
+        </button>`}
+    </div>`;
+  }).join('');
+}
+
+function toggleStatTab(tabId){
+  var hidden=getHiddenTabs();
+  var idx=hidden.indexOf(tabId);
+  if(idx>=0)hidden.splice(idx,1);
+  else hidden.push(tabId);
+  saveHiddenTabs(hidden);
+  renderTabMgmt();
+  applyHiddenTabs();
+}
+
+function applyHiddenTabs(){
+  var hidden=getHiddenTabs();
+  var buttons=document.querySelectorAll('#sub-stat .sub-tab[data-tab-id]');
+  var firstVisible=null;
+  buttons.forEach(btn=>{
+    var tid=btn.getAttribute('data-tab-id');
+    var isHidden=hidden.includes(tid);
+    btn.style.display=isHidden?'none':'';
+    if(!isHidden&&!firstVisible)firstVisible=btn;
+  });
+  /* firstPages 업데이트 */
+  if(firstVisible){
+    var firstId=firstVisible.getAttribute('data-tab-id');
+    /* setCat stat 호출 시 첫 탭이 바뀌게 on-stat 재조정 */
+    buttons.forEach(b=>b.classList.remove('on-stat'));
+    /* 현재 분석탭이 열려있으면 첫 가시 탭으로 이동 */
+    var statOpen=document.querySelector('.cat-tab-stat.on');
+    if(statOpen){
+      buttons.forEach(b=>b.classList.remove('on-stat'));
+      firstVisible.classList.add('on-stat');
+      document.querySelectorAll('.page').forEach(p=>p.classList.remove('on'));
+      var fp=document.getElementById(firstId);if(fp)fp.classList.add('on');
+      /* 탭별 렌더 */
+      if(firstId==='e-tr'){var p=APP.profile||{};renderTrend(p);}
+      else if(firstId==='e-st'){var p=APP.profile||{};renderCurrentState(p);}
+      else if(firstId==='d-tl')renderDiet();
+      else if(firstId==='d-sp')renderSuppPage();
+      else if(firstId==='l-link')renderLinkList();
+    }
+    /* firstPages 동적 교체 */
+    window._statFirstPage=firstId;
+  }
+}
+
 function clearAllStorage(){
   if(!confirm('로컬 저장 데이터(세션·쿠키·스토리지)를 모두 삭제할까요?\n\nGitHub 저장소의 데이터는 삭제되지 않습니다.'))return;
   /* localStorage */
