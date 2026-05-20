@@ -546,7 +546,8 @@ body:not(.light-mode) .home-ai::before{background:#0e0e14;}
 .home-week-dot{width:28px;height:28px;border-radius:50%;border:2px solid #e0e0e0;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:#bbb;transition:all .2s;}
 .home-week-dot.done-weight{background:#185fa5;border-color:#185fa5;color:#fff;}
 .home-week-dot.done-climbing{background:#1d9e75;border-color:#1d9e75;color:#fff;}
-.home-week-dot.done-rest{background:#aaa;border-color:#aaa;color:#fff;}
+.home-week-dot.done-rest{background:#f0f4ff;border-color:#7b72e9;color:#7b72e9;}
+.home-week-dot.missed{border-color:#e57373;color:#e57373;background:#fdecea;}
 .home-week-dot.today-ring{box-shadow:0 0 0 3px rgba(245,197,24,0.5);}
 .home-week-day{font-size:9px;color:var(--text-secondary,#888);font-weight:600;}
 .home-week-bar{height:6px;border-radius:4px;background:#f0f0f0;margin-top:6px;overflow:hidden;}
@@ -1474,6 +1475,11 @@ body:not(.light-mode) .home-ai::before{background:#0e0e14;}
       <div class="home-week-dots" id="home-week-dots"></div>
       <div class="home-week-bar"><div class="home-week-bar-fill" id="home-week-bar" style="width:0%"></div></div>
       <div style="font-size:10px;color:var(--text-secondary,#888);margin-top:4px" id="home-week-label"></div>
+    </div>
+    <!-- 지금 먹을 음식 -->
+    <div class="home-section">
+      <div class="home-section-title">🍽 지금 먹을 것</div>
+      <div id="home-next-meal"></div>
     </div>
     <!-- 오늘 기록 요약 -->
     <div class="home-section">
@@ -6091,7 +6097,11 @@ function renderHome(){
         doneDays++;
         if(log.exTypes?.includes('climbing')){dotCls+=' done-climbing';dotIcon='🧗';}
         else if(log.exTypes?.includes('weight')){dotCls+=' done-weight';dotIcon='💪';}
+        else if(log.exTypes?.includes('bike')){dotCls+=' done-climbing';dotIcon='🚴';}
+        else if(log.exTypes?.includes('rest')){dotCls+=' done-rest';dotIcon='💤';}
         else{dotCls+=' done-rest';dotIcon='✓';}
+      }else if(!log&&!isFuture&&!isToday){
+        dotCls+=' missed';dotIcon='!';
       }
       html+=`<div class="home-week-dot-wrap"><div class="${dotCls}" style="${dotStyle}">${dotIcon||dayLabels[d]}</div><div class="home-week-day">${dayLabels[d]}</div></div>`;
     }
@@ -6099,6 +6109,62 @@ function renderHome(){
     var pct=Math.round(doneDays/goalDays*100);
     if(barEl)barEl.style.width=Math.min(pct,100)+'%';
     if(wlabelEl)wlabelEl.textContent=`${doneDays}/${goalDays}일 완료 (목표 ${goalDays}일)`;
+  }
+
+  /* 지금 먹을 음식 */
+  var nextMealEl=document.getElementById('home-next-meal');
+  if(nextMealEl){
+    var hour=now.getHours();var min=now.getMinutes();
+    var timeNow=hour*60+min;
+    var dow=now.getDay();
+    var dayType=dow===2||dow===4?'climbing':dow===0||dow===6?'rest':'weight';
+    var isNattoDay=dow===1||dow===4;
+
+    /* 시간대별 메뉴 정의 */
+    var meals={
+      weight:[
+        {from:0,  to:420, label:'아침 전',    menu:'오트밀 50g + 두유 190ml · 바나나 1개', tip:'기상 후 30분 내 섭취 권장'},
+        {from:420,to:480, label:'아침',        menu:'오트밀 50g + 두유 190ml · 바나나 1개', tip:'전자레인지 2분 후 드세요'},
+        {from:480,to:750, label:'오전',        menu:'점심 전 공복 유지 — 물 충분히', tip:'배고프면 방울토마토 간식 가능'},
+        {from:750,to:870, label:'점심',        menu:'직장 식사 — 단백질 20g 이상 목표', tip:'밥+단백질 반찬 위주'},
+        {from:870,to:1110,label:'오후',        menu:'귀가 후 간식 준비 — 계란 2개 + 방울토마토', tip:'18:30쯤 전자레인지 스크램블'},
+        {from:1110,to:1140,label:'운동 전',   menu:'계란 2개 · 방울토마토', tip:'운동 전 단백질 확보'},
+        {from:1140,to:1200,label:'운동 중',   menu:'물 500~700ml — 세트 사이마다', tip:'갈증 느끼면 이미 탈수'},
+        {from:1200,to:1260,label:'운동 후',   menu:'훈제 닭가슴살 1개 · 햇반 현미 1개 · 채소'+(isNattoDay?' · 낫토 1팩🫘':''), tip:'운동 후 60분 내 섭취'},
+        {from:1260,to:1320,label:'야식',      menu:'프로틴 1스쿱 (물 300ml) · 모듬 견과 30g', tip:'배고프지 않으면 건너뛰기 OK'},
+        {from:1320,to:1440,label:'취침 전',   menu:'수분 보충 · 마그네슘 50mg (3일 1회)', tip:'물 200ml와 함께'},
+      ],
+      climbing:[
+        {from:0,  to:420, label:'아침 전',    menu:'오트밀 50g + 두유 190ml · 바나나 1개', tip:'기상 후 섭취'},
+        {from:420,to:480, label:'아침',        menu:'오트밀 50g + 두유 190ml · 바나나 1개', tip:'전자레인지 2분'},
+        {from:480,to:750, label:'오전',        menu:'점심 전 공복 유지', tip:'물 충분히'},
+        {from:750,to:870, label:'점심',        menu:'직장 식사 — 단백질 20g 목표', tip:'클라이밍 날 탄수 살짝 줄여도 됨'},
+        {from:870,to:1140,label:'오후',        menu:'운동 전 식사 준비', tip:'19:00 식사 예정'},
+        {from:1140,to:1200,label:'운동 전 식사',menu:'훈제 닭가슴살 1개 · 햇반 현미 1개 · 채소'+(isNattoDay?' · 낫토 1팩🫘':''), tip:'운동 1시간 전 — 소화 고려'},
+        {from:1200,to:1290,label:'클라이밍',  menu:'물 600~800ml', tip:'전완 펌핑 소모 큼'},
+        {from:1290,to:1440,label:'귀가 후',   menu:'프로틴 1스쿱 · 계란 1개 · 방울토마토', tip:'22시 이후 탄수 최소화'},
+      ],
+      rest:[
+        {from:0,  to:480, label:'아침',        menu:'오트밀 + 두유 · 계란 2개 · 바나나', tip:'여유있게 준비'},
+        {from:480,to:780, label:'오전',        menu:'물 충분히', tip:'휴식일 수분도 중요'},
+        {from:780,to:900, label:'점심',        menu:'자유 치팅 허용 — 단 폭식 금지', tip:'주 1회 치팅은 렙틴 회복에 유리'},
+        {from:900,to:1140,label:'오후',        menu:'저녁 준비', tip:'19:00 저녁 예정'},
+        {from:1140,to:1260,label:'저녁',      menu:'훈제 닭가슴살 1개 · 햇반 현미 1개 · 채소', tip:'탄수 운동일 대비 15% 줄이기'},
+        {from:1260,to:1440,label:'야식',      menu:'배고프면 견과 30g만', tip:'휴식일 과식 주의'},
+      ],
+    };
+    var mealList=meals[dayType]||meals.weight;
+    var current=mealList.find(m=>timeNow>=m.from&&timeNow<m.to)||mealList[mealList.length-1];
+    var next=mealList[mealList.indexOf(current)+1];
+    nextMealEl.innerHTML=`<div style="background:var(--surface,#fff);border:1.5px solid var(--border,#e8e8e8);border-radius:12px;padding:12px 14px">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+        <span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;background:#f0f4ff;color:#185fa5">${String(hour).padStart(2,'0')}:${String(min).padStart(2,'0')}</span>
+        <span style="font-size:12px;font-weight:700;color:var(--text-primary,#1a1a1a)">${current.label}</span>
+      </div>
+      <div style="font-size:13px;font-weight:600;color:#1d9e75;margin-bottom:4px">${current.menu}</div>
+      <div style="font-size:10px;color:#888">${current.tip}</div>
+      ${next?`<div style="margin-top:8px;padding-top:8px;border-top:1px solid var(--border,#f0f0f0);font-size:10px;color:#aaa">다음 → <span style="color:#555">${next.label}: ${next.menu.split('·')[0].trim()}</span></div>`:''}
+    </div>`;
   }
 
   /* 오늘 기록 요약 카드 */
