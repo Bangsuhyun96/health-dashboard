@@ -4546,7 +4546,9 @@ function renderLogHistory(){
     var isClosed=lGet('v5_closed_'+uid+'_'+l.date)==='1';
     var tags=(l.exTypes||[]).map(t=>({weight:'웨이트',climbing:'클라이밍',bike:'바이크',rehab:'재활',rest:'휴식'}[t]||t))
       .map(t=>`<span class="log-tag" style="background:#f0f4ff;color:#185fa5;border-color:#b0bfee">${t}</span>`).join('');
-    var exStr=l.exercises?.filter(e=>e.name).map(e=>`${e.name}${e.sets?.length?' '+e.sets.length+'세트':''}`).join(' · ')||'';
+    /* 식단 요약 — 운동 요약 대신 */
+    var foods=l.foods||[];
+    var foodStr=foods.length?foods.join(' · '):''
     var nutStr=l.nutrition?`<span class="log-nut-item">🍽 ${l.nutrition.kcal}kcal · 단백질 ${l.nutrition.prot}g</span>`:'';
     var ankleColor=(l.ankle||0)===0?'#1d9e75':(l.ankle||0)<=3?'#ef9f27':'#e57373';
     var statusBadge=isClosed?'<span style="font-size:9px;background:#e6fdf2;color:#1d9e75;padding:2px 6px;border-radius:6px;font-weight:700">✅ 마감</span>':'';
@@ -4561,8 +4563,8 @@ function renderLogHistory(){
           ${!isClosed?`<button class="log-del" onclick="event.stopPropagation();deleteLog('${l.date}')">삭제</button>`:''}
         </div>
       </div>
-      <div class="log-tags" style="padding-bottom:10px">${tags}</div>
-      ${exStr?`<div style="font-size:10px;color:#185fa5;margin-bottom:10px">🏋️ ${exStr}</div>`:''}
+      <div class="log-tags" style="padding-bottom:${foodStr?'6px':'10px'}">${tags}</div>
+      ${foodStr?`<div style="font-size:10px;color:#555;margin-bottom:10px;line-height:1.5">🥗 ${foodStr}</div>`:''}
       <div class="log-nut" style="padding-bottom:10px">${nutStr}<span class="log-nut-item">💤 ${l.sleep||7}h</span><span class="log-nut-item" style="color:${ankleColor}">🦶 ${l.ankle||0}/10</span><span class="log-nut-item">💧 ${((l.water||2500)/1000).toFixed(1)}L</span></div>
       <div class="log-detail-slide" id="log-detail-${l.date}">
         <div class="log-detail-inner" id="log-detail-inner-${l.date}"></div>
@@ -5500,6 +5502,130 @@ function setCat(cat,btn){
 }
 /* ─── 홈화면 렌더 ─── */
 /* ─── 홈/기록내역에서 기록하기 탭으로 이동 ─── */
+
+/* ─── 개인화 목표치 계산 ─── */
+function calcPersonalGoals(profile, logDate){
+  var p=profile||{};
+  var weight=parseFloat(p.weight)||65;
+  var height=parseFloat(p.height)||170;
+  var age=parseInt(p.age)||30;
+  var gender=p.gender||'male';
+  var goalType=p.goal?.type||'maintain'; /* bulk / diet / maintain / rehab */
+  var exp=parseInt(p.performance?.exp)||6; /* 훈련경력 개월 */
+
+  /* 최신 인바디에서 골격근량/체지방률 가져오기 */
+  var inbodyArr=getStore('inbody').slice().sort((a,b)=>b.date>a.date?1:-1);
+  var ib=inbodyArr[0]||{};
+  var muscle=parseFloat(ib.muscle)||parseFloat(p.muscle)||0;
+  var fatPct=parseFloat(ib.fat)||parseFloat(p.fatPct)||20;
+
+  /* 골격근량 등급 (남성 기준, 여성은 -5kg) */
+  var musGender=gender==='female'?muscle+5:muscle; /* 여성 보정 */
+  var MusGrade; /* 'low'|'normal'|'good'|'high' */
+  if(musGender<28)MusGrade='low';
+  else if(musGender<33)MusGrade='normal';
+  else if(musGender<38)MusGrade='good';
+  else MusGrade='high';
+
+  /* 체지방률 등급 */
+  var FatGrade; /* 'low'|'normal'|'high'|'obese' */
+  var fatStd=gender==='female'?[18,28,35]:[10,20,28];
+  if(fatPct<fatStd[0])FatGrade='low';
+  else if(fatPct<fatStd[1])FatGrade='normal';
+  else if(fatPct<fatStd[2])FatGrade='high';
+  else FatGrade='obese';
+
+  /* 훈련경력 등급 */
+  var TrainGrade=exp<6?'beginner':exp<24?'intermediate':'advanced';
+
+  /* 오늘이 운동일인지 (logDate 기준) */
+  var isWorkout=true;
+  if(logDate){
+    var logs=getStore('logs');
+    var dayLog=logs.find(l=>l.date===logDate);
+    if(dayLog){
+      var et=dayLog.exTypes||[];
+      isWorkout=et.includes('weight')||et.includes('climbing')||et.includes('bike')||et.includes('rehab');
+    }
+  }
+
+  /* BMR (Mifflin-St Jeor) */
+  var bmr=gender==='female'
+    ?(10*weight+6.25*height-5*age-161)
+    :(10*weight+6.25*height-5*age+5);
+
+  /* TDEE 활동 계수 */
+  var actMult={beginner:1.55,intermediate:1.65,advanced:1.75}[TrainGrade];
+  if(!isWorkout)actMult=actMult-0.15;
+  var tdee=Math.round(bmr*actMult);
+
+  /* 목표별 칼로리 조정 */
+  var kcalAdj={bulk:+300,diet:-400,maintain:0,rehab:-100}[goalType]||0;
+  var goalKcal=Math.round(tdee+kcalAdj);
+
+  /* 단백질: 근육등급·목표별 */
+  var protMulti={
+    bulk:   {low:2.2,normal:2.0,good:1.9,high:1.8},
+    diet:   {low:2.4,normal:2.2,good:2.0,high:1.9},
+    maintain:{low:1.8,normal:1.7,good:1.6,high:1.5},
+    rehab:  {low:2.0,normal:1.9,good:1.8,high:1.7},
+  };
+  var pm=(protMulti[goalType]||protMulti.maintain)[MusGrade]||1.7;
+  var goalProt=Math.round(weight*pm);
+
+  /* 탄수화물: 칼로리에서 단백질·지방 제외 */
+  /* 지방: 체중 × 계수 */
+  var fatMulti={bulk:1.0,diet:0.8,maintain:0.9,rehab:0.9}[goalType]||0.9;
+  /* 체지방 높으면 지방 줄이기 */
+  if(FatGrade==='high')fatMulti-=0.1;
+  if(FatGrade==='obese')fatMulti-=0.2;
+  var goalFat=Math.round(weight*fatMulti);
+  var goalCarb=Math.round((goalKcal-(goalProt*4)-(goalFat*9))/4);
+  if(goalCarb<50)goalCarb=50; /* 최소값 */
+
+  /* 수분: 체중×35ml + 운동일 +500ml */
+  var goalWater=Math.round(weight*35+(isWorkout?500:0));
+
+  /* 수면: 훈련경력·목표별 */
+  var goalSleep={beginner:8,intermediate:7.5,advanced:7}[TrainGrade];
+  if(goalType==='rehab')goalSleep=8;
+
+  return {
+    kcal:goalKcal, prot:goalProt, carb:goalCarb, fat:goalFat,
+    water:goalWater, sleep:goalSleep,
+    /* 메타 */
+    grades:{muscle:MusGrade,fat:FatGrade,train:TrainGrade},
+    isWorkout, bmr:Math.round(bmr), tdee
+  };
+}
+
+/* 달성률→색상 */
+function goalColor(val,goal,type){
+  var pct=goal?val/goal:0;
+  /* 칼로리: 85~115% 정상 */
+  if(type==='kcal'){
+    if(pct>=0.85&&pct<=1.15)return{bg:'#e6fdf2',lbl:'#0a5c46',val:'#1d9e75'};
+    if(pct<0.85)return{bg:'#fff7e6',lbl:'#7a4f00',val:'#d4720a'};
+    return{bg:'#fdecea',lbl:'#9b3030',val:'#e57373'};
+  }
+  /* 단백질/탄수/지방: 85~115% */
+  if(pct>=0.85&&pct<=1.15)return{bg:'#e6fdf2',lbl:'#0a5c46',val:'#1d9e75'};
+  if(pct>=0.7&&pct<0.85)return{bg:'#fff7e6',lbl:'#7a4f00',val:'#d4720a'};
+  if(pct>1.15)return{bg:'#fdecea',lbl:'#9b3030',val:'#e57373'};
+  return{bg:'#fdecea',lbl:'#9b3030',val:'#e57373'};
+}
+function goalColorSleep(val,goal){
+  var diff=val-goal;
+  if(diff>=-0.5&&diff<=1)return{bg:'#e6fdf2',lbl:'#0a5c46',val:'#1d9e75'};
+  if(diff<-0.5)return{bg:'#fdecea',lbl:'#9b3030',val:'#e57373'};
+  return{bg:'#fff7e6',lbl:'#7a4f00',val:'#d4720a'};
+}
+function goalColorWater(val,goal){
+  var pct=goal?val/goal:0;
+  if(pct>=0.9)return{bg:'#dceefb',lbl:'#0c5c8a',val:'#185fa5'};
+  if(pct>=0.7)return{bg:'#fff7e6',lbl:'#7a4f00',val:'#d4720a'};
+  return{bg:'#fdecea',lbl:'#9b3030',val:'#e57373'};
+}
 /* ─── 마감 기능 ─── */
 function closeLog(){
   syncBlockData();
@@ -5643,20 +5769,29 @@ function toggleLogDetail(date, cardEl){
 
   /* 영양 그리드 */
   var nutHtml='';
+  /* 개인화 목표치 계산 */
+  var goals=calcPersonalGoals(APP.profile,date);
   if(log.nutrition){
     var n=log.nutrition;
+    var pctStr=(v,g)=>g?` <span style="font-size:10px;font-weight:400;opacity:.75">${Math.round(v/g*100)}%</span>`:'';
+    var cp=goalColor(n.prot||0,goals.prot,'prot');
+    var ck=goalColor(n.kcal||0,goals.kcal,'kcal');
+    var cc=goalColor(n.carb||0,goals.carb,'carb');
+    var cf=goalColor(n.fat||0,goals.fat,'fat');
     nutHtml=`<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:6px;margin-bottom:10px">
-      <div style="background:#e6fdf2;border-radius:8px;padding:8px 10px"><div style="font-size:10px;color:#0a5c46;margin-bottom:2px">단백질</div><div style="font-size:16px;font-weight:700;color:#1d9e75">${n.prot||0}g</div></div>
-      <div style="background:#fdecea;border-radius:8px;padding:8px 10px"><div style="font-size:10px;color:#9b3030;margin-bottom:2px">칼로리</div><div style="font-size:16px;font-weight:700;color:#e57373">${n.kcal||0}</div></div>
-      <div style="background:#fff7e6;border-radius:8px;padding:8px 10px"><div style="font-size:10px;color:#7a4f00;margin-bottom:2px">탄수화물</div><div style="font-size:16px;font-weight:700;color:#d4720a">${n.carb||0}g</div></div>
-      <div style="background:#f3f0ff;border-radius:8px;padding:8px 10px"><div style="font-size:10px;color:#4a3a9e;margin-bottom:2px">지방</div><div style="font-size:16px;font-weight:700;color:#7b72e9">${n.fat||0}g</div></div>
+      <div style="background:${cp.bg};border-radius:8px;padding:8px 10px"><div style="font-size:9px;color:${cp.lbl};margin-bottom:2px">단백질 / 목표 ${goals.prot}g</div><div style="font-size:16px;font-weight:700;color:${cp.val}">${n.prot||0}g${pctStr(n.prot||0,goals.prot)}</div></div>
+      <div style="background:${ck.bg};border-radius:8px;padding:8px 10px"><div style="font-size:9px;color:${ck.lbl};margin-bottom:2px">칼로리 / 목표 ${goals.kcal}</div><div style="font-size:16px;font-weight:700;color:${ck.val}">${n.kcal||0}${pctStr(n.kcal||0,goals.kcal)}</div></div>
+      <div style="background:${cc.bg};border-radius:8px;padding:8px 10px"><div style="font-size:9px;color:${cc.lbl};margin-bottom:2px">탄수화물 / 목표 ${goals.carb}g</div><div style="font-size:16px;font-weight:700;color:${cc.val}">${n.carb||0}g${pctStr(n.carb||0,goals.carb)}</div></div>
+      <div style="background:${cf.bg};border-radius:8px;padding:8px 10px"><div style="font-size:9px;color:${cf.lbl};margin-bottom:2px">지방 / 목표 ${goals.fat}g</div><div style="font-size:16px;font-weight:700;color:${cf.val}">${n.fat||0}g${pctStr(n.fat||0,goals.fat)}</div></div>
     </div>`;
   }
 
   /* 수면/수분 행 */
+  var cs=goalColorSleep(log.sleep||7,goals.sleep);
+  var cw=goalColorWater(log.water||1800,goals.water);
   var metaHtml=`<div style="display:flex;gap:6px;margin-bottom:10px">
-    <div style="background:#f0f4ff;border-radius:8px;padding:7px 10px;flex:1;display:flex;align-items:center;gap:6px"><span style="font-size:14px">💤</span><span style="font-size:11px;color:#4a7bc4">수면</span><span style="font-size:13px;font-weight:700;color:#185fa5;margin-left:auto">${log.sleep||7}h</span></div>
-    <div style="background:#dceefb;border-radius:8px;padding:7px 10px;flex:1;display:flex;align-items:center;gap:6px"><span style="font-size:14px">💧</span><span style="font-size:11px;color:#0c5c8a">수분</span><span style="font-size:13px;font-weight:700;color:#185fa5;margin-left:auto">${((log.water||1800)/1000).toFixed(1)}L</span></div>
+    <div style="background:${cs.bg};border-radius:8px;padding:7px 10px;flex:1;display:flex;align-items:center;gap:6px"><span style="font-size:14px">💤</span><span style="font-size:11px;color:${cs.lbl}">수면 / 목표 ${goals.sleep}h</span><span style="font-size:13px;font-weight:700;color:${cs.val};margin-left:auto">${log.sleep||7}h</span></div>
+    <div style="background:${cw.bg};border-radius:8px;padding:7px 10px;flex:1;display:flex;align-items:center;gap:6px"><span style="font-size:14px">💧</span><span style="font-size:11px;color:${cw.lbl}">수분 / 목표 ${(goals.water/1000).toFixed(1)}L</span><span style="font-size:13px;font-weight:700;color:${cw.val};margin-left:auto">${((log.water||1800)/1000).toFixed(1)}L</span></div>
   </div>`;
 
   var memo=log.memo?`<div style="font-size:11px;color:var(--text-secondary,#888);margin-bottom:10px;padding:7px 10px;border:1.5px solid var(--border,#e8e8e8);border-radius:8px">📝 ${log.memo}</div>`:'';
@@ -5674,7 +5809,13 @@ function toggleLogDetail(date, cardEl){
     ?`<button onclick="goTodayRecord('${date}')" style="font-family:inherit;font-size:12px;font-weight:700;padding:9px;border:none;border-radius:8px;background:#7b72e9;color:#fff;cursor:pointer;width:100%">✏️ 기록하기에서 수정</button>`
     :`<button onclick="copyLogText(\`${copyText.replace(/`/g,"'")}\`)" style="font-family:inherit;font-size:12px;font-weight:700;padding:9px;border:none;border-radius:8px;background:#1d9e75;color:#fff;cursor:pointer;width:100%">📋 텍스트 복사</button>`;
 
-  inner.innerHTML=exHtml+nutHtml+metaHtml+memo+editBtn;
+  /* 식단 섹션 */
+  var foodList=log.foods||[];
+  var foodHtml=foodList.length?`<div style="border:1.5px solid var(--border,#e8e8e8);border-radius:10px;padding:8px 12px;margin-bottom:10px">
+    <div style="font-size:10px;color:var(--text-secondary,#888);margin-bottom:6px;font-weight:600">🥗 식단</div>
+    ${foodList.map(f=>`<div style="font-size:12px;color:var(--text-primary,#333);padding:3px 0;border-bottom:1px solid var(--border,#f5f5f5)">${f}</div>`).join('')}
+  </div>`:''
+  inner.innerHTML=exHtml+foodHtml+nutHtml+metaHtml+memo+editBtn;
   slide.classList.add('open');
   arrow.textContent='▲';
 }
