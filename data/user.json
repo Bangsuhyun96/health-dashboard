@@ -10,8 +10,9 @@
       "height": 166.9,
       "weight": 66.1,
       "createdAt": "2026-05-14",
-      "onboardingDone": true
+      "onboardingDone": true,
+      "isAdmin": true
     }
   ],
-  "updatedAt": "2026-05-19T02:14:29.027Z"
+  "updatedAt": "2026-05-20T00:00:00.000Z"
 }
