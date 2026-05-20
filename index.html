@@ -2028,6 +2028,7 @@ function uPath(userId,type,ym){
   if(type==='inbody')  return base+'inbody.json';
   if(type==='lifts')   return base+'lifts.json';
   if(type==='logs')    return base+'logs/'+(ym||currentYM())+'.json';
+  if(type==='closed')  return base+'closed.json';
   return base+type;
 }
 function currentYM(){
@@ -4548,7 +4549,7 @@ function renderLogHistory(){
       .map(t=>`<span class="log-tag" style="background:#f0f4ff;color:#185fa5;border-color:#b0bfee">${t}</span>`).join('');
     /* 식단 요약 — 운동 요약 대신 */
     var foods=l.foods||[];
-    var foodStr=''
+    var foodStr=foods.length?foods.join(' · '):''
     var nutStr=l.nutrition?`<span class="log-nut-item">🍽 ${l.nutrition.kcal}kcal · 단백질 ${l.nutrition.prot}g</span>`:'';
     var ankleColor=(l.ankle||0)===0?'#1d9e75':(l.ankle||0)<=3?'#ef9f27':'#e57373';
     var statusBadge=isClosed?'<span style="font-size:9px;background:#e6fdf2;color:#1d9e75;padding:2px 6px;border-radius:6px;font-weight:700">✅ 마감</span>':'';
@@ -4563,7 +4564,8 @@ function renderLogHistory(){
           ${!isClosed?`<button class="log-del" onclick="event.stopPropagation();deleteLog('${l.date}')">삭제</button>`:''}
         </div>
       </div>
-      <div class="log-tags" style="padding-bottom:10px">${tags}</div>
+      <div class="log-tags" style="padding-bottom:${foodStr?'6px':'10px'}">${tags}</div>
+      ${foodStr?`<div style="font-size:10px;color:#555;margin-bottom:10px;line-height:1.6">🥗 ${foodStr}</div>`:''}
       <div class="log-nut" style="padding-bottom:10px">${nutStr}<span class="log-nut-item">💤 ${l.sleep||7}h</span><span class="log-nut-item" style="color:${ankleColor}">🦶 ${l.ankle||0}/10</span><span class="log-nut-item">💧 ${((l.water||2500)/1000).toFixed(1)}L</span></div>
       <div class="log-detail-slide" id="log-detail-${l.date}">
         <div class="log-detail-inner" id="log-detail-inner-${l.date}"></div>
@@ -5285,6 +5287,15 @@ async function pullFromGitHub(force){
       }catch(e){}
     }
 
+    /* closed.json 복원 */
+    try{
+      var closedData=await ghGet(uPath(uid,'closed')).catch(()=>null);
+      if(closedData?.closedDates){
+        closedData.closedDates.forEach(d=>{
+          lSet('v5_closed_'+uid+'_'+d,'1');
+        });
+      }
+    }catch(e){}
     lSet('v5_last_pull_'+uid, Date.now());
 
     /* UI 갱신 */
@@ -5630,8 +5641,30 @@ function closeLog(){
   syncBlockData();
   var date=document.getElementById('log-date')?.value||new Date().toISOString().slice(0,10);
   saveLog();
-  lSet('v5_closed_'+(APP.user?.id||'_')+'_'+date,'1');
+  var uid=APP.user?.id||'_';
+  lSet('v5_closed_'+uid+'_'+date,'1');
   renderClosedView(date);
+  /* GitHub에 마감 상태 저장 */
+  if(GH.owner&&GH.repo&&GH.token&&GH.writeMode&&APP.user?.id){
+    syncClosedToGitHub();
+  }
+}
+
+async function syncClosedToGitHub(){
+  try{
+    var uid=APP.user?.id;
+    /* localStorage에서 해당 유저 마감 날짜 수집 */
+    var dates=[];
+    Object.keys(localStorage).forEach(k=>{
+      if(k.startsWith('v5_closed_'+uid+'_')&&localStorage.getItem(k)==='"1"'){
+        dates.push(k.replace('v5_closed_'+uid+'_',''));
+      }
+    });
+    var path=uPath(uid,'closed');
+    var sha=await ghGetSha(path).catch(()=>null);
+    var data={closedDates:dates,updatedAt:new Date().toISOString()};
+    await ghPut(path,data,sha);
+  }catch(e){console.warn('마감 동기화 실패:',e.message);}
 }
 
 function renderClosedView(date){
@@ -5807,13 +5840,7 @@ function toggleLogDetail(date, cardEl){
     ?`<button onclick="goTodayRecord('${date}')" style="font-family:inherit;font-size:12px;font-weight:700;padding:9px;border:none;border-radius:8px;background:#7b72e9;color:#fff;cursor:pointer;width:100%">✏️ 기록하기에서 수정</button>`
     :`<button onclick="copyLogText(\`${copyText.replace(/`/g,"'")}\`)" style="font-family:inherit;font-size:12px;font-weight:700;padding:9px;border:none;border-radius:8px;background:#1d9e75;color:#fff;cursor:pointer;width:100%">📋 텍스트 복사</button>`;
 
-  /* 식단 섹션 */
-  var foodList=log.foods||[];
-  var foodHtml=foodList.length?`<div style="border:1.5px solid var(--border,#e8e8e8);border-radius:10px;padding:8px 12px;margin-bottom:10px">
-    <div style="font-size:10px;color:var(--text-secondary,#888);margin-bottom:6px;font-weight:600">🥗 식단</div>
-    ${foodList.map(f=>`<div style="font-size:12px;color:var(--text-primary,#333);padding:3px 0;border-bottom:1px solid var(--border,#f5f5f5)">${f}</div>`).join('')}
-  </div>`:''
-  inner.innerHTML=exHtml+foodHtml+nutHtml+metaHtml+memo+editBtn;
+  inner.innerHTML=exHtml+nutHtml+metaHtml+memo+editBtn;
   slide.classList.add('open');
   arrow.textContent='▲';
 }
