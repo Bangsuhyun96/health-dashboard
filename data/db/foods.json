@@ -594,6 +594,17 @@
       "carb": 47,
       "fat": 75.5,
       "verified": true
+    },
+    {
+      "id": "food_1779242663601",
+      "name": "아이스 돌체 콜드 브루",
+      "category": "음료",
+      "unit": "그란데(Grande, 473ml)",
+      "kcal": 375,
+      "prot": 11,
+      "carb": 42,
+      "fat": 17,
+      "verified": true
     }
   ]
 }
