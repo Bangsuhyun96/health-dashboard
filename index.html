@@ -4548,7 +4548,7 @@ function renderLogHistory(){
       .map(t=>`<span class="log-tag" style="background:#f0f4ff;color:#185fa5;border-color:#b0bfee">${t}</span>`).join('');
     /* 식단 요약 — 운동 요약 대신 */
     var foods=l.foods||[];
-    var foodStr=foods.length?foods.join(' · '):''
+    var foodStr=''
     var nutStr=l.nutrition?`<span class="log-nut-item">🍽 ${l.nutrition.kcal}kcal · 단백질 ${l.nutrition.prot}g</span>`:'';
     var ankleColor=(l.ankle||0)===0?'#1d9e75':(l.ankle||0)<=3?'#ef9f27':'#e57373';
     var statusBadge=isClosed?'<span style="font-size:9px;background:#e6fdf2;color:#1d9e75;padding:2px 6px;border-radius:6px;font-weight:700">✅ 마감</span>':'';
@@ -4563,8 +4563,7 @@ function renderLogHistory(){
           ${!isClosed?`<button class="log-del" onclick="event.stopPropagation();deleteLog('${l.date}')">삭제</button>`:''}
         </div>
       </div>
-      <div class="log-tags" style="padding-bottom:${foodStr?'6px':'10px'}">${tags}</div>
-      ${foodStr?`<div style="font-size:10px;color:#555;margin-bottom:10px;line-height:1.5">🥗 ${foodStr}</div>`:''}
+      <div class="log-tags" style="padding-bottom:10px">${tags}</div>
       <div class="log-nut" style="padding-bottom:10px">${nutStr}<span class="log-nut-item">💤 ${l.sleep||7}h</span><span class="log-nut-item" style="color:${ankleColor}">🦶 ${l.ankle||0}/10</span><span class="log-nut-item">💧 ${((l.water||2500)/1000).toFixed(1)}L</span></div>
       <div class="log-detail-slide" id="log-detail-${l.date}">
         <div class="log-detail-inner" id="log-detail-inner-${l.date}"></div>
@@ -5705,7 +5704,6 @@ function renderClosedView(date){
     ${exHtml}${nutHtml}${metaHtml}
     <div class="closed-actions">
       <button class="closed-copy-btn" onclick="copyLogText(\`${copyText.replace(/`/g,"'")}\`)">📋 텍스트 복사</button>
-      <button class="closed-edit-btn" onclick="reopenLog('${date}')">수정하기</button>
     </div>
   </div>`;
 }
