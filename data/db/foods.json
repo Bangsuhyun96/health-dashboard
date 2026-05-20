@@ -583,6 +583,17 @@
       "carb": 113.2,
       "fat": 23.2,
       "verified": true
+    },
+    {
+      "id": "food_1779240281723",
+      "name": "네네치킨 스노윙 치즈",
+      "category": "치팅",
+      "unit": "1/2인분",
+      "kcal": 1181,
+      "prot": 74,
+      "carb": 47,
+      "fat": 75.5,
+      "verified": true
     }
   ]
 }
