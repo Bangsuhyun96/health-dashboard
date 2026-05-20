@@ -1106,6 +1106,15 @@ body:not(.light-mode) .home-ai::before{background:#0e0e14;}
 
 <!-- ======== 식단 탭들 ======== -->
 <div id="d-tl" class="page">
+  <!-- 요일 타입 선택 -->
+  <div style="display:flex;gap:6px;margin-bottom:10px">
+    <button onclick="setDietDayType('weight',this)" id="diet-btn-weight"
+      style="font-family:inherit;font-size:11px;font-weight:700;padding:6px 14px;border-radius:99px;border:1.5px solid #185fa5;background:#f0f4ff;color:#185fa5;cursor:pointer;flex:1">💪 웨이트</button>
+    <button onclick="setDietDayType('climbing',this)" id="diet-btn-climbing"
+      style="font-family:inherit;font-size:11px;font-weight:700;padding:6px 14px;border-radius:99px;border:1.5px solid #ddd;background:#fff;color:#888;cursor:pointer;flex:1">🧗 클라이밍</button>
+    <button onclick="setDietDayType('rest',this)" id="diet-btn-rest"
+      style="font-family:inherit;font-size:11px;font-weight:700;padding:6px 14px;border-radius:99px;border:1.5px solid #ddd;background:#fff;color:#888;cursor:pointer;flex:1">😴 휴식</button>
+  </div>
   <div class="sg" id="diet-sg">
     <div class="sb"><div class="sv" style="color:#7b72e9" id="ds-kcal">2,680</div><div class="sl">운동일 kcal</div></div>
     <div class="sb"><div class="sv" style="color:#1d9e75" id="ds-prot">138g</div><div class="sl">단백질</div></div>
@@ -2837,6 +2846,10 @@ function toggleProfile(){
 }
 
 /* ─── 식단 렌더링 (프로필 데이터 완전 기반) ─── */
+function setDietDayType(type,btn){
+  window._dietDayType=type;
+  renderDiet();
+}
 function renderDiet(){
   var p=APP.profile||{};var plan=p.plan||null;
   var bw=p.weight||65;var hasClimb=p.sports?.includes('climbing');var hasBike=p.sports?.includes('bike');
@@ -2997,8 +3010,19 @@ function renderBangTimeline(){
   ];
   var el=document.getElementById('tl-c');if(!el)return;
   var dow=new Date().getDay();
-  var dayType=dow===2||dow===4?'climbing':dow===0||dow===6?'rest':'weight';
-  var isNattoDay=dow===1||dow===4; /* 월·목 */
+  var autoDayType=dow===2||dow===4?'climbing':dow===0||dow===6?'rest':'weight';
+  var dayType=window._dietDayType||autoDayType;
+  var isNattoDay=dow===1||dow===4;
+  /* 버튼 활성화 상태 업데이트 */
+  ['weight','climbing','rest'].forEach(t=>{
+    var btn=document.getElementById('diet-btn-'+t);
+    if(!btn)return;
+    var on=t===dayType;
+    var colors={weight:['#185fa5','#f0f4ff'],climbing:['#1d9e75','#e6fdf2'],rest:['#7b72e9','#f3f0ff']};
+    btn.style.borderColor=on?colors[t][0]:'#ddd';
+    btn.style.background=on?colors[t][1]:'var(--surface,#fff)';
+    btn.style.color=on?colors[t][0]:'#888';
+  });
 
   var wTL=[
     {t:'07:00',ti:'아침',s:'오트밀 50g + 두유 190ml · 바나나 1개',note:'전자레인지 2분. 저GI 복합탄수+단백질 확보.',p:[{l:'450kcal',c:'pk'},{l:'단백질 12g',c:'pp'},{l:'탄수 68g',c:'pc'}]},
