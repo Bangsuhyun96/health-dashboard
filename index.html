@@ -5778,11 +5778,14 @@ function closeLog(){
   var uid=APP.user?.id||'_';
   lSet('v5_closed_'+uid+'_'+date,'1');
   renderClosedView(date);
-  /* 기록내역 즉시 갱신 */
   renderLogHistory();
-  /* GitHub에 마감 상태 저장 */
-  if(GH.owner&&GH.repo&&GH.token&&GH.writeMode&&APP.user?.id){
-    syncClosedToGitHub();
+  /* GitHub 저장 — 쓰기 모드 없으면 먼저 활성화 */
+  if(GH.owner&&GH.repo&&APP.user?.id){
+    if(GH.token&&GH.writeMode){
+      syncClosedToGitHub();
+    }else if(GH.encToken){
+      requireWriteMode(()=>syncClosedToGitHub());
+    }
   }
 }
 
@@ -5798,8 +5801,10 @@ async function syncClosedToGitHub(){
     });
     var path=uPath(uid,'closed');
     var sha=await ghGetSha(path).catch(()=>null);
+    if(sha)GH.sha[path]=sha;
     var data={closedDates:dates,updatedAt:new Date().toISOString()};
-    await ghPut(path,data,sha);
+    await ghPut(path,data);
+    showToast('✅ 마감 저장됨');
   }catch(e){console.warn('마감 동기화 실패:',e.message);}
 }
 
