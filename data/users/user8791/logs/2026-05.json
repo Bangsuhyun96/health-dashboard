@@ -1,6 +1,40 @@
 {
   "logs": [
     {
+      "date": "2026-05-20",
+      "exTypes": [
+        "weight"
+      ],
+      "exercises": [
+        {
+          "name": "",
+          "sets": []
+        }
+      ],
+      "foods": [
+        "아이스 돌체 콜드 브루",
+        "통밀빵 2장"
+      ],
+      "nutrition": {
+        "kcal": 535,
+        "prot": 17,
+        "carb": 70,
+        "fat": 19
+      },
+      "sleep": 7,
+      "ankle": 0,
+      "water": 700,
+      "cond": 3,
+      "supps": [
+        "비타민 D3+K2 (아침식사직후)",
+        "오메가3 (아침식사직후)"
+      ],
+      "memo": "",
+      "climbingMin": null,
+      "bikeMin": null,
+      "savedAt": "2026-05-20T06:26:45.351Z"
+    },
+    {
       "date": "2026-05-19",
       "exTypes": [
         "rest"
@@ -32,7 +66,7 @@
       "memo": "",
       "climbingMin": null,
       "bikeMin": null,
-      "savedAt": "2026-05-20T06:11:13.417Z"
+      "savedAt": "2026-05-20T06:26:06.619Z"
     },
     {
       "date": "2026-05-18",
@@ -141,36 +175,7 @@
       "memo": "",
       "climbingMin": null,
       "bikeMin": null,
-      "savedAt": "2026-05-20T06:11:05.887Z"
-    },
-    {
-      "date": "2026-05-20",
-      "exTypes": [
-        "weight"
-      ],
-      "exercises": [],
-      "foods": [
-        "아이스 돌체 콜드 브루",
-        "통밀빵 2장"
-      ],
-      "nutrition": {
-        "kcal": 535,
-        "prot": 17,
-        "carb": 70,
-        "fat": 19
-      },
-      "sleep": 7,
-      "ankle": 0,
-      "water": 700,
-      "cond": 3,
-      "supps": [
-        "비타민 D3+K2 (아침식사직후)",
-        "오메가3 (아침식사직후)"
-      ],
-      "memo": "",
-      "climbingMin": null,
-      "bikeMin": null,
-      "savedAt": "2026-05-20T02:05:17.877Z"
+      "savedAt": "2026-05-20T06:25:58.077Z"
     },
     {
       "date": "2026-05-14",
@@ -344,5 +349,5 @@
     }
   ],
   "month": "2026-05",
-  "updatedAt": "2026-05-20T06:11:58.454Z"
+  "updatedAt": "2026-05-20T06:27:03.855Z"
 }
