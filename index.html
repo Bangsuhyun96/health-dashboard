@@ -2652,6 +2652,7 @@ function initApp(){
   renderDiet();renderExercise();renderRehab();loadSyncConfig();
   applyHiddenTabs();
   showTodayBanner();
+  setTimeout(tryAutoWriteMode,500);
 
   var uid=APP.user?.id;
   var lastPull=lGet('v5_last_pull_'+uid)||0;
@@ -5636,6 +5637,67 @@ function goalColorWater(val,goal){
   if(pct>=0.7)return{bg:'#fff7e6',lbl:'#7a4f00',val:'#d4720a'};
   return{bg:'#fdecea',lbl:'#9b3030',val:'#e57373'};
 }
+
+/* ─── 쓰기 모드 자동 활성화 (로그인 직후) ─── */
+function tryAutoWriteMode(){
+  /* writeToken 평문이 있으면 바로 활성화 */
+  if(APP.user?.writeToken&&!GH.writeMode){
+    GH.token=APP.user.writeToken;GH.writeMode=true;
+    updateSyncStatusUI();return;
+  }
+  /* encToken 있으면 비밀번호 모달 표시 */
+  if(GH.encToken&&!GH.writeMode){
+    showWriteUnlockModal();
+  }
+}
+
+function showWriteUnlockModal(callback){
+  var existing=document.getElementById('write-unlock-modal');
+  if(existing)existing.remove();
+  var modal=document.createElement('div');
+  modal.id='write-unlock-modal';
+  modal.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9998;display:flex;align-items:center;justify-content:center;padding:16px';
+  modal.innerHTML=`<div style="background:var(--surface,#fff);border-radius:16px;padding:20px;width:100%;max-width:340px">
+    <div style="font-size:14px;font-weight:800;margin-bottom:6px">🔑 쓰기 모드 활성화</div>
+    <div style="font-size:11px;color:#888;margin-bottom:14px">저장·동기화 기능을 사용하려면 비밀번호가 필요합니다.</div>
+    <input id="auto-unlock-pw" type="password" placeholder="쓰기 비밀번호" autocomplete="current-password"
+      style="width:100%;font-family:inherit;font-size:13px;padding:10px 12px;border:1.5px solid #ddd;border-radius:8px;outline:none;box-sizing:border-box;margin-bottom:8px"
+      onkeydown="if(event.key==='Enter')doAutoUnlock()">
+    <div id="auto-unlock-msg" style="font-size:11px;color:#e57373;min-height:16px;margin-bottom:10px"></div>
+    <div style="display:flex;gap:8px">
+      <button onclick="document.getElementById('write-unlock-modal').remove()" style="font-family:inherit;font-size:12px;font-weight:600;padding:10px;border:1.5px solid #ddd;border-radius:8px;background:#f5f5f5;color:#888;cursor:pointer;flex:1">나중에</button>
+      <button onclick="doAutoUnlock()" style="font-family:inherit;font-size:12px;font-weight:700;padding:10px;border:none;border-radius:8px;background:#7b72e9;color:#fff;cursor:pointer;flex:2">활성화</button>
+    </div>
+  </div>`;
+  document.body.appendChild(modal);
+  setTimeout(()=>document.getElementById('auto-unlock-pw')?.focus(),100);
+}
+
+function doAutoUnlock(){
+  var pw=document.getElementById('auto-unlock-pw')?.value||'';
+  var msg=document.getElementById('auto-unlock-msg');
+  if(!pw){if(msg)msg.textContent='비밀번호를 입력해주세요';return;}
+  if(GH.encToken){
+    try{
+      var dec=CryptoJS.AES.decrypt(GH.encToken,pw).toString(CryptoJS.enc.Utf8);
+      if(dec&&(dec.indexOf('ghp_')>=0||dec.indexOf('github_pat_')>=0)){
+        GH.token=dec;GH.writeMode=true;
+        document.getElementById('write-unlock-modal')?.remove();
+        updateSyncStatusUI();
+        showToast('✓ 쓰기 모드 활성화');
+        return;
+      }
+    }catch(e){}
+    if(msg)msg.textContent='비밀번호가 틀렸어요';
+    return;
+  }
+  if(pw.indexOf('ghp_')>=0||pw.indexOf('github_pat_')>=0){
+    GH.token=pw;GH.writeMode=true;
+    document.getElementById('write-unlock-modal')?.remove();
+    updateSyncStatusUI();showToast('✓ 쓰기 모드 활성화');return;
+  }
+  if(msg)msg.textContent='토큰이 없어요. 설정 탭에서 먼저 암호화 저장을 해주세요';
+}
 /* ─── 마감 기능 ─── */
 function closeLog(){
   syncBlockData();
@@ -5644,6 +5706,8 @@ function closeLog(){
   var uid=APP.user?.id||'_';
   lSet('v5_closed_'+uid+'_'+date,'1');
   renderClosedView(date);
+  /* 기록내역 즉시 갱신 */
+  renderLogHistory();
   /* GitHub에 마감 상태 저장 */
   if(GH.owner&&GH.repo&&GH.token&&GH.writeMode&&APP.user?.id){
     syncClosedToGitHub();
@@ -6032,7 +6096,24 @@ function renderHome(){
         </div>`:''}
       </div>`;
     }else{
-      summEl.innerHTML=`<div class="home-today-empty">오늘 기록이 없습니다<br><span style="font-size:10px">아래 버튼으로 기록을 시작하세요</span></div>`;
+      /* 오늘 목표 카드 */
+      var goals=calcPersonalGoals(APP.profile||{});
+      var d=new Date();
+      var days2=['일','월','화','수','목','금','토'];
+      var todayLabel=d.getMonth()+1+'월 '+d.getDate()+'일 ('+days2[d.getDay()]+')';
+      summEl.innerHTML=`<div class="home-today-card" onclick="startTodayWorkout()" style="border-color:#e8e8e8">
+        <div class="home-today-card-head">
+          <span class="home-today-card-title">📋 ${todayLabel} 오늘의 목표</span>
+          <span style="font-size:10px;color:#7b72e9">기록 시작 →</span>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:6px;margin-bottom:8px">
+          <div style="background:#e6fdf2;border-radius:8px;padding:7px 10px"><div style="font-size:9px;color:#0a5c46;margin-bottom:1px">단백질 목표</div><div style="font-size:15px;font-weight:700;color:#1d9e75">${goals.prot}g</div></div>
+          <div style="background:#fff7e6;border-radius:8px;padding:7px 10px"><div style="font-size:9px;color:#7a4f00;margin-bottom:1px">칼로리 목표</div><div style="font-size:15px;font-weight:700;color:#d4720a">${goals.kcal}kcal</div></div>
+          <div style="background:#f0f4ff;border-radius:8px;padding:7px 10px"><div style="font-size:9px;color:#4a7bc4;margin-bottom:1px">수면 목표</div><div style="font-size:15px;font-weight:700;color:#185fa5">${goals.sleep}h</div></div>
+          <div style="background:#dceefb;border-radius:8px;padding:7px 10px"><div style="font-size:9px;color:#0c5c8a;margin-bottom:1px">수분 목표</div><div style="font-size:15px;font-weight:700;color:#185fa5">${(goals.water/1000).toFixed(1)}L</div></div>
+        </div>
+        <div style="font-size:10px;color:#aaa;text-align:center">탭하여 기록 시작</div>
+      </div>`;
     }
   }
 
@@ -6795,6 +6876,11 @@ function initSuppChecks(){
 /* ─── 계정 관리 ─── */
 async function loadAccountMgmt(){
   var el=document.getElementById('account-mgmt-list');if(!el)return;
+  /* ADMIN 계정만 접근 가능 */
+  if(!APP.user?.isAdmin){
+    el.innerHTML='<div style="font-size:11px;color:#aaa;text-align:center;padding:16px">🔒 관리자 계정만 접근 가능합니다</div>';
+    return;
+  }
   el.innerHTML='<div style="font-size:11px;color:#aaa;text-align:center;padding:12px">불러오는 중...</div>';
   try{
     var {users,sha}=await fetchUsers();
