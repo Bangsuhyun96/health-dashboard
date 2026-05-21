@@ -164,10 +164,7 @@ safety:`
       <div class="item-num num-red">3</div>
       <div class="item-body"><b>홀드가 없는 벽면 짚지 않기</b><span>손가락이 끼거나 꺾일 수 있음. 반드시 홀드만 잡기.</span></div>
     </div>
-    <div class="item">
-      <div class="item-num num-red">4</div>
-      <div class="item-body"><b>발 아래 사람 확인 후 추락</b><span>내려오기 전 "내려갑니다" 한 마디. 아래 공간 확보 필수.</span></div>
-    </div>
+
   </div>
 
   <div class="warn">⚠️ 초보자 추락 부상 1위 — 손으로 짚는 반사행동. 지금부터 연습해서 반사적으로 손 안 짚는 습관을 만들어야 합니다.</div>
@@ -273,14 +270,14 @@ grade:`
     <div class="card-title"><span>🎨</span> 난이도별 색상</div>
 
     <div class="grade-row">
-      <div class="grade-dot" style="background:#ffffff;border:1px solid #444"></div>
-      <div class="grade-name">화이트</div>
-      <div class="grade-desc">완전 입문. 홀드 크고 간격 좁음. 동작 이해하는 단계.</div>
+      <div class="grade-dot" style="background:#f44336"></div>
+      <div class="grade-name">빨강</div>
+      <div class="grade-desc">입문. 홀드 크고 간격 좁음. 동작 이해하는 단계.</div>
       <div class="grade-me">오늘 목표</div>
     </div>
     <div class="grade-row">
-      <div class="grade-dot" style="background:#ffb3c1"></div>
-      <div class="grade-name">핑크</div>
+      <div class="grade-dot" style="background:#ff8c00"></div>
+      <div class="grade-name">주황</div>
       <div class="grade-desc">초보. 기본 움직임 연습. 몸 쓰는 법 익히기.</div>
       <div class="grade-me">오늘 목표</div>
     </div>
@@ -300,19 +297,29 @@ grade:`
       <div class="grade-desc">중고급. 전략적 루트 파인딩 필요.</div>
     </div>
     <div class="grade-row">
-      <div class="grade-dot" style="background:#9c27b0"></div>
-      <div class="grade-name">보라</div>
-      <div class="grade-desc">고급. 상당한 근력과 기술 동시 요구.</div>
+      <div class="grade-dot" style="background:#1a237e"></div>
+      <div class="grade-name">남색</div>
+      <div class="grade-desc">고급. 복합 동작과 루트 파인딩 동시 요구.</div>
     </div>
     <div class="grade-row">
-      <div class="grade-dot" style="background:#f44336"></div>
-      <div class="grade-name">빨강</div>
-      <div class="grade-desc">상급. 전문가 수준 동작 필요.</div>
+      <div class="grade-dot" style="background:#9c27b0"></div>
+      <div class="grade-name">보라</div>
+      <div class="grade-desc">상급. 상당한 근력과 기술 동시 요구.</div>
+    </div>
+    <div class="grade-row">
+      <div class="grade-dot" style="background:#795548"></div>
+      <div class="grade-name">갈색</div>
+      <div class="grade-desc">최상급. 전문가 수준 동작 필요.</div>
     </div>
     <div class="grade-row">
       <div class="grade-dot" style="background:#1a1a1a;border:1px solid #888"></div>
-      <div class="grade-name">블랙</div>
-      <div class="grade-desc">최상급. 대회 선수 수준.</div>
+      <div class="grade-name">검정</div>
+      <div class="grade-desc">엘리트. 대회 선수 수준.</div>
+    </div>
+    <div class="grade-row">
+      <div class="grade-dot" style="background:#ffb3c1"></div>
+      <div class="grade-name">핑크</div>
+      <div class="grade-desc">마스터. 최고 난이도.</div>
     </div>
   </div>
 
@@ -402,8 +409,8 @@ checklist:`
       ${[
         ['운동복 (반바지 또는 긴바지 — 무릎 자유로운 것)','스키니는 발동작 제한됨'],
         ['양말 (클라이밍 슈즈 속에 신을 것)','맨발은 위생·고정력 문제'],
-        ['수건','땀 닦기 + 홀드 닦기'],
-        ['물','탈수 오면 집중력 급감'],
+        
+        
         ['손목·손가락 테이핑 (선택)','기존 약한 부위 있으면 미리'],
       ].map((c,i)=>`
         <div class="check-item" onclick="this.classList.toggle('done')">
