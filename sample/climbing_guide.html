@@ -9,18 +9,18 @@
 <style>
 *{box-sizing:border-box;margin:0;padding:0;}
 :root{
-  --bg:#0f0f0f;
-  --surface:#1a1a1a;
-  --surface-2:#222;
-  --border:#2a2a2a;
-  --text:#f0f0f0;
-  --text-2:#999;
-  --text-3:#555;
-  --accent:#c8f542;
-  --accent-dim:#8fb32e;
-  --red:#ff4d4d;
-  --orange:#ff9a3c;
-  --blue:#4d9fff;
+  --bg:#f5f5f7;
+  --surface:#fff;
+  --surface-2:#f0f0f5;
+  --border:#e5e5ea;
+  --text:#1a1a1a;
+  --text-2:#6e6e73;
+  --text-3:#aeaeb2;
+  --accent:#7b72e9;
+  --accent-dim:#5a52c9;
+  --red:#e02020;
+  --orange:#d4720a;
+  --blue:#185fa5;
   --radius:12px;
 }
 body{
@@ -61,9 +61,9 @@ body{
 }
 
 /* 네비 */
-.nav{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:24px;position:sticky;top:0;background:var(--bg);padding:10px 0;z-index:100;}
-.nav-btn{padding:6px 14px;font-size:11px;font-weight:700;cursor:pointer;border-radius:99px;border:1px solid var(--border);color:var(--text-2);background:var(--surface);transition:all .15s;font-family:inherit;white-space:nowrap;}
-.nav-btn.on{background:var(--accent);color:#000;border-color:var(--accent);}
+.nav{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:24px;position:sticky;top:0;background:var(--bg);padding:10px 0;z-index:100;border-bottom:1px solid var(--border);}
+.nav-btn{padding:6px 14px;font-size:11px;font-weight:600;cursor:pointer;border-radius:99px;border:1.5px solid var(--border);color:var(--text-2);background:var(--surface);transition:all .15s;font-family:inherit;white-space:nowrap;}
+.nav-btn.on{background:var(--accent);color:#fff;border-color:var(--accent);}
 
 /* 섹션 */
 .section{display:none;}
@@ -90,9 +90,9 @@ body{
 .item-body span{color:var(--text-2);font-size:12px;}
 
 /* 경고 박스 */
-.warn{background:#1a0f0f;border-left:3px solid var(--red);padding:10px 14px;font-size:12px;color:#ff8080;line-height:1.7;margin:8px 0;border-radius:0 8px 8px 0;}
-.tip{background:#0f1a0a;border-left:3px solid var(--accent);padding:10px 14px;font-size:12px;color:var(--accent-dim);line-height:1.7;margin:8px 0;border-radius:0 8px 8px 0;}
-.info{background:#0a0f1a;border-left:3px solid var(--blue);padding:10px 14px;font-size:12px;color:#80b3ff;line-height:1.7;margin:8px 0;border-radius:0 8px 8px 0;}
+.warn{background:#fff0f0;border-left:3px solid var(--red);padding:10px 14px;font-size:12px;color:#c0392b;line-height:1.7;margin:8px 0;border-radius:0 8px 8px 0;}
+.tip{background:#f3f0ff;border-left:3px solid var(--accent);padding:10px 14px;font-size:12px;color:var(--accent-dim);line-height:1.7;margin:8px 0;border-radius:0 8px 8px 0;}
+.info{background:#dceefb;border-left:3px solid var(--blue);padding:10px 14px;font-size:12px;color:#0c5c8a;line-height:1.7;margin:8px 0;border-radius:0 8px 8px 0;}
 
 /* 그레이드 표 */
 .grade-row{display:flex;align-items:center;gap:12px;padding:9px 0;border-bottom:1px solid var(--border);font-size:13px;}
@@ -105,14 +105,14 @@ body{
 /* 체크리스트 */
 .check-item{display:flex;align-items:flex-start;gap:10px;padding:9px 0;border-bottom:1px solid var(--border);font-size:13px;cursor:pointer;}
 .check-item:last-child{border-bottom:none;}
-.check-box{width:20px;height:20px;border:1.5px solid var(--border);border-radius:5px;flex-shrink:0;margin-top:1px;display:flex;align-items:center;justify-content:center;transition:all .15s;}
+.check-box{width:20px;height:20px;border:1.5px solid #ccc;border-radius:5px;flex-shrink:0;margin-top:1px;display:flex;align-items:center;justify-content:center;transition:all .15s;}
 .check-item.done .check-box{background:var(--accent);border-color:var(--accent);}
 .check-item.done .check-text{color:var(--text-3);text-decoration:line-through;}
-.check-tick{display:none;color:#000;font-size:12px;font-weight:900;}
+.check-tick{display:none;color:#fff;font-size:12px;font-weight:900;}
 .check-item.done .check-tick{display:block;}
 
 /* 동작 설명 */
-.move-card{background:var(--surface-2);border-radius:10px;padding:14px;margin-bottom:8px;border:1px solid var(--border);}
+.move-card{background:var(--surface);border-radius:10px;padding:14px;margin-bottom:8px;border:1.5px solid var(--border);}
 .move-title{font-size:13px;font-weight:700;margin-bottom:4px;display:flex;align-items:center;gap:6px;}
 .move-title .badge{font-size:9px;padding:2px 7px;border-radius:99px;font-weight:700;}
 .move-desc{font-size:12px;color:var(--text-2);line-height:1.7;}
@@ -120,7 +120,7 @@ body{
 
 /* 풀 그립 */
 .grip-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;}
-.grip-item{background:var(--surface-2);border-radius:10px;padding:12px;border:1px solid var(--border);}
+.grip-item{background:var(--surface);border-radius:10px;padding:12px;border:1.5px solid var(--border);}
 .grip-name{font-size:12px;font-weight:700;margin-bottom:3px;}
 .grip-desc{font-size:11px;color:var(--text-2);line-height:1.6;}
 </style>
@@ -273,13 +273,13 @@ grade:`
       <div class="grade-dot" style="background:#f44336"></div>
       <div class="grade-name">빨강</div>
       <div class="grade-desc">입문. 홀드 크고 간격 좁음. 동작 이해하는 단계.</div>
-      <div class="grade-me">오늘 목표</div>
+      <div class="grade-me" style="background:var(--accent);color:#fff">오늘 목표</div>
     </div>
     <div class="grade-row">
       <div class="grade-dot" style="background:#ff8c00"></div>
       <div class="grade-name">주황</div>
       <div class="grade-desc">초보. 기본 움직임 연습. 몸 쓰는 법 익히기.</div>
-      <div class="grade-me">오늘 목표</div>
+      <div class="grade-me" style="background:var(--accent);color:#fff">오늘 목표</div>
     </div>
     <div class="grade-row">
       <div class="grade-dot" style="background:#ffd700"></div>
