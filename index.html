@@ -1084,11 +1084,11 @@ body:not(.light-mode) .home-ai::before{background:#0e0e14;}
 <div class="sub-tabs" id="sub-today" style="display:none">
   <button class="sub-tab on-today" onclick="setPage('l-hist',this,'today')">기록내역</button>
   <button class="sub-tab" onclick="setPage('l-daily',this,'today')">기록하기</button>
-  <button class="sub-tab" onclick="setPage('e-wk',this,'today')">오늘루틴</button>
+  <button class="sub-tab" onclick="setPage('l-exdb',this,'today')">🏋️ 운동DB</button>
+  <button class="sub-tab" onclick="setPage('l-fooddb',this,'today')">🥗 식단DB</button>
 </div>
 <div class="sub-tabs" id="sub-train" style="display:none">
-  <button class="sub-tab on-train" onclick="setPage('l-exdb',this,'train')">🏋️ 운동DB</button>
-  <button class="sub-tab" onclick="setPage('l-fooddb',this,'train')">🥗 식단DB</button>
+  <button class="sub-tab on-train" onclick="setPage('e-wk',this,'train')">오늘루틴</button>
   <button class="sub-tab" onclick="setPage('l-inbody',this,'train')">인바디</button>
   <button class="sub-tab" onclick="setPage('l-lift',this,'train')">중량추적</button>
 </div>
@@ -5667,7 +5667,7 @@ function setCat(cat,btn){
   /* 모든 페이지 숨기기 */
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('on'));
   /* 첫 페이지 보이기 */
-  var firstPages={home:'h-home',today:'l-hist',train:'l-exdb',stat:window._statFirstPage||'e-tr',diet:'d-tl',ex:'e-wk',rehab:'r-dx',log:'l-hist'};
+  var firstPages={home:'h-home',today:'l-hist',train:'e-wk',stat:window._statFirstPage||'e-tr',diet:'d-tl',ex:'e-wk',rehab:'r-dx',log:'l-hist'};
   var fp=document.getElementById(firstPages[cat]);if(fp)fp.classList.add('on');
   /* 첫 중분류 버튼 활성화 */
   var subBtns=document.querySelectorAll('#sub-'+cat+' .sub-tab');
@@ -5678,7 +5678,7 @@ function setCat(cat,btn){
   if(cat==='today'){
     initLogTab();
   }
-  if(cat==='train'){renderExDBList();renderInbodyHistory();renderLiftHistory();}
+  if(cat==='train'){renderTodayRoutineDashboard();renderInbodyHistory();renderLiftHistory();}
   if(cat==='stat'){
     var p=APP.profile||{};
     var _fp=window._statFirstPage||'e-tr';
