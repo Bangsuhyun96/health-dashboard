@@ -2742,15 +2742,22 @@ function toggleIbCal(e){
     /* 팝업 위치 계산 */
     var btn=document.getElementById('ib-date-btn');
     var rect=btn.getBoundingClientRect();
-    var popH=280; /* 팝업 예상 높이 */
+    /* 실제 팝업 높이 측정 */
+    pop.style.visibility='hidden';
+    pop.classList.add('open');
+    var popH=pop.offsetHeight||320;
+    pop.classList.remove('open');
+    pop.style.visibility='';
     var spaceBelow=window.innerHeight-rect.bottom;
     var spaceAbove=rect.top;
-    if(spaceBelow<popH&&spaceAbove>spaceBelow){
+    if(spaceBelow<popH+8&&spaceAbove>=popH+8){
       /* 위로 표시 */
-      pop.style.top=(rect.top+window.scrollY-popH-4)+'px';
+      pop.style.top=(rect.top+window.scrollY-popH-6)+'px';
     }else{
-      /* 아래로 표시 */
-      pop.style.top=(rect.bottom+window.scrollY+4)+'px';
+      /* 아래로 표시 — 화면 하단 넘치면 클램프 */
+      var topVal=rect.bottom+window.scrollY+4;
+      var maxTop=window.scrollY+window.innerHeight-popH-8;
+      pop.style.top=Math.min(topVal,maxTop)+'px';
     }
     /* 좌우 화면 벗어남 방지 */
     var left=rect.left;
