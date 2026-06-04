@@ -4,393 +4,517 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
 <title>재무 관리 — 방수현</title>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/tabler-icons.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
 <style>
-*{box-sizing:border-box;margin:0;padding:0;}
-:root{
-  --bg:#f5f5f7;
-  --surface:#fff;
-  --surface-2:#f0f0f5;
-  --border:#e5e5ea;
-  --text:#1a1a1a;
-  --text-2:#6e6e73;
-  --text-3:#aeaeb2;
-  --accent:#7b72e9;
-  --accent-bg:#f3f0ff;
-  --accent-border:#d4c8ff;
-  --green:#1d9e75;
-  --green-bg:#e6fdf2;
-  --green-border:#a3e9cc;
-  --orange:#d4720a;
-  --orange-bg:#fff7e6;
-  --orange-border:#fdd8a0;
-  --red:#e02020;
-  --red-bg:#fdecea;
-  --red-border:#f5b8b8;
-  --blue:#185fa5;
-  --blue-bg:#dceefb;
-  --blue-border:#9ecef5;
-  --radius-sm:8px;
-  --radius-md:12px;
-  --radius-lg:16px;
+:root {
+  --color-text-primary: #1a1a1a;
+  --color-text-secondary: #6b7280;
+  --color-text-success: #166534;
+  --color-text-warning: #92400e;
+  --color-text-info: #1e40af;
+  --color-text-danger: #991b1b;
+  --color-background-primary: #ffffff;
+  --color-background-secondary: #f9fafb;
+  --color-background-success: #f0fdf4;
+  --color-background-warning: #fffbeb;
+  --color-background-info: #eff6ff;
+  --color-background-danger: #fef2f2;
+  --color-border-primary: #e5e7eb;
+  --color-border-secondary: #d1d5db;
+  --color-border-tertiary: #e5e7eb;
+  --color-border-success: #86efac;
+  --color-border-warning: #fcd34d;
+  --color-border-info: #93c5fd;
+  --color-border-danger: #fca5a5;
+  --border-radius-md: 8px;
+  --border-radius-lg: 12px;
 }
-body{font-family:-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;font-size:14px;background:var(--bg);color:var(--text);min-height:100vh;padding:20px 16px 60px;max-width:640px;margin:0 auto;}
-
-/* 헤더 */
-.page-header{margin-bottom:20px;}
-.page-title{font-size:22px;font-weight:800;letter-spacing:-.5px;margin-bottom:4px;}
-.page-sub{font-size:12px;color:var(--text-2);}
-
-/* 네비 */
-.nav{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:20px;}
-.nav-btn{padding:7px 14px;font-size:12px;font-weight:600;cursor:pointer;border-radius:99px;border:1.5px solid var(--border);color:var(--text-2);background:var(--surface);transition:all .15s;font-family:inherit;white-space:nowrap;}
-.nav-btn.on{background:var(--accent-bg);color:var(--accent);border-color:var(--accent-border);}
-.nav-btn:hover:not(.on){border-color:var(--accent);color:var(--accent);}
-
-/* 섹션 */
-.section{display:none;}
-.section.on{display:block;}
-
-/* 카드 */
-.card{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--radius-lg);padding:16px;margin-bottom:12px;}
-.ch{font-weight:700;font-size:14px;margin-bottom:12px;display:flex;align-items:center;gap:8px;color:var(--text);}
-.ch i{color:var(--accent);}
-
-/* 배지 */
-.badge{font-size:10px;font-weight:700;padding:3px 8px;border-radius:99px;}
-.bg{background:var(--green-bg);color:var(--green);}
-.ba{background:var(--orange-bg);color:var(--orange);}
-.bi{background:var(--blue-bg);color:var(--blue);}
-.br{background:var(--red-bg);color:var(--red);}
-.bp{background:var(--accent-bg);color:var(--accent);}
-
-/* 행 */
-.row{display:flex;justify-content:space-between;align-items:flex-start;padding:9px 0;border-bottom:1px solid var(--border);gap:12px;font-size:13px;}
-.row:last-child{border-bottom:none;padding-bottom:0;}
-.rl{color:var(--text-2);flex-shrink:0;line-height:1.5;min-width:100px;}
-.rv{text-align:right;font-weight:600;line-height:1.5;}
-.rv small{font-weight:400;font-size:11px;color:var(--text-2);display:block;margin-top:1px;}
-
-/* 알림 박스 */
-.ok{background:var(--green-bg);border-left:3px solid var(--green);padding:10px 14px;font-size:12px;color:var(--green);line-height:1.6;margin:8px 0;border-radius:0 var(--radius-sm) var(--radius-sm) 0;}
-.tip{background:var(--orange-bg);border-left:3px solid var(--orange);padding:10px 14px;font-size:12px;color:var(--orange);line-height:1.6;margin:8px 0;border-radius:0 var(--radius-sm) var(--radius-sm) 0;}
-.info{background:var(--blue-bg);border-left:3px solid var(--blue);padding:10px 14px;font-size:12px;color:var(--blue);line-height:1.6;margin:8px 0;border-radius:0 var(--radius-sm) var(--radius-sm) 0;}
-.warn{background:var(--red-bg);border-left:3px solid var(--red);padding:10px 14px;font-size:12px;color:var(--red);line-height:1.6;margin:8px 0;border-radius:0 var(--radius-sm) var(--radius-sm) 0;}
-
-/* 스텝 리스트 */
-.step-list{list-style:none;}
-.step-list li{display:flex;gap:12px;padding:11px 0;border-bottom:1px solid var(--border);font-size:13px;line-height:1.55;}
-.step-list li:last-child{border-bottom:none;}
-.snum{min-width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;margin-top:2px;background:var(--accent-bg);color:var(--accent);}
-.snum.red{background:var(--red-bg);color:var(--red);}
-.snum.green{background:var(--green-bg);color:var(--green);}
-
-/* 그리드 */
-.g2{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:12px;}
-.mc{background:var(--surface-2);border-radius:var(--radius-md);padding:12px;}
-.mc .ml{font-size:11px;color:var(--text-2);margin-bottom:4px;}
-.mc .mv{font-size:18px;font-weight:800;color:var(--text);}
-.mc .ms{font-size:11px;color:var(--text-3);margin-top:2px;}
-
-/* 시뮬레이터 */
-.sim{background:var(--surface-2);border-radius:var(--radius-md);padding:14px;margin-top:8px;}
-.sim-r{display:flex;justify-content:space-between;font-size:13px;padding:3px 0;color:var(--text-2);}
-.sim-r span:last-child{color:var(--green);font-weight:600;}
-.sim-t{display:flex;justify-content:space-between;font-size:15px;font-weight:800;padding-top:10px;border-top:1.5px solid var(--border);margin-top:8px;}
-
-/* 섹션 타이틀 */
-.tl{font-size:10px;font-weight:700;color:var(--text-3);text-transform:uppercase;letter-spacing:.8px;margin:20px 0 10px;padding-left:2px;}
-.tl:first-child{margin-top:0;}
-
-/* 개념 박스 */
-.concept-box{border:1.5px solid var(--border);border-radius:var(--radius-md);padding:12px;margin-bottom:10px;background:var(--surface);}
-.cb-title{font-size:13px;font-weight:700;margin-bottom:5px;display:flex;align-items:center;gap:6px;color:var(--text);}
-.cb-body{font-size:12px;color:var(--text-2);line-height:1.65;}
-
-/* 진행바 */
-.prog-wrap{margin:8px 0;}
-.prog-label{display:flex;justify-content:space-between;font-size:11px;color:var(--text-2);margin-bottom:4px;}
-.prog-bar{height:6px;background:var(--border);border-radius:4px;overflow:hidden;}
-.prog-fill{height:100%;border-radius:4px;transition:width .5s ease;}
-
-/* 태그 */
-.pill-row{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px;}
-.pill{font-size:11px;padding:3px 10px;border-radius:99px;border:1.5px solid var(--border);color:var(--text-2);}
-
-/* 링크 목록 */
-.link-item{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);}
-.link-item:last-child{border-bottom:none;}
-.link-icon{width:32px;height:32px;border-radius:var(--radius-sm);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:16px;}
-.link-body{flex:1;min-width:0;}
-.link-title{font-size:13px;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.link-url{font-size:11px;color:var(--text-3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.link-arrow{color:var(--text-3);flex-shrink:0;}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f3f4f6; padding: 1rem; }
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0,0,0,0); }
+.page { padding: 1rem 0; font-size: 15px; color: var(--color-text-primary); max-width: 720px; margin: 0 auto; }
+.nav { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 1.5rem; }
+.nav-btn { padding: 7px 14px; font-size: 13px; font-weight: 500; cursor: pointer; border-radius: 99px; border: 0.5px solid var(--color-border-secondary); color: var(--color-text-secondary); background: transparent; transition: all 0.15s; }
+.nav-btn.on { background: var(--color-background-info); color: var(--color-text-info); border-color: var(--color-border-info); }
+.section { display: none; }
+.section.on { display: block; }
+.card { background: var(--color-background-primary); border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-lg); padding: 1.25rem; margin-bottom: 1rem; }
+.ch { font-weight: 500; font-size: 15px; margin-bottom: 1rem; display: flex; align-items: center; gap: 8px; }
+.badge { font-size: 11px; font-weight: 500; padding: 3px 8px; border-radius: var(--border-radius-md); }
+.bg { background: var(--color-background-success); color: var(--color-text-success); }
+.ba { background: var(--color-background-warning); color: var(--color-text-warning); }
+.bi { background: var(--color-background-info); color: var(--color-text-info); }
+.br { background: var(--color-background-danger); color: var(--color-text-danger); }
+.row { display: flex; justify-content: space-between; align-items: flex-start; padding: 9px 0; border-bottom: 0.5px solid var(--color-border-tertiary); gap: 16px; font-size: 14px; }
+.row:last-child { border-bottom: none; padding-bottom: 0; }
+.rl { color: var(--color-text-secondary); flex-shrink: 0; line-height: 1.5; min-width: 90px; }
+.rv { text-align: right; font-weight: 500; line-height: 1.5; }
+.rv small { font-weight: 400; font-size: 12px; color: var(--color-text-secondary); display: block; }
+.ok { background: var(--color-background-success); border-left: 3px solid var(--color-border-success); padding: 10px 14px; font-size: 13px; color: var(--color-text-success); line-height: 1.6; margin: 8px 0; border-radius: 0; }
+.tip { background: var(--color-background-warning); border-left: 3px solid var(--color-border-warning); padding: 10px 14px; font-size: 13px; color: var(--color-text-warning); line-height: 1.6; margin: 8px 0; border-radius: 0; }
+.info { background: var(--color-background-info); border-left: 3px solid var(--color-border-info); padding: 10px 14px; font-size: 13px; color: var(--color-text-info); line-height: 1.6; margin: 8px 0; border-radius: 0; }
+.step-list { list-style: none; padding: 0; margin: 0; }
+.step-list li { display: flex; gap: 12px; padding: 11px 0; border-bottom: 0.5px solid var(--color-border-tertiary); font-size: 14px; line-height: 1.55; }
+.step-list li:last-child { border-bottom: none; }
+.snum { min-width: 26px; height: 26px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 500; flex-shrink: 0; margin-top: 1px; background: var(--color-background-info); color: var(--color-text-info); }
+.sim { background: var(--color-background-secondary); border-radius: var(--border-radius-lg); padding: 1.25rem; margin-top: 8px; }
+.sim-r { display: flex; justify-content: space-between; font-size: 13px; padding: 3px 0; }
+.sim-t { display: flex; justify-content: space-between; font-size: 16px; font-weight: 500; padding-top: 10px; border-top: 0.5px solid var(--color-border-secondary); margin-top: 6px; }
+.g2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; }
+.mc { background: var(--color-background-secondary); border-radius: var(--border-radius-md); padding: 1rem; }
+.mc .ml { font-size: 12px; color: var(--color-text-secondary); margin-bottom: 4px; }
+.mc .mv { font-size: 20px; font-weight: 500; }
+.mc .ms { font-size: 12px; color: var(--color-text-secondary); margin-top: 2px; }
+.tl { font-size: 12px; font-weight: 500; color: var(--color-text-secondary); text-transform: uppercase; letter-spacing: 0.5px; margin: 1.5rem 0 0.75rem; }
+.concept-box { border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-lg); padding: 1rem; margin-bottom: 10px; }
+.cb-title { font-size: 14px; font-weight: 500; margin-bottom: 6px; display: flex; align-items: center; gap: 6px; }
+.cb-body { font-size: 13px; color: var(--color-text-secondary); line-height: 1.6; }
+.h-tabs { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 1.25rem; }
+.h-tab { padding: 6px 13px; font-size: 12px; font-weight: 500; cursor: pointer; border-radius: 99px; border: 0.5px solid var(--color-border-secondary); color: var(--color-text-secondary); background: transparent; transition: all 0.15s; }
+.h-tab.on { background: var(--color-background-info); color: var(--color-text-info); border-color: var(--color-border-info); }
+.h-page { display: none; }
+.h-page.on { display: block; }
+.step-card { background: var(--color-background-primary); border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-lg); padding: 1.25rem; margin-bottom: 1rem; }
+.step-row { display: flex; gap: 14px; padding: 14px 0; border-bottom: 0.5px solid var(--color-border-tertiary); }
+.step-row:last-child { border-bottom: none; padding-bottom: 0; }
+.step-num { min-width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 500; flex-shrink: 0; margin-top: 1px; background: var(--color-background-info); color: var(--color-text-info); }
+.step-body strong { display: block; margin-bottom: 5px; font-weight: 500; font-size: 14px; }
+.step-body .desc { color: var(--color-text-secondary); font-size: 13px; line-height: 1.65; }
+.screen { background: var(--color-background-secondary); border-radius: var(--border-radius-md); border: 0.5px solid var(--color-border-tertiary); padding: 10px 14px; margin-top: 8px; font-size: 13px; line-height: 1.7; color: var(--color-text-primary); }
+.screen-label { font-size: 11px; font-weight: 500; color: var(--color-text-secondary); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
+.screen-tap { display: inline-block; background: var(--color-background-info); color: var(--color-text-info); border-radius: var(--border-radius-md); padding: 3px 9px; font-size: 12px; font-weight: 500; margin: 2px 1px; }
+.file-box { background: var(--color-background-danger); border-radius: var(--border-radius-md); padding: 10px 14px; font-size: 13px; color: var(--color-text-danger); margin-top: 8px; line-height: 1.6; }
+.prep-item { display: flex; align-items: flex-start; gap: 10px; padding: 8px 0; border-bottom: 0.5px solid var(--color-border-tertiary); font-size: 13px; }
+.prep-item:last-child { border-bottom: none; }
+.prep-dot { min-width: 6px; height: 6px; border-radius: 50%; background: var(--color-text-info); margin-top: 5px; flex-shrink: 0; }
+.badge-wait { background: var(--color-background-warning); color: var(--color-text-warning); font-size: 11px; font-weight: 500; padding: 3px 8px; border-radius: var(--border-radius-md); display: inline-block; margin-left: 6px; }
+.badge-go { background: var(--color-background-success); color: var(--color-text-success); font-size: 11px; font-weight: 500; padding: 3px 8px; border-radius: var(--border-radius-md); display: inline-block; margin-left: 6px; }
 </style>
 </head>
 <body>
-
-<div class="page-header">
-  <div class="page-title">💰 재무 관리</div>
-  <div class="page-sub">방수현 · 2026년 업데이트</div>
-</div>
-
+<div class="page">
+<h2 class="sr-only">주택드림청약, 연금저축펀드, IRP, 파킹통장 완전 가이드 로드맵</h2>
 <div class="nav" id="nav"></div>
 <div id="sections"></div>
 
 <script>
 const pages = [
-  {id:'overview', label:'개요', icon:'ti-layout-dashboard'},
-  {id:'invest',   label:'투자', icon:'ti-chart-candlestick'},
-  {id:'pension',  label:'청약·연금', icon:'ti-building-bank'},
-  {id:'spend',    label:'지출', icon:'ti-receipt'},
-  {id:'insurance',label:'보험', icon:'ti-shield-check'},
-  {id:'links',    label:'링크', icon:'ti-link'},
+  { id: 'concept', label: '개념 이해', icon: 'ti-book' },
+  { id: 'chung', label: '주택드림청약', icon: 'ti-home' },
+  { id: 'pension', label: '연금저축펀드', icon: 'ti-chart-bar' },
+  { id: 'irp', label: 'IRP', icon: 'ti-building-bank' },
+  { id: 'parking', label: '파킹통장', icon: 'ti-parking' },
+  { id: 'total', label: '연간 혜택 총정리', icon: 'ti-trophy' },
+  { id: 'howto', label: '신청 방법', icon: 'ti-list-check' },
 ];
 
 const content = {
-  overview: `
-    <div class="tl">월별 재무 현황</div>
-    <div class="g2">
-      <div class="mc"><div class="ml">월 수입 (실수령)</div><div class="mv" style="color:var(--green)">—만원</div><div class="ms">세후 기준</div></div>
-      <div class="mc"><div class="ml">고정 납입 합계</div><div class="mv" style="color:var(--accent)">70만원</div><div class="ms">청약 25만 (준비중)</div></div>
-      <div class="mc"><div class="ml">고정 지출 합계</div><div class="mv">122만원</div><div class="ms">주거+보험+운동+구독+식비</div></div>
-      <div class="mc"><div class="ml">가처분 소득</div><div class="mv" style="color:var(--blue)">약 178만원</div><div class="ms">고정지출 제외</div></div>
+  concept: `
+    <div class="tl">4가지 상품을 한 줄로 이해하기</div>
+    <div class="concept-box">
+      <div class="cb-title"><i class="ti ti-home" aria-hidden="true" style="font-size:16px"></i> 주택드림 청약통장 — "내 집 마련 예약 통장"</div>
+      <div class="cb-body">월 25만원씩 넣으면서 청약 당첨을 기다리는 통장. 넣을수록 당첨 확률이 올라가고, 이자도 4.5%로 높고, 세금도 돌려받습니다. 청약 당첨 시 최저 2.2% 초저금리 대출로 연결됩니다.</div>
+    </div>
+    <div class="concept-box">
+      <div class="cb-title"><i class="ti ti-chart-bar" aria-hidden="true" style="font-size:16px"></i> 연금저축펀드 — "세금 돌려받으며 ETF 투자하는 계좌"</div>
+      <div class="cb-body">1년에 최대 600만원 넣으면 정부가 세금 99만원을 현금으로 돌려줍니다. 그 안에서 ETF(인덱스 펀드)를 사고팔 수 있어요. 55세 이후 연금으로 받으면 세율도 낮아집니다.</div>
+    </div>
+    <div class="concept-box">
+      <div class="cb-title"><i class="ti ti-building-bank" aria-hidden="true" style="font-size:16px"></i> IRP — "직장인 전용 세금 환급 통장"</div>
+      <div class="cb-body">연금저축에 300만원을 추가로 더 넣으면 세금 49.5만원을 더 돌려받는 계좌. 연금저축과 합쳐 연간 최대 148.5만원 환급 가능. 퇴직금도 이 계좌에 보관합니다.</div>
+    </div>
+    <div class="concept-box">
+      <div class="cb-title"><i class="ti ti-parking" aria-hidden="true" style="font-size:16px"></i> 파킹통장 — "고이자 자유입출금 통장"</div>
+      <div class="cb-body">일반 통장(이자 0.1%)과 달리 하루만 맡겨도 연 2~3%대 이자를 주는 통장. 언제든 꺼낼 수 있어서 비상금과 월급 대기 자금을 보관하는 용도로 씁니다.</div>
+    </div>
+    <div class="ok">✅ 이 4개는 역할이 다 달라서 동시에 가입해도 겹치지 않습니다. 비상금(파킹) → 목돈 마련(청년미래적금) → 세금 환급(연금저축+IRP) → 내 집 마련(청약) 이 구조예요.</div>
+  `,
+
+  chung: `
+    <div class="tl">기본 정보</div>
+    <div class="card">
+      <div class="ch"><i class="ti ti-home" aria-hidden="true"></i> 주택드림 청약통장이란?</div>
+      <div class="row"><span class="rl">한마디</span><span class="rv">아파트 청약 신청권 + 4.5% 고금리 + 소득공제</span></div>
+      <div class="row"><span class="rl">월 납입</span><span class="rv">2만원 ~ 100만원 <small>소득공제 최대화는 월 25만원</small></span></div>
+      <div class="row"><span class="rl">금리</span><span class="rv">기본 2.8% → 2년 후 4.5% <small>가입 후 2년 유지 시 우대금리 자동 적용</small></span></div>
+      <div class="row"><span class="rl">나이 조건</span><span class="rv">만 19~34세, 연 소득 5천만원 이하, 무주택</span></div>
     </div>
 
-    <div class="tl">단계별 재무 플랜</div>
+    <div class="tl">받을 수 있는 혜택 3가지</div>
     <div class="card">
-      <div class="ch"><i class="ti ti-stairs"></i> 3단계 로드맵</div>
+      <div class="ch"><i class="ti ti-receipt-tax" aria-hidden="true"></i> 혜택 상세</div>
+      <div style="margin-bottom:14px">
+        <div style="font-size:13px;font-weight:500;margin-bottom:5px">① 연말정산 소득공제 — 연 약 19.8만원 절세</div>
+        <div style="font-size:13px;color:var(--color-text-secondary);line-height:1.6">연 납입액 300만원의 40%(=120만원)를 소득에서 공제. 연소득 3,480만원 기준 세율 16.5%(세금+지방세)라면 연 19.8만원 세금 감소. 조건: 세대주, 무주택, 연 소득 7천만원 이하. 연말정산 때 무주택확인서 제출 필요.</div>
+      </div>
+      <div style="border-top:0.5px solid var(--color-border-tertiary);padding-top:14px;margin-bottom:14px">
+        <div style="font-size:13px;font-weight:500;margin-bottom:5px">② 이자소득 비과세 — 이자에 세금 0%</div>
+        <div style="font-size:13px;color:var(--color-text-secondary);line-height:1.6">이자소득 500만원까지 비과세 (연 납입 600만원 한도). 일반 예금은 이자의 15.4%를 세금으로 내는데, 이게 면제됩니다. 조건: 가입 시 세대주, 전년 총급여 3,600만원 이하.</div>
+      </div>
+      <div style="border-top:0.5px solid var(--color-border-tertiary);padding-top:14px">
+        <div style="font-size:13px;font-weight:500;margin-bottom:5px">③ 청약 당첨 시 초저금리 대출 연계</div>
+        <div style="font-size:13px;color:var(--color-text-secondary);line-height:1.6">1년 이상 가입, 1천만원 이상 납입 후 청약 당첨 시 최저 연 2.2% 고정금리로 최대 3억원 대출 가능 (분양가 6억원 이하, 85㎡ 이하, 최장 40년).</div>
+      </div>
+      <div class="ok">✅ 세대주 확인 필수! 비과세와 소득공제 모두 가입 시 세대주여야 신청 가능합니다. 본인이 세대주인지 주민등록등본으로 미리 확인하세요.</div>
+    </div>
+
+    <div class="tl">신청 방법 (단계별)</div>
+    <div class="card">
+      <div class="ch"><i class="ti ti-list-check" aria-hidden="true"></i> 가입 절차</div>
       <ul class="step-list">
-        <li><div class="snum red">1단계</div><div><strong>비상금 완성 (2~3개월)</strong><br><span style="color:var(--text-2)">파킹통장에 월 100만원 이체 → 600만원 달성. 이 기간엔 투자 없음. 청약만 25만원 시작.</span></div></li>
-        <li><div class="snum" style="background:var(--orange-bg);color:var(--orange)">2단계</div><div><strong>절세 상품 풀가동 (비상금 완성 직후)</strong><br><span style="color:var(--text-2)">청약 25만 + 연금저축 30만 + IRP 15만 = 월 70만원 납입. 연간 절세 효과 약 134만원.</span></div></li>
-        <li><div class="snum green">3단계</div><div><strong>안정화 후 추가 투자 (6개월 후)</strong><br><span style="color:var(--text-2)">연금저축 내 S&P500 ETF. 여유분으로 ISA 계좌 고려. 파킹통장 이자 복리 활용.</span></div></li>
+        <li><div class="snum">1</div><div><strong>홈택스에서 소득확인증명서 발급</strong><br><span style="color:var(--color-text-secondary)">홈택스(hometax.go.kr) 로그인 → 민원증명 → 즉시발급 → "소득확인증명서" 선택 시 용도를 반드시 "청년우대형 주택청약종합저축 가입 및 과세특례 신청용"으로 선택</span></div></li>
+        <li><div class="snum">2</div><div><strong>주민등록등본 발급</strong><br><span style="color:var(--color-text-secondary)">정부24(gov.kr) 또는 주민센터. 세대주 여부 확인용. 3개월 이내 발급분 필요</span></div></li>
+        <li><div class="snum">3</div><div><strong>취급 은행 앱 또는 방문</strong><br><span style="color:var(--color-text-secondary)">KB국민, 신한, 우리, 하나, 농협, 기업은행 등 수탁은행 어디든 가능. 앱에서 "청년 주택드림 청약통장" 검색 후 비대면 개설 가능</span></div></li>
+        <li><div class="snum">4</div><div><strong>비과세 신청 서류 동시 제출 (중요)</strong><br><span style="color:var(--color-text-secondary)">가입 당일 비과세 신청 서류도 함께 제출해야 합니다: 무주택확인서(은행 서식) + 각서 및 정보제공동의서. 가입 후 2년 이내 제출 가능하지만 당일이 안전</span></div></li>
+        <li><div class="snum">5</div><div><strong>자동이체 월 25만원 설정</strong><br><span style="color:var(--color-text-secondary)">소득공제 최대치(연 300만원)에 딱 맞는 금액. 납입일은 급여일 다음 날로 설정 추천</span></div></li>
+        <li><div class="snum">6</div><div><strong>매년 12월 연말정산 신청</strong><br><span style="color:var(--color-text-secondary)">회사 연말정산 시 주택청약 납입 내역 제출. 무주택 세대주 확인서(은행 발급) 매년 제출 필요</span></div></li>
       </ul>
     </div>
-    <div class="tl">자산 배분 현황</div>
-    <div class="card">
-      <div class="ch"><i class="ti ti-chart-pie"></i> 자산 카테고리별 배분</div>
-      <div class="prog-wrap">
-        <div class="prog-label"><span>비상금 (파킹통장)</span><span>—만원</span></div>
-        <div class="prog-bar"><div class="prog-fill" style="width:0%;background:var(--blue)"></div></div>
-      </div>
-      <div class="prog-wrap">
-        <div class="prog-label"><span>투자 (연금저축+IRP+ETF)</span><span>—만원</span></div>
-        <div class="prog-bar"><div class="prog-fill" style="width:0%;background:var(--accent)"></div></div>
-      </div>
-      <div class="prog-wrap">
-        <div class="prog-label"><span>청약 통장</span><span>—만원</span></div>
-        <div class="prog-bar"><div class="prog-fill" style="width:0%;background:var(--green)"></div></div>
-      </div>
-      <div class="tip">⚠️ 이 페이지의 금액은 직접 수정해서 사용하세요. 실제 수치로 업데이트하면 재무 현황을 한눈에 파악할 수 있습니다.</div>
-    </div>
 
-    <div class="tl">이번 달 체크리스트</div>
-    <div class="card">
-      <div class="ch"><i class="ti ti-list-check"></i> 월간 필수 확인</div>
-      <ul class="step-list">
-        <li><div class="snum red">1</div><div><strong>파킹통장 개설 — 비상금 600만원 목표</strong><br><span style="color:var(--text-2)">현재 300만원 보유 → 월 100만원 이체 → 3개월 후 완성. 토스뱅크 or 저축은행 금리 비교</span></div></li>
-        <li><div class="snum red">2</div><div><strong>주택드림 청약 즉시 가입</strong><br><span style="color:var(--text-2)">월 25만원 · 가입 기간이 가점 직결 · 지금 바로 시작 필요. 30세 무주택 최적 시점</span></div></li>
-        <li><div class="snum">3</div><div><strong>비상금 완성 후 — 연금저축펀드 가입</strong><br><span style="color:var(--text-2)">월 30만원 · S&P500 ETF 담기 · 세액공제 연 59만원</span></div></li>
-        <li><div class="snum">4</div><div><strong>비상금 완성 후 — IRP 가입</strong><br><span style="color:var(--text-2)">월 15만원 · 추가 세액공제 연 30만원</span></div></li>
-        <li><div class="snum">!</div><div><strong>월 지출 내역 점검</strong><br><span style="color:var(--text-2)">고정지출 122만원 외 변동지출 확인. 가처분 178만원 초과 지출 방지</span></div></li>
-      </ul>
-    </div>`,
-
-  invest: `
-    <div class="tl">연금저축펀드</div>
-    <div class="card">
-      <div class="ch"><i class="ti ti-chart-bar"></i> 연금저축펀드 <span class="badge bg">세액공제</span></div>
-      <div class="row"><span class="rl">연간 납입 목표</span><span class="rv">600만원 <small>월 50만원</small></span></div>
-      <div class="row"><span class="rl">세액공제율</span><span class="rv">16.5% <small>총급여 5,500만원 이하</small></span></div>
-      <div class="row"><span class="rl">연간 환급액</span><span class="rv" style="color:var(--green)">+99만원</span></div>
-      <div class="row"><span class="rl">운용 전략</span><span class="rv">S&P500 ETF 70%<small>+ 채권 혹은 TDF 30%</small></span></div>
-      <div class="row"><span class="rl">수령 시작</span><span class="rv">만 55세 이후 <small>연금소득세 3.3~5.5%</small></span></div>
-      <div class="ok">✅ 연금저축은 장기 투자 계좌입니다. S&P500 ETF처럼 글로벌 지수 추종 상품을 담아두고 건드리지 않는 것이 가장 좋은 전략입니다.</div>
-    </div>
-
-    <div class="tl">IRP (개인형 퇴직연금)</div>
-    <div class="card">
-      <div class="ch"><i class="ti ti-building-bank"></i> IRP <span class="badge bi">추가 세액공제</span></div>
-      <div class="row"><span class="rl">연간 납입 목표</span><span class="rv">300만원 <small>월 25만원</small></span></div>
-      <div class="row"><span class="rl">추가 세액공제</span><span class="rv" style="color:var(--green)">+49.5만원 <small>연금저축과 합산 900만원 한도</small></span></div>
-      <div class="row"><span class="rl">안전자산 의무</span><span class="rv">30% 이상 <small>채권·MMF·예금</small></span></div>
-      <div class="row"><span class="rl">운용 전략</span><span class="rv">ETF 70% + 채권 30%</span></div>
-      <div class="tip">⚠️ IRP는 중도 인출 시 세액공제 받은 금액을 반납해야 합니다. 비상금과는 별도로 관리하세요.</div>
-    </div>
-
-    <div class="tl">파킹통장 (비상금)</div>
-    <div class="card">
-      <div class="ch"><i class="ti ti-piggy-bank"></i> 파킹통장 현황</div>
-      <div class="row"><span class="rl">목표 잔고</span><span class="rv">600~900만원 <small>생활비 3~6개월치</small></span></div>
-      <div class="row"><span class="rl">현재 금리</span><span class="rv">연 2~3.5% <small>저축은행 파킹 기준</small></span></div>
-      <div class="row"><span class="rl">연간 이자 (700만 기준)</span><span class="rv" style="color:var(--green)">+약 17만원</span></div>
-      <div class="row"><span class="rl">추천 상품</span><span class="rv">토스뱅크 or 저축은행 파킹</span></div>
-      <div class="ok">✅ 월급 입금 → 파킹통장 대기 → 자동이체 날에 적금·연금·청약으로 이동. 대기 기간에도 하루 단위 이자 발생.</div>
-    </div>
-
-    <div class="tl">연간 세금 혜택 합산</div>
     <div class="sim">
-      <div style="font-size:11px;color:var(--text-2);margin-bottom:10px">4개 상품 합산 연간 실질 혜택</div>
-      <div class="sim-r"><span>주택드림 청약 (월 25만원)</span><span>+45만원</span></div>
-      <div class="sim-r"><span>연금저축 세액공제 (월 30만원)</span><span>+59만원</span></div>
-      <div class="sim-r"><span>IRP 추가 세액공제 (월 15만원)</span><span>+30만원</span></div>
-      <div class="sim-r"><span>파킹통장 이자 (600만원 기준)</span><span>+약 15만원</span></div>
-      <div class="sim-t"><span>연간 합산 실질 혜택</span><span style="color:var(--green)">약 149만원</span></div>
-      <div style="font-size:11px;color:var(--text-2);margin-top:8px">= 월 약 12.4만원 자동 이익</div>
-    </div>`,
+      <div style="font-size:12px;color:var(--color-text-secondary);margin-bottom:8px">월 25만원 납입 시 연간 실질 혜택 (연소득 3,480만원 기준)</div>
+      <div class="sim-r"><span>연 납입액</span><span>300만원</span></div>
+      <div class="sim-r"><span>소득공제 환급 (소득공제 120만원 × 세율 16.5%)</span><span style="color:var(--color-text-success)">+약 19.8만원</span></div>
+      <div class="sim-r"><span>이자 비과세 절세 효과 (4.5%)</span><span style="color:var(--color-text-success)">+약 7만원</span></div>
+      <div class="sim-t"><span>연간 실질 혜택</span><span>약 26.8만원</span></div>
+    </div>
+  `,
 
   pension: `
-    <div class="tl">주택드림 청약통장</div>
+    <div class="tl">기본 정보</div>
     <div class="card">
-      <div class="ch"><i class="ti ti-home"></i> 주택드림 청약 <span class="badge bg">진행중</span></div>
-      <div class="row"><span class="rl">월 납입액</span><span class="rv">25만원</span></div>
-      <div class="row"><span class="rl">금리</span><span class="rv">4.5% <small>2년 유지 후 우대금리</small></span></div>
-      <div class="row"><span class="rl">소득공제</span><span class="rv">연 300만원 × 40% <small>연 최대 45만원 절세</small></span></div>
-      <div class="row"><span class="rl">청약 연결 대출</span><span class="rv">최저 2.2% <small>당첨 시 주택드림대출 연계</small></span></div>
-      <div class="row"><span class="rl">조건</span><span class="rv">만 19~34세 / 연소득 5천만원↓ / 무주택</span></div>
-      <div class="ok">✅ 2년 유지 시 4.5% 우대금리 자동 적용. 매달 25만원씩 꾸준히 납입해 청약 가점을 쌓아가세요.</div>
+      <div class="ch"><i class="ti ti-chart-bar" aria-hidden="true"></i> 연금저축펀드란?</div>
+      <div class="row"><span class="rl">한마디</span><span class="rv">ETF 투자 + 세금 99만원 환급 계좌</span></div>
+      <div class="row"><span class="rl">세액공제율</span><span class="rv">16.5% <small>총급여 5,500만원 이하 → 최고 구간 해당</small></span></div>
+      <div class="row"><span class="rl">공제 한도</span><span class="rv">연 600만원 <small>월 50만원 = 연 600만원 딱 맞음</small></span></div>
+      <div class="row"><span class="rl">연 환급액</span><span class="rv">최대 99만원 <small>600만원 × 16.5%</small></span></div>
+      <div class="row"><span class="rl">투자 대상</span><span class="rv">국내외 ETF, 펀드 100% 가능 <small>IRP와 다르게 비율 제한 없음</small></span></div>
+      <div class="row"><span class="rl">중도 인출</span><span class="rv">언제든 가능 <small>단, 세액공제 받은 금액은 기타소득세 16.5% 납부</small></span></div>
     </div>
 
-    <div class="tl">연말정산 공제 챙기기</div>
+    <div class="tl">핵심 작동 원리</div>
     <div class="card">
-      <div class="ch"><i class="ti ti-receipt-tax"></i> 연말정산 항목 정리</div>
-      <ul class="step-list">
-        <li><div class="snum">1</div><div><strong>청약 소득공제 신청</strong><br><span style="color:var(--text-2)">무주택확인서 발급 → 연말정산 시 제출. 연 최대 40~45만원 절세</span></div></li>
-        <li><div class="snum">2</div><div><strong>연금저축 세액공제 확인</strong><br><span style="color:var(--text-2)">연간 600만원 납입 여부 확인. 99만원 환급</span></div></li>
-        <li><div class="snum">3</div><div><strong>IRP 납입 한도 채우기</strong><br><span style="color:var(--text-2)">12월 전 300만원 목표 달성. 49.5만원 추가 환급</span></div></li>
-        <li><div class="snum">4</div><div><strong>의료비·교육비·기부금 증빙 수집</strong><br><span style="color:var(--text-2)">간소화 서비스에서 자동 수집 안 되는 항목은 직접 영수증 보관</span></div></li>
-      </ul>
-      <div class="info">ℹ️ 12월에 연금저축·IRP 잔여 납입 한도를 확인하고 채우면 환급액이 최대화됩니다.</div>
-    </div>`,
-
-  spend: `
-    <div class="tl">월 지출 예산 계획</div>
-    <div class="card">
-      <div class="ch"><i class="ti ti-wallet"></i> 카테고리별 예산</div>
-      <div class="row"><span class="rl">주거 (월세+공과금)</span><span class="rv">700,000원</span></div>
-      <div class="row"><span class="rl">보험</span><span class="rv">127,000원 <small>2개</small></span></div>
-      <div class="row"><span class="rl">운동</span><span class="rv">130,000원 <small>헬스 3만 + 클라이밍 10만</small></span></div>
-      <div class="row"><span class="rl">식비 (점심 제외)</span><span class="rv">230,000원 <small>식단 플랜 기준</small></span></div>
-      <div class="row"><span class="rl">구독 서비스</span><span class="rv">35,000원 <small>플로·넷플·티빙</small></span></div>
-      <div class="row"><span class="rl">통신비</span><span class="rv">0원 <small>무료 요금제</small></span></div>
-      <div class="row"><span class="rl">고정 지출 합계</span><span class="rv" style="color:var(--accent);font-weight:800">1,222,000원</span></div>
-      <div class="row"><span class="rl">가처분 소득</span><span class="rv" style="color:var(--green);font-weight:800">약 1,778,000원</span></div>
-      <div class="tip">⚠️ 위 항목들을 실제 지출로 업데이트하세요. 카드 내역을 월말에 카테고리별로 집계하면 됩니다.</div>
-    </div>
-
-    <div class="tl">구독 서비스 목록</div>
-    <div class="card">
-      <div class="ch"><i class="ti ti-credit-card"></i> 정기 결제 목록</div>
-      <div class="row"><span class="rl">플로 (음악)</span><span class="rv">약 8,000원/월</span></div>
-      <div class="row"><span class="rl">넷플릭스</span><span class="rv">약 17,000원/월</span></div>
-      <div class="row"><span class="rl">티빙</span><span class="rv">약 10,900원/월</span></div>
-      <div class="row"><span class="rl">합계</span><span class="rv" style="font-weight:800">약 35,900원/월</span></div>
-      <div class="ok">✅ 분기마다 구독 서비스를 검토해서 사용하지 않는 항목을 정리하세요.</div>
-    </div>
-
-    <div class="tl">지출 절감 팁</div>
-    <div class="card">
-      <div class="ch"><i class="ti ti-bulb"></i> 실용적인 절감 방법</div>
-      <ul class="step-list">
-        <li><div class="snum">1</div><div><strong>카드 혜택 최적화</strong><br><span style="color:var(--text-2)">식비·교통비 캐시백 카드 1장 + 통신비 할인 카드 1장으로 운영</span></div></li>
-        <li><div class="snum">2</div><div><strong>외식 vs 식재료 비율 조정</strong><br><span style="color:var(--text-2)">주 2회 이상 직접 조리 시 월 식비 3~5만원 절감 가능</span></div></li>
-        <li><div class="snum">3</div><div><strong>구독 서비스 가족/친구 공유</strong><br><span style="color:var(--text-2)">넷플릭스·유튜브는 가족 계정 공유로 1인당 비용 절반</span></div></li>
-      </ul>
-    </div>`,
-
-  insurance: `
-    <div class="tl">보험 현황</div>
-    <div class="card">
-      <div class="ch"><i class="ti ti-shield-check"></i> 가입 보험 목록</div>
-      <div class="row"><span class="rl">실손 의료보험</span><span class="rv"><span class="badge bg">가입</span> <small>월 —원</small></span></div>
-      <div class="row"><span class="rl">암 보험</span><span class="rv"><span class="badge ba">미확인</span></span></div>
-      <div class="row"><span class="rl">치아 보험</span><span class="rv"><span class="badge ba">미확인</span></span></div>
-      <div class="row"><span class="rl">생명 보험</span><span class="rv"><span class="badge ba">미확인</span></span></div>
-      <div class="tip">⚠️ 실제 가입 여부와 보험료를 업데이트하세요.</div>
-    </div>
-
-    <div class="tl">30대 초반 필수 보험 체크리스트</div>
-    <div class="card">
-      <div class="ch"><i class="ti ti-checklist"></i> 우선순위별 보험</div>
-      <ul class="step-list">
-        <li><div class="snum green">1</div><div><strong>실손 의료보험 (최우선)</strong><br><span style="color:var(--text-2)">입원·통원 치료비의 80~100% 보장. 미가입 시 의료비 리스크 가장 큼. 월 3~5만원 수준</span></div></li>
-        <li><div class="snum">2</div><div><strong>암 보험</strong><br><span style="color:var(--text-2)">30대 초반 가입 시 보험료 가장 저렴. 진단비 위주로 설계. 월 3~5만원</span></div></li>
-        <li><div class="snum">3</div><div><strong>치아 보험</strong><br><span style="color:var(--text-2)">임플란트·크라운 비용 보장. 대기기간(1~2년) 고려해 미리 가입. 월 2~3만원</span></div></li>
-        <li><div class="snum">4</div><div><strong>운전자 보험 (운전 시)</strong><br><span style="color:var(--text-2)">교통사고 형사·민사 합의금 보장. 월 1~2만원으로 큰 리스크 커버</span></div></li>
-      </ul>
-      <div class="ok">✅ 보험은 실손 → 암 → 치아 순으로 우선순위를 두고, 총 보험료가 월 수입의 5~10%를 넘지 않도록 설계하세요.</div>
-    </div>
-
-    <div class="tl">보험 점검 원칙</div>
-    <div class="card">
-      <div class="ch"><i class="ti ti-info-circle"></i> 보험 관리 원칙</div>
-      <div class="concept-box">
-        <div class="cb-title">❌ 과잉 보험 피하기</div>
-        <div class="cb-body">저축성 보험·종신보험은 수수료가 높고 수익률이 낮습니다. 저축은 ETF·파킹통장으로, 보험은 순수 보장성으로 분리하는 것이 원칙입니다.</div>
+      <div class="ch"><i class="ti ti-bulb" aria-hidden="true"></i> 왜 가입해야 하나?</div>
+      <div style="font-size:13px;color:var(--color-text-secondary);line-height:1.6;margin-bottom:12px">일반 증권 계좌에서 ETF를 사면 수익의 15.4%가 세금. 연금저축 안에서 사면 수익에 세금이 없고, 납입한 돈의 16.5%를 연말정산에서 현금으로 돌려받아요.</div>
+      <div style="background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:12px;font-size:13px;line-height:1.7">
+        예시: 월 50만원 × 12개월 = 600만원 납입<br>
+        → 다음 해 연말정산에서 <strong style="color:var(--color-text-success)">99만원 현금 환급</strong><br>
+        → 실제 내 손에서 나간 돈: 600만원 - 99만원 = 501만원<br>
+        → 그 돈으로 ETF 투자해서 수익까지 발생
       </div>
-      <div class="concept-box">
-        <div class="cb-title">✅ 연 1회 보험 리뷰</div>
-        <div class="cb-body">매년 1월, 가입한 보험의 보장 내용과 보험료를 점검하세요. 불필요한 특약은 삭제하고 보장이 부족한 부분을 보완합니다.</div>
-      </div>
-    </div>`,
+      <div class="tip" style="margin-top:12px">⚠️ 55세 이전 해지하면 세액공제 받은 금액에 기타소득세(16.5%) 발생. 꼭 장기로 유지할 계획이 있을 때 가입하세요.</div>
+    </div>
 
-  links: `
-    <div class="tl">관련 링크 모음</div>
+    <div class="tl">신청 방법 (단계별)</div>
     <div class="card">
-      <div id="link-items">
-        <a class="link-item" href="https://bangsuhyun96.github.io/health-dashboard" target="_blank" style="text-decoration:none;color:inherit;display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border)">
-          <div class="link-icon" style="background:var(--accent-bg);">💪</div>
-          <div class="link-body"><div class="link-title">LvUP 헬스 대시보드</div><div class="link-url">bangsuhyun96.github.io/health-dashboard</div></div>
-          <i class="ti ti-external-link link-arrow"></i>
-        </a>
-        <a class="link-item" href="https://docs.google.com/spreadsheets/d/16ek7bFxO44iQuc9spl8BC8iqtctB4Sy9AwAaAwj3LPc/edit" target="_blank" style="text-decoration:none;color:inherit;display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border)">
-          <div class="link-icon" style="background:#e6fdf2;">🗡️</div>
-          <div class="link-body"><div class="link-title">몬헌 TU4.5 장비 가이드</div><div class="link-url">docs.google.com/spreadsheets</div></div>
-          <i class="ti ti-external-link link-arrow"></i>
-        </a>
-        <a class="link-item" href="https://bangsuhyun96.github.io/health-dashboard/sample/brawl/stat-dashboard.html" target="_blank" style="text-decoration:none;color:inherit;display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border)">
-          <div class="link-icon" style="background:var(--orange-bg);">🎮</div>
-          <div class="link-body"><div class="link-title">브롤컵 d-3 통계 대시보드</div><div class="link-url">bangsuhyun96.github.io/health-dashboard/sample/brawl</div></div>
-          <i class="ti ti-external-link link-arrow"></i>
-        </a>
-        <a class="link-item" href="https://finlife.fss.or.kr" target="_blank" style="text-decoration:none;color:inherit;display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border)">
-          <div class="link-icon" style="background:var(--blue-bg);">🏦</div>
-          <div class="link-body"><div class="link-title">금융상품 한눈에 (금감원)</div><div class="link-url">finlife.fss.or.kr — 파킹통장 금리 비교</div></div>
-          <i class="ti ti-external-link link-arrow"></i>
-        </a>
-        <a class="link-item" href="https://www.hometax.go.kr" target="_blank" style="text-decoration:none;color:inherit;display:flex;align-items:center;gap:10px;padding:10px 0;">
-          <div class="link-icon" style="background:var(--green-bg);">🧾</div>
-          <div class="link-body"><div class="link-title">홈택스 (연말정산·증빙)</div><div class="link-url">hometax.go.kr — 소득확인증명서·연말정산</div></div>
-          <i class="ti ti-external-link link-arrow"></i>
-        </a>
+      <div class="ch"><i class="ti ti-list-check" aria-hidden="true"></i> 가입 절차 (10분이면 끝)</div>
+      <ul class="step-list">
+        <li><div class="snum">1</div><div><strong>증권사 앱 선택 및 설치</strong><br><span style="color:var(--color-text-secondary)">삼성증권·미래에셋·키움·NH투자 등 아무 증권사나 가능. 수수료가 저렴한 다이렉트형 선택 추천. 기존에 쓰는 증권사 앱 그대로 써도 됩니다.</span></div></li>
+        <li><div class="snum">2</div><div><strong>앱 내 "연금저축펀드" 검색 → 계좌 개설</strong><br><span style="color:var(--color-text-secondary)">신분증 인증 → 계좌 개설 완료. 비대면으로 5분이면 끝. "연금저축" 상품 중 "펀드형"으로 선택 (보험형·신탁형과 다름)</span></div></li>
+        <li><div class="snum">3</div><div><strong>월 50만원 자동이체 설정</strong><br><span style="color:var(--color-text-secondary)">급여 들어오는 날 다음 날로 이체일 설정. 연 600만원이 세액공제 최대 한도</span></div></li>
+        <li><div class="snum">4</div><div><strong>ETF 매수</strong><br><span style="color:var(--color-text-secondary)">S&P500 ETF, 국내 배당 ETF 등 국내 상장 ETF 전부 매수 가능. 앱에서 티커명으로 검색 후 매수</span></div></li>
+        <li><div class="snum">5</div><div><strong>매년 12월 연말정산 입력</strong><br><span style="color:var(--color-text-secondary)">회사 연말정산 서류에 "연금저축 납입 확인서" 제출. 증권사 앱에서 자동 발급. 홈택스 간소화 서비스에서도 자동 연동됩니다.</span></div></li>
+      </ul>
+    </div>
+
+    <div class="sim">
+      <div style="font-size:12px;color:var(--color-text-secondary);margin-bottom:8px">월 50만원 납입 시 (IRP 없이 단독)</div>
+      <div class="sim-r"><span>연 납입액</span><span>600만원</span></div>
+      <div class="sim-r"><span>세액공제 환급 (16.5%)</span><span style="color:var(--color-text-success)">+99만원</span></div>
+      <div class="sim-r"><span>ETF 수익 (연 7% 가정, 세금 없음)</span><span style="color:var(--color-text-success)">+복리 누적</span></div>
+      <div class="sim-t"><span>실질 첫 해 수익률</span><span>≈ 23%+</span></div>
+    </div>
+  `,
+
+  irp: `
+    <div class="tl">기본 정보</div>
+    <div class="card">
+      <div class="ch"><i class="ti ti-building-bank" aria-hidden="true"></i> IRP란?</div>
+      <div class="row"><span class="rl">한마디</span><span class="rv">연금저축에 추가 납입해 세금 49.5만원 더 돌려받는 계좌</span></div>
+      <div class="row"><span class="rl">추가 공제 한도</span><span class="rv">연 300만원 <small>연금저축 600만원 + IRP 300만원 = 합산 900만원</small></span></div>
+      <div class="row"><span class="rl">추가 환급액</span><span class="rv">최대 49.5만원 <small>300만원 × 16.5%</small></span></div>
+      <div class="row"><span class="rl">가입 조건</span><span class="rv">소득 있는 직장인 (근로소득자) ✅</span></div>
+      <div class="row"><span class="rl">투자 대상</span><span class="rv">위험자산 70% 한도 <small>나머지 30%는 안전자산(채권·예금 등) 필수</small></span></div>
+      <div class="row"><span class="rl">중도 인출</span><span class="rv">원칙적으로 불가 <small>퇴직·사망·요양 등 특별 사유만 가능</small></span></div>
+    </div>
+
+    <div class="tl">연금저축펀드와 차이점</div>
+    <div class="card">
+      <div class="ch"><i class="ti ti-git-compare" aria-hidden="true"></i> 핵심 차이</div>
+      <div style="font-size:13px;color:var(--color-text-secondary);line-height:1.7;margin-bottom:10px">
+        연금저축과 IRP는 세트로 가입하는 게 국룰입니다. 연금저축에 600만원 꽉 채운 다음, IRP에 300만원 추가로 넣으면 합산 900만원 공제 한도를 모두 쓸 수 있어요.
+      </div>
+      <div style="background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:12px;font-size:13px;line-height:1.7">
+        연금저축 600만원 → 세액공제 99만원<br>
+        IRP 300만원 추가 → <strong style="color:var(--color-text-success)">세액공제 49.5만원 더</strong><br>
+        합계: 연 148.5만원 환급 (= 연 12.4만원/월 공짜)
+      </div>
+      <div class="info" style="margin-top:10px">💡 IRP는 중도 인출이 거의 안 되므로 연금저축(자유 인출 가능)을 먼저 채우고, IRP에 나머지만 넣는 전략이 일반적.</div>
+    </div>
+
+    <div class="tl">신청 방법 (단계별)</div>
+    <div class="card">
+      <div class="ch"><i class="ti ti-list-check" aria-hidden="true"></i> 가입 절차</div>
+      <ul class="step-list">
+        <li><div class="snum">1</div><div><strong>연금저축 가입과 같은 앱에서 IRP 추가 개설</strong><br><span style="color:var(--color-text-secondary)">대부분의 증권사 앱에서 연금저축 개설 후 IRP도 같은 앱에서 개설 가능. 소득 증빙 서류(재직증명서 또는 건강보험 자격 확인) 필요할 수 있음</span></div></li>
+        <li><div class="snum">2</div><div><strong>월 25만원 자동이체 설정</strong><br><span style="color:var(--color-text-secondary)">연 300만원이 추가 세액공제 한도. 급여일 다음 날로 설정</span></div></li>
+        <li><div class="snum">3</div><div><strong>운용 상품 설정</strong><br><span style="color:var(--color-text-secondary)">IRP는 위험자산 70% 한도. ETF 70% + 채권 ETF나 예금 30% 조합 추천. 귀찮으면 "디폴트옵션(TDF 펀드)" 설정 시 자동 운용</span></div></li>
+        <li><div class="snum">4</div><div><strong>연말정산 자동 반영</strong><br><span style="color:var(--color-text-secondary)">연금저축과 마찬가지로 홈택스 간소화 서비스에서 자동 연동. 별도 서류 제출 불필요</span></div></li>
+      </ul>
+      <div class="tip">⚠️ IRP는 퇴직금도 자동으로 들어오는 계좌입니다. 이직 시 퇴직금을 IRP로 받으면 과세 이연 혜택이 생깁니다.</div>
+    </div>
+  `,
+
+  parking: `
+    <div class="tl">기본 정보</div>
+    <div class="card">
+      <div class="ch"><i class="ti ti-parking" aria-hidden="true"></i> 파킹통장이란?</div>
+      <div class="row"><span class="rl">한마디</span><span class="rv">언제든 꺼낼 수 있는 고이자 통장</span></div>
+      <div class="row"><span class="rl">현재 금리</span><span class="rv">인터넷은행 1.6~2.0%<br>저축은행 2.5~3.5% <small>2026년 기준, 수시 변동</small></span></div>
+      <div class="row"><span class="rl">예금자 보호</span><span class="rv">1인당 5천만원까지 ✅</span></div>
+      <div class="row"><span class="rl">용도</span><span class="rv">비상금 + 월급 대기 + 납입 전 대기 자금</span></div>
+    </div>
+
+    <div class="tl">왜 필요한가?</div>
+    <div class="card">
+      <div class="ch"><i class="ti ti-bulb" aria-hidden="true"></i> 파킹통장의 역할</div>
+      <div style="font-size:13px;color:var(--color-text-secondary);line-height:1.6;margin-bottom:12px">일반 입출금 통장(이자 0.1%)에 월급 전부를 넣어두면 손해입니다. 1,000만원을 1년간 맡겨도 이자 1만원밖에 안 됩니다. 파킹통장에 넣으면 같은 돈에 연 25~35만원 이자가 생겨요.</div>
+      <div style="background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:12px;font-size:13px;line-height:1.7">
+        월급 입금 → 파킹통장에 대기<br>
+        적금·연금저축 자동이체 날까지 파킹에 보관<br>
+        → 대기 기간에도 이자 발생 (하루 단위)
+      </div>
+      <div class="ok" style="margin-top:10px">✅ 비상금 목표: 월 생활비 × 3~6개월 분 = 약 600~900만원. 이 금액을 파킹통장에 상시 유지하세요.</div>
+    </div>
+
+    <div class="tl">신청 방법 (단계별)</div>
+    <div class="card">
+      <div class="ch"><i class="ti ti-list-check" aria-hidden="true"></i> 개설 절차</div>
+      <ul class="step-list">
+        <li><div class="snum">1</div><div><strong>현재 금리 비교 후 선택</strong><br><span style="color:var(--color-text-secondary)">네이버페이 금융 앱 → "파킹통장" 탭에서 실시간 금리 비교 가능. 또는 finlife.fss.or.kr(금융상품 한눈에)에서 검색. 금리는 자주 바뀌므로 가입 직전에 확인</span></div></li>
+        <li><div class="snum">2</div><div><strong>비상금용 (즉시 출금 필요): 토스뱅크 or 카카오뱅크</strong><br><span style="color:var(--color-text-secondary)">앱에서 "세이프박스" (카카오) / "나눠모으기 통장" (토스) 개설. 5분 이내. 금리 약 1.6%, 하루 이자 자동 지급</span></div></li>
+        <li><div class="snum">3</div><div><strong>목돈 대기용 (금리 중시): 저축은행 파킹통장</strong><br><span style="color:var(--color-text-secondary)">키움·OK·애큐온 등 저축은행 앱에서 개설. 금리 2.5~3.5% 수준. 단, 은행별로 한도 조건 확인 필요 (예: 3천만원까지만 고금리)</span></div></li>
+        <li><div class="snum">4</div><div><strong>급여 계좌에서 파킹통장으로 자동이체 설정</strong><br><span style="color:var(--color-text-secondary)">월급일에 생활비·비상금을 파킹통장으로 자동이체. 적금 자동이체일 전날까지 파킹에 보관</span></div></li>
+      </ul>
+      <div class="tip">⚠️ CMA(증권사 파킹통장)는 발행어음형의 경우 예금자보호법 미적용. 원금 보호가 중요하다면 은행 파킹통장 선택.</div>
+    </div>
+  `,
+
+  total: `
+    <div class="tl">연간 실질 혜택 합산</div>
+    <div class="g2" style="margin-bottom:1rem">
+      <div class="mc"><div class="ml">주택드림 청약 절세</div><div class="mv">약 26.8만원</div><div class="ms">소득공제 19.8만원 + 이자 비과세 7만원</div></div>
+      <div class="mc"><div class="ml">연금저축 세액공제 환급</div><div class="mv">99만원</div><div class="ms">600만원 × 16.5%</div></div>
+      <div class="mc"><div class="ml">IRP 추가 세액공제 환급</div><div class="mv">49.5만원</div><div class="ms">300만원 × 16.5%</div></div>
+      <div class="mc"><div class="ml">파킹통장 추가 이자</div><div class="mv">약 15만원</div><div class="ms">500만원 × 3% (비상금 기준)</div></div>
+    </div>
+
+    <div class="sim">
+      <div style="font-size:12px;color:var(--color-text-secondary);margin-bottom:8px">4개 상품 합산 연간 실질 혜택 (연소득 3,480만원 기준)</div>
+      <div class="sim-r"><span>주택드림 청약 (월 25만원)</span><span style="color:var(--color-text-success)">+26.8만원</span></div>
+      <div class="sim-r"><span>연금저축 세액공제 (월 50만원)</span><span style="color:var(--color-text-success)">+99만원</span></div>
+      <div class="sim-r"><span>IRP 추가 세액공제 (월 25만원)</span><span style="color:var(--color-text-success)">+49.5만원</span></div>
+      <div class="sim-r"><span>파킹통장 이자 증가분</span><span style="color:var(--color-text-success)">+15만원</span></div>
+      <div class="sim-t"><span>연간 합산 실질 혜택</span><span>약 190만원</span></div>
+      <div style="font-size:12px;color:var(--color-text-secondary);margin-top:8px">= 월 약 15.8만원 자동 이익 발생</div>
+    </div>
+
+    <div class="tl">월 납입 요약표</div>
+    <div class="card">
+      <div class="ch"><i class="ti ti-calendar-stats" aria-hidden="true"></i> 전체 월 납입 계획</div>
+      <div class="row"><span class="rl">청년미래적금</span><span class="rv">50만원 <small>6월 출시 예정 — 공고 뜨면 즉시 신청</small></span></div>
+      <div class="row"><span class="rl">주택드림 청약</span><span class="rv">25만원 <small>지금 바로 시작</small></span></div>
+      <div class="row"><span class="rl">연금저축펀드</span><span class="rv">50만원 <small>지금 바로 시작</small></span></div>
+      <div class="row"><span class="rl">IRP</span><span class="rv">25만원 <small>지금 바로 시작</small></span></div>
+      <div class="row"><span class="rl">파킹통장 비상금</span><span class="rv">목표 600~900만원 <small>월급 일부 이전</small></span></div>
+      <div class="row" style="background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:10px;border:none;margin-top:4px">
+        <span style="font-weight:500">월 고정 납입 합계 (청년미래적금 포함 시)</span>
+        <span style="font-size:18px;font-weight:500;color:var(--color-text-info)">150만원 / 월</span>
       </div>
     </div>
-    <div class="info">ℹ️ 링크를 추가하려면 HTML 파일을 직접 수정하거나, LvUP 앱의 링크 탭을 활용하세요.</div>
+
+    <div class="tl">지금 당장 해야 할 순서</div>
+    <div class="card">
+      <div class="ch"><i class="ti ti-clock" aria-hidden="true"></i> 오늘부터 할 일 (2026년 6월 기준)</div>
+      <ul class="step-list">
+        <li><div class="snum">1</div><div><strong>이번 주: 연금저축펀드 개설 + 자동이체 설정</strong><br><span style="color:var(--color-text-secondary)">쓰는 증권사 앱 → "연금저축펀드" 검색 → 개설 → 월 50만원 자동이체. 10분</span></div></li>
+        <li><div class="snum">2</div><div><strong>이번 주: IRP 개설 + 자동이체 설정</strong><br><span style="color:var(--color-text-secondary)">같은 앱에서 IRP 개설 → 월 25만원 자동이체. 개설 후 ETF 70% + 채권 30% 배분</span></div></li>
+        <li><div class="snum">3</div><div><strong>이번 주: 파킹통장 개설</strong><br><span style="color:var(--color-text-secondary)">토스 or 카카오 앱에서 비상금 통장 개설. 현재 일반 입출금 통장의 비상금 이전</span></div></li>
+        <li><div class="snum">4</div><div><strong>이번 주: 주택드림 청약통장 개설</strong><br><span style="color:var(--color-text-secondary)">홈택스에서 소득확인증명서 발급 → 취급은행 앱에서 개설 → 비과세 서류 당일 제출 → 월 25만원 자동이체</span></div></li>
+        <li><div class="snum" style="background:var(--color-background-warning);color:var(--color-text-warning)">⏳</div><div><strong>6월 중: 청년미래적금 출시 즉시 가입</strong><br><span style="color:var(--color-text-secondary)">고용노동부·서민금융진흥원 공식 출시 공고 확인 후 취급 은행 앱에서 즉시 신청. 첫 모집은 경쟁이 치열할 수 있으니 공고 당일 신청 권장. 월 50만원 자동이체 설정</span></div></li>
+        <li><div class="snum">6</div><div><strong>12월: 연말정산 대비 체크</strong><br><span style="color:var(--color-text-secondary)">연금저축 + IRP 납입 내역 확인 / 청약 무주택확인서 제출 / 청약 소득공제 신청</span></div></li>
+      </ul>
+    </div>
   `
 };
 
-function render(){
-  const nav=document.getElementById('nav');
-  const secs=document.getElementById('sections');
-  pages.forEach((p,i)=>{
-    const btn=document.createElement('button');
-    btn.className='nav-btn'+(i===0?' on':'');
-    btn.innerHTML=`<i class="ti ${p.icon}" aria-hidden="true" style="font-size:13px;margin-right:4px;vertical-align:middle"></i>${p.label}`;
-    btn.onclick=()=>{
-      document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('on'));
-      document.querySelectorAll('.section').forEach(s=>s.classList.remove('on'));
+content.howto = `
+  <div style="margin-bottom:1rem;font-size:13px;color:var(--color-text-secondary);line-height:1.6">
+    상품별 탭을 눌러 단계별 신청 방법을 확인하세요. "파일 첨부" 같은 막히는 순간마다 빨간 박스로 설명해뒀어요.
+  </div>
+  <div class="h-tabs" id="h-tabs"></div>
+  <div id="h-pages"></div>
+  <script>
+  (function(){
+    const prods = [
+      { id: 'hc', label: '주택드림 청약' },
+      { id: 'hp', label: '연금저축펀드' },
+      { id: 'hi', label: 'IRP' },
+      { id: 'hk', label: '파킹통장' },
+      { id: 'hm', label: '청년미래적금' },
+    ];
+    const hpages = {
+      hc: \`
+        <div class="tl">사전 준비물 <span class="badge-go">지금 신청 가능</span></div>
+        <div class="step-card">
+          <div class="prep-item"><div class="prep-dot"></div><div><strong style="font-weight:500">소득확인증명서</strong> — 홈택스에서 무료 발급 (1단계)</div></div>
+          <div class="prep-item"><div class="prep-dot"></div><div><strong style="font-weight:500">주민등록등본</strong> — 정부24에서 무료 발급</div></div>
+          <div class="prep-item"><div class="prep-dot"></div><div><strong style="font-weight:500">은행 앱</strong> — KB·신한·우리·하나·농협·기업 중 하나</div></div>
+          <div class="ok">✅ 전부 앱·웹에서 무료 발급돼요. PDF로 저장해두면 됩니다.</div>
+        </div>
+        <div class="tl">1단계 — 홈택스에서 소득확인증명서 발급</div>
+        <div class="step-card">
+          <div class="step-row"><div class="step-num">1</div><div class="step-body"><strong>hometax.go.kr 접속 → 로그인</strong><div class="desc">모바일은 손택스 앱. 카카오·네이버 간편인증 로그인 가능</div></div></div>
+          <div class="step-row"><div class="step-num">2</div><div class="step-body"><strong>[민원증명] → [즉시발급] → [소득확인증명서]</strong><div class="screen"><div class="screen-label">발급 목적 — 꼭 이걸로</div><span class="screen-tap">청년우대형 주택청약종합저축 가입 및 과세특례 신청용</span><br><span style="color:var(--color-text-danger);font-size:12px">⚠️ 이 목적 선택 안 하면 재발급 해야 해요</span></div></div></div>
+          <div class="step-row"><div class="step-num">3</div><div class="step-body"><strong>PDF 저장</strong><div class="desc">다운로드 폴더에 저장. 은행 앱 개설 시 이 파일 업로드합니다.</div></div></div>
+        </div>
+        <div class="tl">2단계 — 주민등록등본 발급</div>
+        <div class="step-card">
+          <div class="step-row"><div class="step-num">1</div><div class="step-body"><strong>정부24 앱 또는 gov.kr → 로그인</strong></div></div>
+          <div class="step-row"><div class="step-num">2</div><div class="step-body"><strong>[자주찾는서비스] → [주민등록표 등본] → 신청</strong><div class="screen"><div class="screen-label">설정값</div>주민등록번호 공개: <span class="screen-tap">전체 공개</span> &nbsp; 수령: <span class="screen-tap">온라인 발급 (PDF)</span></div></div></div>
+          <div class="ok">✅ 본인이 세대주여야 비과세·소득공제 신청 가능. 등본에서 확인하세요.</div>
+        </div>
+        <div class="tl">3단계 — 은행 앱에서 개설</div>
+        <div class="step-card">
+          <div class="step-row"><div class="step-num">1</div><div class="step-body"><strong>은행 앱 → 검색창에 "주택드림" 입력</strong></div></div>
+          <div class="step-row"><div class="step-num">2</div><div class="step-body"><strong>[청년 주택드림 청약통장] 선택 → [가입하기]</strong><div class="screen"><div class="screen-label">헷갈리는 상품들</div>❌ 주택청약종합저축 (일반형)<br>✅ <strong>청년 주택드림 청약통장</strong></div></div></div>
+          <div class="step-row"><div class="step-num">3</div><div class="step-body"><strong>신분증 촬영 → 본인 인증</strong><div class="desc">밝은 곳에서 네 귀퉁이 맞춰 찍기</div></div></div>
+          <div class="step-row"><div class="step-num">4</div><div class="step-body"><strong>소득확인증명서 업로드 화면 → 1단계 저장한 PDF 첨부</strong><div class="file-box">📎 "파일 첨부" 버튼 당황하지 마세요!<br>파일앱 또는 갤러리에서 소득확인증명서 PDF 선택하면 돼요.<br>못 찾겠으면 "다운로드" 폴더 확인</div></div></div>
+          <div class="step-row"><div class="step-num">5</div><div class="step-body"><strong>무주택확인서 + 서약서 동의</strong><div class="desc">앱 안에서 체크박스로 동의. 별도 파일 없어요.</div></div></div>
+          <div class="step-row"><div class="step-num">6</div><div class="step-body"><strong>월 납입금 250,000원 입력 / 자동이체일: 급여일 다음 날</strong></div></div>
+          <div class="ok">✅ 완료! 2년 지나면 금리 2.8% → 4.5% 자동 상승</div>
+        </div>
+      \`,
+      hp: \`
+        <div class="tl">사전 준비물 <span class="badge-go">지금 신청 가능</span></div>
+        <div class="step-card">
+          <div class="prep-item"><div class="prep-dot"></div><div><strong style="font-weight:500">증권사 앱</strong> — 미래에셋·삼성·키움·NH투자 등</div></div>
+          <div class="prep-item"><div class="prep-dot"></div><div><strong style="font-weight:500">신분증</strong></div></div>
+          <div class="ok">✅ 이게 전부예요. 다른 서류 없어요.</div>
+        </div>
+        <div class="tl">개설 방법</div>
+        <div class="step-card">
+          <div class="step-row"><div class="step-num">1</div><div class="step-body"><strong>증권사 앱 설치 → 실행</strong><div class="desc">없으면 미래에셋증권 앱 추천 (수수료 저렴)</div></div></div>
+          <div class="step-row"><div class="step-num">2</div><div class="step-body"><strong>검색창에 "연금저축" → [연금저축펀드] 선택</strong><div class="screen"><div class="screen-label">헷갈리는 상품들</div>❌ 연금저축보험 (보험사, 수수료 높음)<br>❌ 연금저축신탁 (은행)<br>✅ <strong>연금저축펀드</strong> (증권사)</div></div></div>
+          <div class="step-row"><div class="step-num">3</div><div class="step-body"><strong>[계좌 개설] → 신분증 촬영 → 완료</strong><div class="desc">5분이면 끝</div></div></div>
+          <div class="step-row"><div class="step-num">4</div><div class="step-body"><strong>자동이체 월 500,000원 / 급여일 다음 날</strong></div></div>
+          <div class="step-row"><div class="step-num">5</div><div class="step-body"><strong>돈 들어오면 ETF 매수</strong><div class="screen"><div class="screen-label">입문자 추천</div>검색창 → <span class="screen-tap">TIGER 미국S&P500</span> 검색 → 전액 매수<br><span style="font-size:12px;color:var(--color-text-secondary)">미국 대형주 500개 분산투자. 가장 무난한 선택</span></div></div></div>
+          <div class="tip">⚠️ 중도 해지 시 세액공제 받은 금액에 세금 16.5% 부과. 당장 쓸 돈은 넣지 마세요.</div>
+        </div>
+      \`,
+      hi: \`
+        <div class="tl">사전 준비물 <span class="badge-go">지금 신청 가능</span></div>
+        <div class="step-card">
+          <div class="prep-item"><div class="prep-dot"></div><div><strong style="font-weight:500">연금저축펀드 계좌</strong> — 먼저 만들어야 해요 (앞 탭)</div></div>
+          <div class="prep-item"><div class="prep-dot"></div><div><strong style="font-weight:500">신분증</strong></div></div>
+          <div class="info">💡 연금저축 만든 앱에서 IRP도 같이 만들면 관리가 한 곳에 돼요.</div>
+        </div>
+        <div class="tl">개설 방법</div>
+        <div class="step-card">
+          <div class="step-row"><div class="step-num">1</div><div class="step-body"><strong>연금저축 앱 → 검색창에 "IRP" → [IRP 계좌 개설]</strong><div class="screen"><div class="screen-label">화면 용어</div>IRP = 개인형 퇴직연금. <span class="screen-tap">개인형IRP</span>로 표시되기도 해요.</div></div></div>
+          <div class="step-row"><div class="step-num">2</div><div class="step-body"><strong>재직증명서 요청 나올 수 있어요</strong><div class="file-box">📎 재직증명서 요청 나오면?<br>회사 인사팀에 "재직증명서 PDF로 주세요" 요청 → 저장 → 업로드<br>또는: 국민건강보험 앱 → [건강보험 자격득실 확인서]로 대체 가능한 경우도 있어요</div></div></div>
+          <div class="step-row"><div class="step-num">3</div><div class="step-body"><strong>월 250,000원 자동이체 / 급여일 다음 날</strong></div></div>
+          <div class="step-row"><div class="step-num">4</div><div class="step-body"><strong>운용 설정 — 뭘 골라야 할지 모르면 TDF</strong><div class="screen"><div class="screen-label">추천 선택</div><span class="screen-tap">TDF 2055</span> 또는 <span class="screen-tap">TDF 2060</span> 선택<br><span style="font-size:12px;color:var(--color-text-secondary)">은퇴 연도 기준으로 알아서 자산 배분해줘요. IRP는 위험자산 70% 한도라 TDF가 가장 무난</span></div></div></div>
+          <div class="tip">⚠️ IRP는 중도 인출 거의 불가. 당장 쓸 돈 절대 넣지 마세요.</div>
+        </div>
+      \`,
+      hk: \`
+        <div class="tl">사전 준비물 <span class="badge-go">지금 신청 가능</span></div>
+        <div class="step-card">
+          <div class="prep-item"><div class="prep-dot"></div><div><strong style="font-weight:500">토스 앱 또는 카카오뱅크 앱</strong></div></div>
+          <div class="ok">✅ 제일 간단해요. 5분이면 끝납니다.</div>
+        </div>
+        <div class="tl">토스뱅크 (추천)</div>
+        <div class="step-card">
+          <div class="step-row"><div class="step-num">1</div><div class="step-body"><strong>토스 앱 → 하단 [전체] 탭</strong></div></div>
+          <div class="step-row"><div class="step-num">2</div><div class="step-body"><strong>[통장 만들기] → [토스뱅크 통장] → [나눠 모으기]</strong><div class="screen"><div class="screen-label">헷갈릴 수 있어요</div>"파킹통장"이라는 단어 안 나올 수 있어요<br>→ <span class="screen-tap">나눠 모으기</span> 또는 <span class="screen-tap">자유 저금통</span>이 파킹통장 역할</div></div></div>
+          <div class="step-row"><div class="step-num">3</div><div class="step-body"><strong>신분증 촬영 → 개설 완료</strong><div class="desc">이미 토스 계좌 있으면 신분증 없이 바로 됩니다</div></div></div>
+          <div class="step-row"><div class="step-num">4</div><div class="step-body"><strong>비상금 이체 — 600만원 목표로 이전</strong><div class="desc">기존 통장에서 이체. 이자가 하루 단위로 붙기 시작합니다.</div></div></div>
+        </div>
+        <div class="tl">카카오뱅크</div>
+        <div class="step-card">
+          <div class="step-row"><div class="step-num">1</div><div class="step-body"><strong>카카오뱅크 앱 → [상품] → [세이프박스]</strong></div></div>
+          <div class="step-row"><div class="step-num">2</div><div class="step-body"><strong>[개설하기] → 금액 입력 → 완료</strong><div class="desc">카카오뱅크 계좌 있으면 1분이면 됩니다</div></div></div>
+          <div class="info">💡 더 높은 금리: 저축은행 파킹통장 (2.5~3.5%). 키움·OK저축은행 앱에서 개설 가능</div>
+        </div>
+      \`,
+      hm: \`
+        <div class="tl">현재 상태 <span class="badge-wait">출시 대기 중</span></div>
+        <div class="step-card">
+          <div class="info">📅 2026년 6월 출시 예정이지만 정확한 날짜가 아직 공개 안 됐어요.<br>출시 공고 뜨면 당일 신청해야 해요 — 첫 모집에 수요가 몰려요.</div>
+        </div>
+        <div class="tl">공고 알림 받기 — 지금 해두세요</div>
+        <div class="step-card">
+          <div class="step-row"><div class="step-num">1</div><div class="step-body"><strong>서민금융진흥원 앱 설치 → 알림 허용</strong><div class="desc">앱스토어에서 "서민금융진흥원" 검색 → 설치. 공고 뜨면 가장 먼저 알림 와요.</div></div></div>
+          <div class="step-row"><div class="step-num">2</div><div class="step-body"><strong>금융위원회 카카오톡채널 팔로우</strong><div class="desc">카카오톡 → 채널 검색 → "금융위원회" 팔로우</div></div></div>
+        </div>
+        <div class="tl">출시 후 신청 방법 (예상 흐름)</div>
+        <div class="step-card">
+          <div class="step-row"><div class="step-num">1</div><div class="step-body"><strong>내 유형 확인</strong><div class="screen"><div class="screen-label">방수현 님 해당 유형</div>연소득 약 3,480만원 → <span class="screen-tap">우대형 해당</span><br><span style="font-size:12px;color:var(--color-text-secondary)">연소득 3,600만원 이하 → 정부기여금 12%</span></div></div></div>
+          <div class="step-row"><div class="step-num">2</div><div class="step-body"><strong>취급 은행 앱 → "청년미래적금" 검색 → 신청</strong></div></div>
+          <div class="step-row"><div class="step-num">3</div><div class="step-body"><strong>소득 증빙 파일 요청 나올 수 있어요</strong><div class="file-box">📎 소득 증빙 요청 나오면?<br>홈택스 → [민원증명] → [근로소득 원천징수 영수증] → PDF 저장 → 업로드<br>또는 회사에서 받은 연말정산 원천징수 영수증 사용 가능</div></div></div>
+          <div class="step-row"><div class="step-num">4</div><div class="step-body"><strong>월 500,000원 자동이체 설정 → 완료</strong></div></div>
+          <div class="ok">✅ 우대형: 월 50만원 × 36개월 = 원금 1,800만원 + 정부기여금 216만원 + 이자 ≈ 약 2,200만원</div>
+        </div>
+      \`,
+    };
+    const tabEl = document.getElementById('h-tabs');
+    const pageEl = document.getElementById('h-pages');
+    if (!tabEl || !pageEl) return;
+    prods.forEach((p, i) => {
+      const btn = document.createElement('button');
+      btn.className = 'h-tab' + (i === 0 ? ' on' : '');
+      btn.textContent = p.label;
+      btn.onclick = () => {
+        document.querySelectorAll('.h-tab').forEach(b => b.classList.remove('on'));
+        document.querySelectorAll('.h-page').forEach(pg => pg.classList.remove('on'));
+        btn.classList.add('on');
+        document.getElementById('hp-' + p.id).classList.add('on');
+      };
+      tabEl.appendChild(btn);
+      const pg = document.createElement('div');
+      pg.id = 'hp-' + p.id;
+      pg.className = 'h-page' + (i === 0 ? ' on' : '');
+      pg.innerHTML = hpages[p.id];
+      pageEl.appendChild(pg);
+    });
+  })();
+  <\/script>
+`;
+
+function render() {
+  const nav = document.getElementById('nav');
+  const secs = document.getElementById('sections');
+  pages.forEach((p, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'nav-btn' + (i === 0 ? ' on' : '');
+    btn.innerHTML = `<i class="ti ${p.icon}" aria-hidden="true" style="font-size:14px;margin-right:4px"></i>${p.label}`;
+    btn.onclick = () => {
+      document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('on'));
+      document.querySelectorAll('.section').forEach(s => s.classList.remove('on'));
       btn.classList.add('on');
-      document.getElementById('sec-'+p.id).classList.add('on');
+      document.getElementById('sec-' + p.id).classList.add('on');
     };
     nav.appendChild(btn);
-    const sec=document.createElement('div');
-    sec.id='sec-'+p.id;
-    sec.className='section'+(i===0?' on':'');
-    sec.innerHTML=content[p.id];
+    const sec = document.createElement('div');
+    sec.id = 'sec-' + p.id;
+    sec.className = 'section' + (i === 0 ? ' on' : '');
+    sec.innerHTML = content[p.id];
     secs.appendChild(sec);
   });
 }
 render();
 </script>
+</div>
 </body>
 </html>
