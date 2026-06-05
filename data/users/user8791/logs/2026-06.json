@@ -1,0 +1,102 @@
+{
+  "logs": [
+    {
+      "date": "2026-06-04",
+      "exTypes": [
+        "climbing"
+      ],
+      "exercises": [],
+      "foods": [],
+      "nutrition": null,
+      "sleep": 6,
+      "ankle": 0,
+      "water": 1800,
+      "cond": 3,
+      "supps": [],
+      "memo": "",
+      "climbingMin": 210,
+      "bikeMin": null,
+      "savedAt": "2026-06-05T02:32:43.011Z"
+    },
+    {
+      "date": "2026-06-03",
+      "exTypes": [
+        "weight"
+      ],
+      "exercises": [
+        {
+          "name": "벤치프레스",
+          "sets": [
+            {
+              "kg": "30",
+              "reps": "10"
+            },
+            {
+              "kg": "40",
+              "reps": "10"
+            },
+            {
+              "kg": "45",
+              "reps": "10"
+            },
+            {
+              "kg": "30",
+              "reps": "10"
+            },
+            {
+              "kg": "30",
+              "reps": "10"
+            }
+          ]
+        },
+        {
+          "name": "컨벤셔널 데드리프트",
+          "sets": [
+            {
+              "kg": "60",
+              "reps": "5"
+            },
+            {
+              "kg": "70",
+              "reps": "5"
+            },
+            {
+              "kg": "70",
+              "reps": "5"
+            }
+          ]
+        },
+        {
+          "name": "스미스머신 스쿼트",
+          "sets": [
+            {
+              "kg": "30",
+              "reps": "10"
+            },
+            {
+              "kg": "30",
+              "reps": "10"
+            },
+            {
+              "kg": "30",
+              "reps": "10"
+            }
+          ]
+        }
+      ],
+      "foods": [],
+      "nutrition": null,
+      "sleep": 7,
+      "ankle": 0,
+      "water": 1800,
+      "cond": 3,
+      "supps": [],
+      "memo": "",
+      "climbingMin": null,
+      "bikeMin": null,
+      "savedAt": "2026-06-04T04:29:50.048Z"
+    }
+  ],
+  "month": "2026-06",
+  "updatedAt": "2026-06-05T07:59:22.621Z"
+}
