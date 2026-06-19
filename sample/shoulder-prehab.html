@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>어깨 프리햅 · 주간 루틴</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+--bg:#0e0f11;--bg2:#16181c;--bg3:#1e2024;
+--tx:#e8e6e1;--tx2:#a09e97;--tx3:#6b6963;
+--bd:#2a2c30;--bd2:#3a3c42;
+--teal:#1d9e75;--teal-bg:rgba(29,158,117,.12);--teal-tx:#5dcaa5;
+--blue:#378add;--blue-bg:rgba(55,138,221,.12);--blue-tx:#85b7eb;
+--coral:#d85a30;--coral-bg:rgba(216,90,48,.12);--coral-tx:#f0997b;
+--gray-bg:rgba(136,135,128,.10);--gray-tx:#b4b2a9;
+--purple:#7f77dd;--purple-bg:rgba(127,119,221,.12);--purple-tx:#afa9ec;
+--amber:#ef9f27;--amber-bg:rgba(239,159,39,.12);--amber-tx:#fac775;
+--r:10px;--r-lg:14px;
+--font:-apple-system,BlinkMacSystemFont,'Pretendard','Segoe UI',sans-serif;
+}
+@media(prefers-color-scheme:light){
+:root{
+--bg:#f7f6f3;--bg2:#ffffff;--bg3:#eeedea;
+--tx:#1a1a18;--tx2:#5f5e5a;--tx3:#888780;
+--bd:#d3d1c7;--bd2:#b4b2a9;
+--teal-bg:rgba(29,158,117,.08);--teal-tx:#0f6e56;
+--blue-bg:rgba(55,138,221,.08);--blue-tx:#185fa5;
+--coral-bg:rgba(216,90,48,.08);--coral-tx:#993c1d;
+--gray-bg:rgba(136,135,128,.06);--gray-tx:#5f5e5a;
+--purple-bg:rgba(127,119,221,.08);--purple-tx:#534ab7;
+--amber-bg:rgba(239,159,39,.08);--amber-tx:#854f0b;
+}
+}
+body{font-family:var(--font);background:var(--bg);color:var(--tx);line-height:1.7;-webkit-font-smoothing:antialiased}
+.wrap{max-width:720px;margin:0 auto;padding:24px 20px 60px}
+h1{font-size:22px;font-weight:600;margin-bottom:4px}
+.sub{font-size:13px;color:var(--tx2);margin-bottom:28px}
+.back{display:inline-flex;align-items:center;gap:6px;font-size:13px;color:var(--tx2);text-decoration:none;margin-bottom:20px;transition:color .2s}
+.back:hover{color:var(--tx)}
+.back svg{width:16px;height:16px}
+
+.cat{background:var(--bg2);border:1px solid var(--bd);border-radius:var(--r-lg);padding:20px 22px;margin-bottom:16px}
+.cat-head{display:flex;align-items:center;gap:10px;margin-bottom:4px;cursor:pointer;user-select:none}
+.cat-icon{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+.cat-icon.teal{background:var(--teal-bg);color:var(--teal-tx)}
+.cat-icon.blue{background:var(--blue-bg);color:var(--blue-tx)}
+.cat-icon.coral{background:var(--coral-bg);color:var(--coral-tx)}
+.cat-title{font-size:16px;font-weight:600}
+.cat-desc{font-size:12px;color:var(--tx3);margin-bottom:14px;padding-left:42px}
+
+.ex{background:var(--bg3);border-radius:var(--r);padding:12px 16px;margin-bottom:8px}
+.ex:last-child{margin-bottom:0}
+.ex-name{font-size:14px;font-weight:600;margin-bottom:3px}
+.ex-detail{font-size:13px;color:var(--tx2);line-height:1.6}
+
+.day{background:var(--bg2);border:1px solid var(--bd);border-radius:var(--r-lg);padding:20px 22px;margin-bottom:12px}
+.day-head{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.day-badge{padding:3px 12px;border-radius:6px;font-size:12px;font-weight:600;flex-shrink:0}
+.day-badge.teal{background:var(--teal-bg);color:var(--teal-tx)}
+.day-badge.blue{background:var(--blue-bg);color:var(--blue-tx)}
+.day-badge.gray{background:var(--gray-bg);color:var(--gray-tx)}
+.day-badge.coral{background:var(--coral-bg);color:var(--coral-tx)}
+.day-title{font-size:15px;font-weight:600}
+.day-context{font-size:12px;color:var(--tx3);margin-bottom:14px}
+
+.phase{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media(max-width:560px){.phase{grid-template-columns:1fr}}
+.phase-box{background:var(--bg3);border-radius:var(--r);padding:12px 14px}
+.phase-label{font-size:12px;font-weight:600;margin-bottom:8px}
+.phase-label.teal{color:var(--teal-tx)}
+.phase-label.blue{color:var(--blue-tx)}
+.phase-label.coral{color:var(--coral-tx)}
+.phase-label.gray{color:var(--gray-tx)}
+.phase-list{font-size:13px;color:var(--tx2);line-height:1.8;list-style:none;counter-reset:step}
+.phase-list li{counter-increment:step}
+.phase-list li::before{content:counter(step)". ";font-weight:600;color:var(--tx3);font-size:12px}
+.day-note{font-size:11px;color:var(--tx3);margin-top:10px;padding-top:10px;border-top:1px solid var(--bd)}
+
+.summary{background:var(--bg2);border:2px solid var(--blue);border-radius:var(--r-lg);padding:18px 22px;margin-top:24px}
+.summary-title{font-size:14px;font-weight:600;margin-bottom:10px}
+.summary-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+@media(max-width:480px){.summary-grid{grid-template-columns:1fr}}
+.summary-item{font-size:13px}
+.summary-label{color:var(--tx2);margin-bottom:2px}
+.summary-val{font-weight:600;font-size:16px}
+.summary-sub{font-size:11px;color:var(--tx3)}
+
+.section-title{font-size:18px;font-weight:600;margin:32px 0 14px}
+.section-desc{font-size:13px;color:var(--tx2);margin-bottom:16px}
+
+.info-card{background:var(--bg2);border:1px solid var(--bd);border-radius:var(--r-lg);padding:18px 22px;margin-bottom:16px}
+.info-card .label{font-size:14px;font-weight:600;margin-bottom:6px}
+.info-card .body{font-size:13px;color:var(--tx2);line-height:1.7}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<a href="index.html" class="back"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M15 18l-6-6 6-6"/></svg>대시보드로 돌아가기</a>
+
+<h1>🛡️ 어깨 프리햅 · 주간 루틴</h1>
+<p class="sub">전거근 · 외회전근 · 어깨 가동성 — 당기기 과발달(광배·내회전 단축) 균형 잡기</p>
+
+<div class="info-card">
+<div class="label">왜 필요한가</div>
+<div class="body">수년간 철봉·등반으로 광배근과 내회전근이 극도로 발달 → 어깨를 안쪽으로 당기고 닫는 방향으로 단축. 백스쿼트 그립에서 왼쪽 어깨 쥐 나는 증상의 원인. 전거근·외회전근·흉추 가동성을 열어야 전후 균형이 잡힘.</div>
+</div>
+
+<div class="section-title">운동 목록</div>
+
+<div class="cat">
+<div class="cat-head">
+<div class="cat-icon teal">💪</div>
+<div class="cat-title">전거근 (Serratus Anterior)</div>
+</div>
+<div class="cat-desc">견갑골을 앞으로 당겨 벽에 붙이는 근육 — 약하면 견갑 날개(winging)·충돌 위험</div>
+<div class="ex"><div class="ex-name">스캡 푸시업 (Scap push-up)</div><div class="ex-detail">플랭크 자세에서 팔꿈치를 펴고 견갑골만 벌렸다 모았다. 전거근 활성화의 기본. 15~20회 × 3세트.</div></div>
+<div class="ex"><div class="ex-name">월 슬라이드 (Wall slide)</div><div class="ex-detail">벽에 등·팔뚝을 붙이고 팔을 위아래로 슬라이드. 전거근 + 하부 승모근 동시 활성. 12~15회 × 3세트.</div></div>
+<div class="ex"><div class="ex-name">서레이터스 펀치 (Serratus punch)</div><div class="ex-detail">누워서 덤벨을 천장으로 들고 견갑골만 바닥에서 띄우듯 밀어 올림. 가벼운 무게(3~5kg). 15회 × 3세트.</div></div>
+<div class="ex"><div class="ex-name">프레스 플러스 (Push-up plus)</div><div class="ex-detail">일반 푸시업 최상단에서 등을 더 둥글게 밀어 견갑골을 최대 전인(protraction). 10~15회 × 3세트.</div></div>
+<div class="ex"><div class="ex-name">밴드/케이블 전거근 프레스</div><div class="ex-detail">케이블이나 밴드를 잡고 팔을 앞으로 뻗으며 견갑을 전인. 가벼운 저항. 12~15회 × 3세트.</div></div>
+<div class="ex"><div class="ex-name">베어 크롤 (Bear crawl)</div><div class="ex-detail">네발기기 자세에서 무릎을 살짝 띄우고 전진·후진. 전거근·코어 동시 자극. 10m × 3~4세트.</div></div>
+<div class="ex"><div class="ex-name">덤벨 풀오버 (경량)</div><div class="ex-detail">벤치에 누워 가벼운 덤벨을 머리 뒤로 내렸다 올림. 전거근 신장 + 수축 + 광배 스트레칭 겸용. 12회 × 3세트.</div></div>
+</div>
+
+<div class="cat">
+<div class="cat-head">
+<div class="cat-icon blue">🔄</div>
+<div class="cat-title">외회전근 + 후면·측면 삼각근</div>
+</div>
+<div class="cat-desc">극하근·소원근·후면삼각근 — 내회전 과발달(광배·등반)의 균형추</div>
+<div class="ex"><div class="ex-name">밴드 외회전 (90/90 position)</div><div class="ex-detail">팔꿈치 90도 고정, 몸통 옆에 붙이고 밴드를 바깥으로 회전. 회전근개 강화의 기본. 15~20회 × 3세트.</div></div>
+<div class="ex"><div class="ex-name">사이드라잉 외회전 (Side-lying ER)</div><div class="ex-detail">옆으로 누워 위쪽 팔 팔꿈치를 옆구리에 대고 가벼운 덤벨(1~3kg)을 천장 쪽으로 회전. 극하근 고립. 15회 × 3세트.</div></div>
+<div class="ex"><div class="ex-name">페이스풀 (Face pull) ⭐</div><div class="ex-detail">케이블 로프를 얼굴 높이에서 당기며 끝에서 외회전. 후면삼각근 + 외회전근 + 하부승모근 동시. 가장 중요한 단일 운동. 15~20회 × 3~4세트.</div></div>
+<div class="ex"><div class="ex-name">밴드 풀어파트 (Band pull-apart)</div><div class="ex-detail">밴드를 가슴 높이에서 양손으로 잡고 양쪽으로 벌림. 후면삼각근 + 능형근. 매일 가능. 20~30회 × 2~3세트.</div></div>
+<div class="ex"><div class="ex-name">리버스 플라이 (Reverse fly)</div><div class="ex-detail">엎드리거나 인클라인 벤치에서 가벼운 덤벨을 양쪽으로 벌림. 후면삼각근 고립. 12~15회 × 3세트.</div></div>
+<div class="ex"><div class="ex-name">케이블 외회전 (팔 벌린 자세)</div><div class="ex-detail">팔을 90도 옆으로 벌리고 케이블을 잡아 위로 회전. 등반 자세(머리 위 당기기)에 특이적인 외회전 강화. 12~15회 × 3세트.</div></div>
+<div class="ex"><div class="ex-name">프론 Y-T-W 레이즈</div><div class="ex-detail">엎드려서 양팔을 Y·T·W 형태로 들어 올림. 하부승모근·후면삼각근·극하근 전부 자극. 맨몸 또는 0.5~1kg. 각 8~10회 × 2세트.</div></div>
+<div class="ex"><div class="ex-name">래터럴 레이즈 (밴드/덤벨)</div><div class="ex-detail">가벼운 무게로 옆으로 들어올림. 측면 삼각근 — 어깨 안정성·폭·관절 보호. 15~20회 × 3세트.</div></div>
+</div>
+
+<div class="cat">
+<div class="cat-head">
+<div class="cat-icon coral">🧘</div>
+<div class="cat-title">스트레칭 · 가동성</div>
+</div>
+<div class="cat-desc">광배·흉근·어깨 열기 — 백스쿼트 그립이 안 들어가는 원인을 직접 해결</div>
+<div class="ex"><div class="ex-name">데드행 (Dead hang)</div><div class="ex-detail">철봉에 그냥 매달리기. 광배·대원근·흉근을 중력으로 신장. 30~60초 × 3세트.</div></div>
+<div class="ex"><div class="ex-name">도어프레임 흉근 스트레칭</div><div class="ex-detail">문틀에 팔뚝을 90도로 대고 몸을 앞으로 기울여 대흉근·전면삼각근 신장. 30초 × 좌우 3세트. 45°·90°·135° 높이별로.</div></div>
+<div class="ex"><div class="ex-name">광배 월 스트레칭 (Lat wall stretch)</div><div class="ex-detail">벽을 향해 서서 양손을 벽에 올리고 엉덩이를 뒤로 빼며 상체를 숙임. 광배·대원근 집중 신장. 30초 × 3세트.</div></div>
+<div class="ex"><div class="ex-name">슬리퍼 스트레칭 (Sleeper stretch)</div><div class="ex-detail">옆으로 누워 아래팔을 90도로 세우고 위쪽 손으로 바닥 쪽으로 부드럽게 누름. 후방 관절낭·내회전 구축 해소. 30초 × 좌우 3세트.</div></div>
+<div class="ex"><div class="ex-name">크로스바디 어깨 스트레칭</div><div class="ex-detail">한 팔을 가슴 앞으로 가로질러 반대 손으로 당김. 후면삼각근·극하근·후방 관절낭 신장. 30초 × 좌우 3세트.</div></div>
+<div class="ex"><div class="ex-name">봉 디스로케이션 (Shoulder pass-through) ⭐</div><div class="ex-detail">긴 봉이나 밴드를 넓게 잡고 머리 위로 넘겨 등 뒤까지 돌림. 어깨 전체 가동범위 확장. 백스쿼트 그립 개선에 가장 직접적. 10~15회 × 2~3세트.</div></div>
+<div class="ex"><div class="ex-name">캣카우 (Cat-cow)</div><div class="ex-detail">네발기기에서 등을 둥글리고(고양이) 젖히기(소) 반복. 흉추 가동성 확보. 10회 × 2~3세트.</div></div>
+<div class="ex"><div class="ex-name">오픈북 흉추 회전 (Open book)</div><div class="ex-detail">옆으로 누워 무릎을 굽혀 고정하고 위쪽 팔을 반대쪽 바닥까지 천천히 열기. 흉추 회전·흉곽 가동성 확보. 좌우 8~10회 × 2세트.</div></div>
+<div class="ex"><div class="ex-name">폼롤러 흉추 익스텐션</div><div class="ex-detail">폼롤러를 등 상부(흉추) 아래에 놓고 팔을 머리 뒤로 넘기며 신전. 흉추 신전 가동성 확보. 10~15회 × 2세트.</div></div>
+</div>
+
+<div class="section-title">주간 루틴 배치</div>
+<div class="section-desc">각 요일 메인 운동 맥락에 맞춰 전·후 루틴을 배치. 총 10~12분/일.</div>
+
+<div class="day">
+<div class="day-head"><span class="day-badge teal">월</span><span class="day-title">헬스 — 가슴 · 대퇴사두</span></div>
+<div class="day-context">미는 날 → 밀기 전 견갑 깨우기 + 밀기 후 후면 균형</div>
+<div class="phase">
+<div class="phase-box"><div class="phase-label teal">운동 전 (5분)</div><ol class="phase-list"><li>봉 디스로케이션 15회</li><li>스캡 푸시업 15회 × 2</li><li>밴드 외회전 15회 × 좌우</li></ol></div>
+<div class="phase-box"><div class="phase-label teal">운동 후 (7분)</div><ol class="phase-list" start="4"><li>페이스풀 20회 × 3</li><li>리버스 플라이 15회 × 2</li><li>도어프레임 흉근 스트레칭 30초 × 좌우</li><li>데드행 40초 × 2</li></ol></div>
+</div>
+<div class="day-note">목적: 전거근 활성화로 견갑 안정 확보 후 밀기 → 밀기 끝나면 후면삼각근·광배 신장으로 균형</div>
+</div>
+
+<div class="day">
+<div class="day-head"><span class="day-badge blue">화</span><span class="day-title">클라이밍 3h</span></div>
+<div class="day-context">당기기 세션 → 등반 전 외회전 깨우기 + 등반 후 내회전 풀기</div>
+<div class="phase">
+<div class="phase-box"><div class="phase-label blue">등반 전 (5분)</div><ol class="phase-list"><li>밴드 풀어파트 20회 × 2</li><li>밴드 외회전 15회 × 좌우</li><li>Y-T-W 레이즈 각 8회</li></ol></div>
+<div class="phase-box"><div class="phase-label blue">등반 후 (5분)</div><ol class="phase-list" start="4"><li>데드행 60초 × 2</li><li>크로스바디 스트레칭 30초 × 좌우</li><li>슬리퍼 스트레칭 30초 × 좌우</li><li>광배 월 스트레칭 30초 × 2</li></ol></div>
+</div>
+<div class="day-note">목적: 3시간 당기기 전 회전근개 예열 → 등반 후 광배·내회전 단축 해소</div>
+</div>
+
+<div class="day">
+<div class="day-head"><span class="day-badge teal">수</span><span class="day-title">헬스 — 하체후면 · 어깨</span></div>
+<div class="day-context">어깨 날 → 흉추 열기 + 전거근 강화 + 외회전 강화를 메인에 통합</div>
+<div class="phase">
+<div class="phase-box"><div class="phase-label teal">운동 전 (7분)</div><ol class="phase-list"><li>캣카우 10회</li><li>폼롤러 흉추 익스텐션 12회</li><li>봉 디스로케이션 15회</li><li>스캡 푸시업 15회 × 2</li></ol></div>
+<div class="phase-box"><div class="phase-label teal">어깨 메인에 통합</div><ol class="phase-list" start="5"><li>페이스풀 20회 × 4 (메인)</li><li>케이블 외회전(팔 벌린) 15회 × 3</li><li>래터럴 레이즈 15회 × 3</li></ol></div>
+</div>
+<div class="day-note">목적: 어깨 날이니 프리햅이 곧 메인. 흉추 가동성 먼저 열고 어깨 운동 진입</div>
+</div>
+
+<div class="day">
+<div class="day-head"><span class="day-badge blue">목</span><span class="day-title">클라이밍 3h</span></div>
+<div class="day-context">주중 두 번째 등반 → 화요일과 다른 조합으로 변화</div>
+<div class="phase">
+<div class="phase-box"><div class="phase-label blue">등반 전 (5분)</div><ol class="phase-list"><li>스캡 푸시업 15회 × 2</li><li>사이드라잉 외회전 15회 × 좌우</li><li>밴드 풀어파트 20회 × 2</li></ol></div>
+<div class="phase-box"><div class="phase-label blue">등반 후 (5분)</div><ol class="phase-list" start="4"><li>데드행 60초 × 2</li><li>도어프레임 흉근 스트레칭 30초 × 좌우</li><li>오픈북 흉추회전 8회 × 좌우</li><li>광배 월 스트레칭 30초 × 2</li></ol></div>
+</div>
+<div class="day-note">목적: 화요일과 겹치지 않는 외회전 변형(사이드라잉) + 흉추 가동성 추가</div>
+</div>
+
+<div class="day">
+<div class="day-head"><span class="day-badge teal">금</span><span class="day-title">헬스 — 등</span></div>
+<div class="day-context">강한 당기기 세션 → 전거근으로 견갑 잡고 + 끝나면 당김 해소</div>
+<div class="phase">
+<div class="phase-box"><div class="phase-label teal">운동 전 (5분)</div><ol class="phase-list"><li>봉 디스로케이션 15회</li><li>밴드 외회전 15회 × 좌우</li><li>Y-T-W 레이즈 각 8회</li></ol></div>
+<div class="phase-box"><div class="phase-label teal">운동 후 (7분)</div><ol class="phase-list" start="4"><li>페이스풀 20회 × 3</li><li>프레스 플러스 12회 × 2</li><li>데드행 60초 × 2</li><li>슬리퍼 스트레칭 30초 × 좌우</li></ol></div>
+</div>
+<div class="day-note">목적: 등 운동 후 광배가 가장 단축된 상태 → 데드행·슬리퍼로 즉시 풀기 + 프레스 플러스로 전거근</div>
+</div>
+
+<div class="day">
+<div class="day-head"><span class="day-badge gray">토</span><span class="day-title">휴식</span></div>
+<div class="day-context">회복일 → 운동 없이 가동성·스트레칭만. 주간 누적 단축을 한 번에 풀기</div>
+<div class="phase" style="grid-template-columns:1fr">
+<div class="phase-box"><div class="phase-label gray">풀 가동성 루틴 (10~12분)</div><ol class="phase-list"><li>캣카우 10회</li><li>폼롤러 흉추 익스텐션 12회</li><li>오픈북 흉추회전 10회 × 좌우</li><li>봉 디스로케이션 15회 × 2 (천천히)</li><li>데드행 60초 × 3</li><li>도어프레임 흉근 스트레칭 30초 × 좌우 (3높이)</li><li>슬리퍼 스트레칭 30초 × 좌우</li></ol></div>
+</div>
+<div class="day-note">목적: 주 5일 훈련(당기기 4회 + 밀기 1회) 누적 → 쉬는 날에 흉추·광배·관절낭 집중 회복</div>
+</div>
+
+<div class="day">
+<div class="day-head"><span class="day-badge coral">일</span><span class="day-title">클라이밍 3h + 자전거 2h</span></div>
+<div class="day-context">가장 긴 날 → 등반 전 최소 활성화 + 모든 활동 끝난 후 회복</div>
+<div class="phase">
+<div class="phase-box"><div class="phase-label coral">등반 전 (3분)</div><ol class="phase-list"><li>밴드 풀어파트 20회 × 2</li><li>밴드 외회전 12회 × 좌우</li><li>스캡 푸시업 12회</li></ol></div>
+<div class="phase-box"><div class="phase-label coral">모든 활동 후 (7분)</div><ol class="phase-list" start="4"><li>데드행 60초 × 3</li><li>크로스바디 스트레칭 30초 × 좌우</li><li>광배 월 스트레칭 30초 × 2</li><li>도어프레임 흉근 스트레칭 30초 × 좌우</li></ol></div>
+</div>
+<div class="day-note">목적: 5시간 활동일이라 워밍업은 최소화 → 마지막에 주간 최대 신장 루틴으로 마무리</div>
+</div>
+
+<div class="summary">
+<div class="summary-title">📊 주간 커버리지</div>
+<div class="summary-grid">
+<div class="summary-item"><div class="summary-label">전거근</div><div class="summary-val">주 4회</div><div class="summary-sub">월 · 수 · 목 · 금</div></div>
+<div class="summary-item"><div class="summary-label">외회전</div><div class="summary-val">주 6회</div><div class="summary-sub">월 · 화 · 수 · 목 · 금 · 일</div></div>
+<div class="summary-item"><div class="summary-label">데드행 · 스트레칭</div><div class="summary-val">매일</div><div class="summary-sub">월 ~ 일 전일</div></div>
+</div>
+</div>
+
+<div class="info-card" style="margin-top:24px">
+<div class="label">🎯 체크포인트</div>
+<div class="body">4~6주 후 봉 디스로케이션의 그립 폭이 좁아지는지 확인. 그립이 좁아지면 백스쿼트 바 잡기도 열림. 왼쪽 어깨 쥐 나는 증상이 줄어드는 것이 첫 번째 성공 지표.</div>
+</div>
+
+</div>
+</body>
+</html>
