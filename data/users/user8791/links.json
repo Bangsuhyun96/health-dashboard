@@ -1,11 +1,6 @@
 {
   "links": [
     {
-      "title": "LvUP 헬스 대시보드",
-      "url": "https://bangsuhyun96.github.io/health-dashboard/",
-      "emoji": "💪"
-    },
-    {
       "title": "재무 관리",
       "url": "https://bangsuhyun96.github.io/health-dashboard/sample/finance.html",
       "emoji": "💰"
@@ -16,28 +11,13 @@
       "emoji": "📋"
     },
     {
-      "title": "브롤컵 d-3 통계",
-      "url": "https://bangsuhyun96.github.io/health-dashboard/sample/brawl/stat-dashboard.html",
-      "emoji": "🎮"
-    },
-    {
       "title": "몬헌 TU4.5 장비 가이드",
       "url": "https://docs.google.com/spreadsheets/d/16ek7bFxO44iQuc9spl8BC8iqtctB4Sy9AwAaAwj3LPc/edit",
       "emoji": "🗡️"
     },
     {
-      "title": "브롤러 카운터",
-      "url": "https://bangsuhyun96.github.io/health-dashboard/sample/brawl/brawl_counter.html",
-      "emoji": "🔗"
-    },
-    {
       "title": "클라이밍 가이드 v1.0",
       "url": "https://bangsuhyun96.github.io/health-dashboard/sample/climbing_guide.html",
-      "emoji": "🔗"
-    },
-    {
-      "title": "어깨 가동성 주간 루틴",
-      "url": "https://bangsuhyun96.github.io/health-dashboard/sample/shoulder-prehab.html",
       "emoji": "🔗"
     },
     {
@@ -46,5 +26,5 @@
       "emoji": "🔗"
     }
   ],
-  "updatedAt": "2026-06-24T07:39:38.173Z"
+  "updatedAt": "2026-06-24T07:39:56.379Z"
 }
