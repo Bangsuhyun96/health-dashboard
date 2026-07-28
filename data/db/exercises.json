@@ -870,6 +870,15 @@
       "defaultReps": "12",
       "met": 3.5,
       "tips": ""
+    },
+    {
+      "id": "ex_1785207712979",
+      "name": "사이드 레터럴 레이즈",
+      "category": "어깨",
+      "defaultSets": 3,
+      "defaultReps": "20",
+      "met": 4,
+      "tips": ""
     }
   ]
 }
