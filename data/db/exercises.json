@@ -870,15 +870,6 @@
       "defaultReps": "12",
       "met": 3.5,
       "tips": ""
-    },
-    {
-      "id": "ex_1785207532001",
-      "name": "OHP 덤벨프레스",
-      "category": "어깨",
-      "defaultSets": 3,
-      "defaultReps": "12",
-      "met": 3.5,
-      "tips": ""
     }
   ]
 }
