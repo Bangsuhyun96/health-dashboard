@@ -1,6 +1,54 @@
 {
   "lifts": [
     {
+      "date": "2026-07-27",
+      "exercise": "케이블 트라이셉 푸쉬다운",
+      "weight": 30,
+      "sets": "10",
+      "feel": "",
+      "memo": "PR 자동기록"
+    },
+    {
+      "date": "2026-07-27",
+      "exercise": "프리쳐 컬 머신",
+      "weight": 46,
+      "sets": "10",
+      "feel": "",
+      "memo": "PR 자동기록"
+    },
+    {
+      "date": "2026-07-27",
+      "exercise": "체스트프레스 머신",
+      "weight": 56,
+      "sets": "8",
+      "feel": "",
+      "memo": "PR 자동기록"
+    },
+    {
+      "date": "2026-07-27",
+      "exercise": "케이블 플라이",
+      "weight": 26,
+      "sets": "12",
+      "feel": "",
+      "memo": "PR 자동기록"
+    },
+    {
+      "date": "2026-07-27",
+      "exercise": "사이드 레터럴 레이즈",
+      "weight": 4,
+      "sets": "20",
+      "feel": "",
+      "memo": "PR 자동기록"
+    },
+    {
+      "date": "2026-07-27",
+      "exercise": "오버 헤드 덤벨 프레스",
+      "weight": 6,
+      "sets": "12",
+      "feel": "",
+      "memo": "PR 자동기록"
+    },
+    {
       "date": "2026-06-03",
       "exercise": "스미스머신 스쿼트",
       "weight": 30,
@@ -81,5 +129,5 @@
       "memo": "PR 자동기록"
     }
   ],
-  "updatedAt": "2026-06-19T08:28:33.126Z"
+  "updatedAt": "2026-07-28T03:05:55.337Z"
 }
