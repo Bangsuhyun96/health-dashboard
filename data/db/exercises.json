@@ -861,6 +861,24 @@
       "defaultReps": "10",
       "met": 5,
       "tips": "발 위치 앞으로 약간, 등 곧게, 무릎 발끝 방향"
+    },
+    {
+      "id": "ex_1785207474753",
+      "name": "오버 헤드 덤벨 프레스",
+      "category": "어깨",
+      "defaultSets": 3,
+      "defaultReps": "12",
+      "met": 3.5,
+      "tips": ""
+    },
+    {
+      "id": "ex_1785207532001",
+      "name": "OHP 덤벨프레스",
+      "category": "어깨",
+      "defaultSets": 3,
+      "defaultReps": "12",
+      "met": 3.5,
+      "tips": ""
     }
   ]
 }
