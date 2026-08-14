@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<title>설정집 리더</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --bg:#f5f5f7;
+  --surface:#fff;
+  --border:#e5e5ea;
+  --text:#1a1a1a;
+  --text-2:#6e6e73;
+  --text-3:#aeaeb2;
+  --accent:#3a3a5c;
+  --accent-light:#f0f0f8;
+  --red:#c0392b;
+  --radius:12px;
+}
+body{
+  font-family:-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;
+  background:var(--bg);
+  color:var(--text);
+  min-height:100vh;
+  padding:20px 16px 80px;
+  max-width:640px;
+  margin:0 auto;
+  line-height:1.6;
+}
+
+/* 헤더 */
+.hero{padding:28px 0 20px;margin-bottom:20px;border-bottom:1px solid var(--border);}
+.hero-tag{font-size:10px;font-weight:700;letter-spacing:2px;color:var(--red);text-transform:uppercase;margin-bottom:6px;}
+.hero-title{font-size:22px;font-weight:900;line-height:1.3;letter-spacing:-0.5px;margin-bottom:6px;}
+.hero-meta{font-size:12px;color:var(--text-2);}
+
+/* 네비 */
+.nav{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:20px;position:sticky;top:0;background:var(--bg);padding:10px 0;z-index:100;border-bottom:1px solid var(--border);}
+.nav-btn{padding:5px 12px;font-size:11px;font-weight:600;cursor:pointer;border-radius:99px;border:1.5px solid var(--border);color:var(--text-2);background:var(--surface);font-family:inherit;white-space:nowrap;transition:all .15s;}
+.nav-btn.on{background:var(--accent);color:#fff;border-color:var(--accent);}
+
+/* 섹션 */
+.section{display:none;}
+.section.on{display:block;}
+
+/* 카드 */
+.card{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:10px;}
+.card-title{font-size:12px;font-weight:700;color:var(--accent);margin-bottom:12px;letter-spacing:0.5px;text-transform:uppercase;}
+
+/* 텍스트 입력 */
+.paste-wrap{margin-bottom:16px;}
+.paste-label{font-size:11px;color:var(--text-2);margin-bottom:6px;display:block;}
+.paste-area{width:100%;min-height:100px;font-family:inherit;font-size:13px;padding:10px 12px;border:1.5px solid var(--border);border-radius:var(--radius);background:var(--surface);color:var(--text);outline:none;resize:vertical;line-height:1.6;transition:border-color .15s;}
+.paste-area:focus{border-color:var(--accent);}
+.paste-btn{width:100%;padding:10px;font-family:inherit;font-size:13px;font-weight:700;background:var(--accent);color:#fff;border:none;border-radius:var(--radius);cursor:pointer;margin-top:8px;}
+.paste-btn:active{opacity:0.85;}
+
+/* 항목 */
+.item{padding:12px 0;border-bottom:1px solid var(--border);font-size:13px;line-height:1.7;}
+.item:last-child{border-bottom:none;padding-bottom:0;}
+.item-date{font-size:10px;color:var(--text-3);margin-bottom:4px;}
+.item-text{white-space:pre-wrap;word-break:break-word;}
+
+/* 인물 카드 */
+.char-card{background:var(--accent-light);border:1.5px solid #d0d0e8;border-radius:var(--radius);padding:14px;margin-bottom:8px;}
+.char-name{font-size:14px;font-weight:800;margin-bottom:4px;}
+.char-desc{font-size:12px;color:var(--text-2);line-height:1.6;}
+.char-tag{display:inline-block;font-size:10px;font-weight:700;padding:2px 8px;border-radius:99px;background:var(--accent);color:#fff;margin-bottom:8px;}
+
+/* 명대사 */
+.quote{background:#1a1a2e;border-radius:var(--radius);padding:16px;margin-bottom:8px;}
+.quote-who{font-size:10px;font-weight:700;color:#9090c0;margin-bottom:6px;letter-spacing:1px;}
+.quote-text{font-size:13px;color:#e8e8f0;line-height:1.8;white-space:pre-wrap;}
+
+/* 능력 표 */
+.ability-row{display:flex;gap:12px;padding:10px 0;border-bottom:1px solid var(--border);font-size:12px;}
+.ability-row:last-child{border-bottom:none;}
+.ability-key{min-width:80px;font-weight:700;color:var(--accent);font-size:11px;flex-shrink:0;}
+.ability-val{color:var(--text);line-height:1.6;}
+
+/* 반전 카드 */
+.twist{border-left:3px solid var(--red);padding:10px 14px;margin-bottom:8px;background:#fff8f8;border-radius:0 8px 8px 0;font-size:13px;line-height:1.7;}
+.twist-title{font-size:11px;font-weight:700;color:var(--red);margin-bottom:4px;}
+
+/* 빈 상태 */
+.empty{text-align:center;color:var(--text-3);padding:30px 0;font-size:13px;}
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="hero-tag">📖 설정집</div>
+  <div class="hero-title">나는 비겁한 능력자가 되기로<br>마음 먹었다</div>
+  <div class="hero-meta">다크 SF / 디스토피아 / 포스트 아포칼립스 · 200~300화</div>
+</div>
+
+<div class="nav" id="nav"></div>
+<div id="sections"></div>
+
+<script>
+/* ── 초기 데이터 ── */
+const PAGES = [
+  {id:'overview', label:'📋 개요'},
+  {id:'world',    label:'🌍 세계관'},
+  {id:'ability',  label:'⚡ 능력'},
+  {id:'chars',    label:'👥 인물'},
+  {id:'twist',    label:'🔀 반전'},
+  {id:'plot',     label:'📜 플롯'},
+  {id:'quotes',   label:'💬 명대사'},
+  {id:'notes',    label:'📝 메모'},
+];
+
+const CONTENT = {
+overview:`
+<div class="card">
+  <div class="card-title">작품 정보</div>
+  <div class="item"><div class="item-text"><b>슬로건</b><br>"세상이 망한 건 내 사소한 복수 때문이었다.<br>하지만 나는 세상을 구하는 대신, 비겁하게 내 가족만 챙겨 도망치기로 했다."</div></div>
+  <div class="item"><div class="item-text"><b>장르</b><br>다크 SF / 디스토피아 / 포스트 아포칼립스 / 타임루프 / 피폐</div></div>
+  <div class="item"><div class="item-text"><b>목표 분량</b><br>200화 ~ 300화 (웹소설 장편)</div></div>
+  <div class="item"><div class="item-text"><b>핵심 키워드</b><br>#지능형주인공 #진짜이기주의 #나비효과 #마지막회차 #디스토피아 #정주행유도</div></div>
+</div>`,
+
+world:`
+<div class="card">
+  <div class="card-title">배경</div>
+  <div class="item"><div class="item-text"><b>시대</b><br>3차 대전 후 100년, 4차 대전 직전. 국가 시스템과 사회 인프라가 완전히 괴멸한 피폐 아포칼립스.</div></div>
+  <div class="item"><div class="item-text"><b>절대 재화 '전기'</b><br>전력 인프라 파괴로 전기는 황금보다 귀한 생존 재화. 하층민들은 한겨울 단칸방에서 전기장판 하나로 버팀.</div></div>
+</div>
+<div class="card">
+  <div class="card-title">정부의 덫 (20만 분의 1 필터)</div>
+  <div class="item"><div class="item-text">4차 세계대전 직전, 정부는 회귀자를 솎아내기 위해 [피험자 직계 가족 평생 무료 전기 독점 공급]이라는 파격적인 조건의 수면 실험 덫을 설치.</div></div>
+  <div class="item"><div class="item-text"><b>진실</b><br>일반인은 절대 당첨될 수 없도록 짠 확률. 오직 회귀 능력으로 확률을 비트는 능력자만 걸러내는 족집게 필터.</div></div>
+</div>`,
+
+ability:`
+<div class="card">
+  <div class="card-title">타임리프 시스템</div>
+  <div class="ability-row"><div class="ability-key">기능</div><div class="ability-val">지정된 시간(직전의 가장 안전했던 시점)으로 돌아가는 타임리프. 주인공 본인에겐 페널티 0.</div></div>
+  <div class="ability-row"><div class="ability-key">발동 조건</div><div class="ability-val">① 손가락으로 상대를 정확히 타겟팅<br>② 그 손으로 자신의 심장을 강하게 타격</div></div>
+  <div class="ability-row"><div class="ability-key">대회차 페널티</div><div class="ability-val">지목당한 상대는 뇌 손상으로 지능이 점진 저하.<br>· 똑똑한 사람: 최대 30번 가능<br>· 멍청한 사람: 최소 5번 가능</div></div>
+  <div class="ability-row"><div class="ability-key">치명적 약점</div><div class="ability-val">손·팔이 묶이거나, 기습으로 심장을 칠 힘 없이 의식을 잃으면 회귀 불가능.</div></div>
+</div>`,
+
+chars:`
+<div class="char-card">
+  <div class="char-tag">남주인공</div>
+  <div class="char-name">문별 (삼남매 중 둘째)</div>
+  <div class="char-desc">극악의 가난 속에서 가족을 살리기 위해 능력 사용. 세상을 구할 위선적 영웅이 되길 거부하고 가족의 생존만 챙기는 완벽한 비겁자(실리주의자). 수면 실험 당첨을 위해 1,320번의 회귀를 반복. 4,000번의 루프 끝에 세상의 진실을 깨달음.</div>
+</div>
+<div class="char-card">
+  <div class="char-tag">어머니</div>
+  <div class="char-name">어머니</div>
+  <div class="char-desc">홀로 삼남매를 키워낸 강인한 어머니. 복수 명단 수첩과 주변인들의 이상증세를 목격하며 아들의 능력을 이미 알고 있었음. 탈출 과정에서 능력의 유일한 타깃이 되어 지능을 잃음. 회귀 직전 "전부 너의 탓이야, 별아"라는 영원히 사과받을 수 없는 낙인을 찍음.</div>
+</div>
+<div class="char-card">
+  <div class="char-tag">가족</div>
+  <div class="char-name">문해 (첫째 형) / 문달 (셋째 여동생)</div>
+  <div class="char-desc">문별이 목숨을 걸고 지키고자 하는 가족. 멸망한 세상 속에서 문별과 함께 생존.</div>
+</div>
+<div class="char-card">
+  <div class="char-tag">정부 요원</div>
+  <div class="char-name">성수현</div>
+  <div class="char-desc">지하 실험실에 난입한 특수 요원. 생체 미끼 트랩 보유: 회귀자에게 이름을 간파당하면 가슴의 장치가 작동해 즉시 심정지 상태에 빠지도록 설계.</div>
+</div>
+<div class="char-card">
+  <div class="char-tag">세계관 최고 반전</div>
+  <div class="char-name">성수현의 남동생</div>
+  <div class="char-desc">학창 시절 문별을 잔혹하게 괴롭혔던 인물. 문별이 첫 회귀 때 사소한 복수로 지능을 깎아버린 상대. 실상은 제4차 세계대전을 막을 수 있었던 지구상 유일한 천재.</div>
+</div>`,
+
+twist:`
+<div class="twist"><div class="twist-title">🔴 복선 1 — 복수 노트</div>어린 시절 문별이 작성한 '괴롭힌 놈들 명단'. 수첩 속 이름들이 하나둘 바보가 되어버리는 것을 본 어머니는 아들의 능력과 대가를 오래전부터 눈치챔.</div>
+<div class="twist"><div class="twist-title">🔴 반전 1 — 사소한 복수가 부른 세기말 멸망</div>문별이 1회차 때 뇌를 파괴한 가해자가 '4차 대전을 막을 천재'였음. 이로 인해 4,000번을 회귀해도 세상을 구할 방법이 이미 차단되어 있었음. 나비효과의 원죄.</div>
+<div class="twist"><div class="twist-title">🔴 반전 2 — 1화의 재해석</div>1화에서는 가족 전기세를 위해 1,320번 고생하는 유쾌한 고인물 사이다처럼 보이지만, 클라이맥스 이후 다시 읽으면 "가족을 구하려던 행동이 결국 가족을 파멸로 이끄는 지독한 비극"으로 재해석됨.</div>`,
+
+plot:`
+<div class="card">
+  <div class="card-title">프롤로그 — 원죄의 순간</div>
+  <div class="item"><div class="item-text">학창 시절 괴롭힘을 당하던 문별, 능력을 깨닫고 가해자(수현의 동생)의 이마를 가리킨 뒤 심장을 쳐서 첫 회귀 발동. 가해자가 멍청해진 것을 보고 소소한 쾌감을 느끼지만, 이 행위가 인류 멸망의 시작점이었음을 암시.</div></div>
+</div>
+<div class="card">
+  <div class="card-title">초반부 1화~30화 — 4,000번째 수면 실험실</div>
+  <div class="item"><div class="item-text">20만 분의 1 확률을 뚫고자 1,320번 회귀하여 수면 실험실 입성. 침투한 성수현을 제압하다 이름을 부르자 수현이 심장마비로 즉사. LED 신호가 울리며 진압대 도착까지 3분의 정적 발생. 3분 동안 4,000번의 패배 이유와 모든 진실을 깨달음.</div></div>
+</div>
+<div class="card">
+  <div class="card-title">중반부 31화~150화 — 비겁한 탈출과 어머니의 낙인</div>
+  <div class="item"><div class="item-text">세상을 구하는 영웅이 되길 포기하고 가족만 데리고 탈출하기로 결심. 포위망 속에서 타임리프를 쓰기 위해 심장을 치지만, 능력 사거리 안의 유일한 대상은 '어머니'였음. 능력 발동 직전 어머니의 마지막 유언: "전부 너의 탓이야, 별아."</div></div>
+</div>
+<div class="card">
+  <div class="card-title">후반부 151화~250화 — 잿더미 속 피폐 생존극</div>
+  <div class="item"><div class="item-text">회귀 후 눈을 뜬 세상. 어머니는 어린아이가 되어 아들의 얼굴을 보고 해맑게 웃을 뿐, 자신이 한 말을 기억하지 못함. 사과조차 할 수 없는 영원한 감옥에 갇힌 문별. 4차 세계대전이 터진 세상에서 아이가 된 어머니와 형제들을 데리고 악착같이 살아남는 하드코어 생존극.</div></div>
+</div>
+<div class="card">
+  <div class="card-title">에필로그 251화~270화 — 비겁자의 완결</div>
+  <div class="item"><div class="item-text">멸망한 세상의 끝에서 가족을 끝까지 지켜낸 문별. 세상을 망쳤다는 영원한 죄책감을 가슴속에 묻은 채, 해맑게 웃는 어머니에게 통조림을 쥐어주며 무심하게 살아가는 완결.</div></div>
+</div>`,
+
+quotes:`
+<div class="quote">
+  <div class="quote-who">문별 — 1화 독백</div>
+  <div class="quote-text">"20만 분의 1. 그 미친 당첨 확률을 뚫겠다고 바친 회귀만 1,320번이었다. 엄마, 그리고 해와 달이에게 드디어 인간다운 삶을 살게 해줄 수 있다. ...그렇게 믿었다."</div>
+</div>
+<div class="quote">
+  <div class="quote-who">성수현 — 2화 제압 씬</div>
+  <div class="quote-text">"너... 어떻게 내 이름을..." (심정지 작동)</div>
+</div>
+<div class="quote">
+  <div class="quote-who">어머니 — 클라이맥스 회귀 직전</div>
+  <div class="quote-text">"네가 책상 밑에 숨겨뒀던 수첩... 거기 적힌 애들이 전부 이상해졌을 때부터 알고 있었다. 네가 무슨 짓을 하고 다녔는지... 그 명단 끝에 결국 이 못난 엄마까지 들어오게 됐구나."
+
+"전부 너의 탓이야, 별아."</div>
+</div>
+<div class="quote">
+  <div class="quote-who">어머니 — 회귀 후, 어린아이가 된 상태</div>
+  <div class="quote-text">"별이야, 히히! 별이 탓이다, 별이 탓!" (아무것도 모른 채 천진난만하게 웃음)</div>
+</div>`,
+};
+
+/* ── 메모 섹션 (localStorage 저장) ── */
+function getNotes(){try{return JSON.parse(localStorage.getItem('novel_notes')||'[]');}catch{return[];}}
+function saveNotes(arr){localStorage.setItem('novel_notes',JSON.stringify(arr));}
+
+function renderNotes(){
+  const arr=getNotes();
+  const list=document.getElementById('notes-list');
+  if(!arr.length){list.innerHTML='<div class="empty">메모가 없습니다.<br>아래에 텍스트를 붙여넣어 추가하세요.</div>';return;}
+  list.innerHTML=arr.map((n,i)=>`
+    <div class="item">
+      <div class="item-date">${n.date}</div>
+      <div class="item-text">${escHtml(n.text)}</div>
+    </div>`).join('');
+}
+
+function addNote(){
+  const ta=document.getElementById('note-input');
+  const text=ta.value.trim();
+  if(!text)return;
+  const arr=getNotes();
+  arr.unshift({text,date:new Date().toLocaleString('ko-KR')});
+  saveNotes(arr);
+  ta.value='';
+  renderNotes();
+}
+
+function escHtml(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+
+/* ── 렌더 ── */
+function render(){
+  const nav=document.getElementById('nav');
+  const secs=document.getElementById('sections');
+
+  PAGES.forEach((p,i)=>{
+    const btn=document.createElement('button');
+    btn.className='nav-btn'+(i===0?' on':'');
+    btn.textContent=p.label;
+    btn.onclick=()=>{
+      document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('on'));
+      document.querySelectorAll('.section').forEach(s=>s.classList.remove('on'));
+      btn.classList.add('on');
+      document.getElementById('sec-'+p.id).classList.add('on');
+      window.scrollTo({top:0,behavior:'smooth'});
+    };
+    nav.appendChild(btn);
+
+    const sec=document.createElement('div');
+    sec.id='sec-'+p.id;
+    sec.className='section'+(i===0?' on':'');
+
+    if(p.id==='notes'){
+      sec.innerHTML=`
+        <div class="paste-wrap">
+          <span class="paste-label">텍스트를 붙여넣으면 메모로 저장됩니다</span>
+          <textarea class="paste-area" id="note-input" placeholder="설정, 아이디어, 수정사항 등 자유롭게 붙여넣기..."></textarea>
+          <button class="paste-btn" onclick="addNote()">메모 추가</button>
+        </div>
+        <div class="card">
+          <div class="card-title">저장된 메모</div>
+          <div id="notes-list"></div>
+        </div>`;
+    }else{
+      sec.innerHTML=CONTENT[p.id]||'';
+    }
+    secs.appendChild(sec);
+  });
+
+  renderNotes();
+}
+
+render();
+</script>
+</body>
+</html>
