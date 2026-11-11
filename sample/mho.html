@@ -137,6 +137,9 @@ td.nm{font-weight:600;white-space:nowrap}
 .more:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
 .charbar .seg.one button{flex-basis:132px;width:132px}
 .el-무{--ec:var(--muted)}
+[data-k=elem] button{white-space:nowrap}
+@media (min-width:861px){.controls .ctl:has(> [data-k=elem]){grid-column:span 2}}
+select:disabled{opacity:.7;cursor:not-allowed}
 .grid4 article td:first-child{white-space:nowrap}
 [data-k=slpbox][hidden]{display:none!important}
 @media (max-width:860px){.charbar .seg.one button{flex:0 1 auto;width:auto}}
@@ -374,9 +377,18 @@ function makeView(kind){
   q("bud").innerHTML=BUDS.map((b,i)=>`<option value="${i}">${esc(b[0])}${b[1]?` · 속성 +${b[1]}`:""}${b[2]?` · ${b[2]} +${b[3]}%`:""}${b[4]?` · 회심 +${b[4]}%`:""}</option>`).join("");q("bud").value=st.bud;
   const B=BUDS[st.bud];q("budhint").textContent=B[8]?`서포트: ${B[8]} 시 ${B[5]==="party"?"파티 속성":B[5]} +${B[6][st.bdol]}% · 이 캐릭터의 발동 비율 약 ${Math.round(trig(B,C)*100)}%${B[5]!=="party"&&B[5]!==C.el?` · ${C.el} 무기라 속성 서포트는 안 붙고 파티 대미지 +${B[7][st.bdol]}%만 적용`:""}`:(st.bud?"서포트 효과 데이터 없음 (기본 능력치만 반영)":"");
   seg("bdol",[0,1,2].map(i=>[i,i+"돌"]),st.bdol,v=>st.bdol=v);
-  q("mon").innerHTML=`<option value="일반">일반 개체 (모든 몬스터)</option><optgroup label="일반 개체">`+Object.keys(STARS).map(n=>`<option value="일반:${n}">${n} — ${C.el} ★${STARS[n][E.indexOf(C.el)]}</option>`).join("")+`</optgroup><optgroup label="융광종">`+Object.keys(RADW).map(n=>`<option value="융광:${n}">융광종 ${n} — ${RADW[n]} 약점${RADW[n]===C.el?" ★":""}</option>`).join("")+"</optgroup>";q("mon").value=st.mon;
+  { const ei=E.indexOf(C.el), mine=Object.keys(RADW).filter(n=>RADW[n]===C.el), other=Object.keys(RADW).filter(n=>RADW[n]!==C.el);
+    const sel=q("mon");
+    if(ei<0){sel.innerHTML=`<option value="${esc(st.mon)}">속성 무관 — 모든 몬스터 같은 세팅</option>`;sel.disabled=true}
+    else{sel.disabled=false;
+     const byStar=[3,2,1].map(s=>{const ns=Object.keys(STARS).filter(n=>STARS[n][ei]===s);return ns.length?`<optgroup label="일반 개체 · ${C.el} ★${s} (비율 ${SR[s].toFixed(2)})">`+ns.map(n=>`<option value="일반:${n}">${n}</option>`).join("")+"</optgroup>":""}).join("");
+     sel.innerHTML=`<option value="일반">일반 개체 (몬스터 미지정 · 비율 0.60)</option>`
+      +(mine.length?`<optgroup label="융광종 · ${C.el} 약점 → 속성 세팅">`+mine.map(n=>`<option value="융광:${n}">융광종 ${n}</option>`).join("")+"</optgroup>":"")
+      +byStar
+      +`<optgroup label="융광종 · 다른 속성 약점 → 일반 세팅">`+other.map(n=>`<option value="융광:${n}">융광종 ${n} (${RADW[n]} 약점)</option>`).join("")+"</optgroup>";
+     sel.value=st.mon; if(sel.value!==st.mon){st.mon="일반";sel.value="일반"}}}
   seg("hard",[[0,"일반"],[1,"고난이도 (생존 깨달음 포함)"]],st.hard,v=>st.hard=v);
-  q("hardhint").textContent=C.req?`고난이도에서는 생존 깨달음 '${C.req}'(30pt)을 반드시 넣고 계산합니다.`:"이 캐릭터(타입)는 필수 생존 깨달음이 없어 일반과 결과가 같습니다. 5pt 생존 깨달음은 두 모드 모두 남는 포인트로 넣습니다.";
+  q("hardhint").textContent=C.req?`고난이도: '${C.req}'(30pt) 필수`:"필수 생존 깨달음이 없어 일반과 같음";
   seg("main",[[1,"메인 조작"],[0,"동료(AI)"]],st.main,v=>st.main=v);
   seg("res",[[0,"없음"],[1,"켜짐"]],st.res,v=>st.res=v);
   const W=C.weap[st.wi]; const o={wpn:W,bud:st.bud,bdol:st.bdol,main:st.main,res:st.res};
